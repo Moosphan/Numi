@@ -21,11 +21,21 @@ public struct InsightsDistributionRow: Identifiable, Equatable {
 
 public struct InsightsView: View {
     private let summary: TransactionSummary
-    private let distribution: [InsightsDistributionRow]
+    private let expenseDistribution: [InsightsDistributionRow]
+    private let incomeDistribution: [InsightsDistributionRow]
+    private let expenseAccentColor: Color
+    private let incomeAccentColor: Color
 
-    public init(summary: TransactionSummary, distribution: [InsightsDistributionRow]) {
+    public init(
+        summary: TransactionSummary,
+        distribution: [InsightsDistributionRow],
+        incomeDistribution: [InsightsDistributionRow] = []
+    ) {
         self.summary = summary
-        self.distribution = distribution
+        self.expenseDistribution = distribution
+        self.incomeDistribution = incomeDistribution
+        self.expenseAccentColor = NumiColor.expenseText
+        self.incomeAccentColor = NumiColor.incomeText
     }
 
     public var body: some View {
@@ -37,22 +47,36 @@ public struct InsightsView: View {
                     NumiSummaryTile(title: "结余", value: summary.balance.formatted(), variant: summary.balance.minorUnits < 0 ? .negative : .neutral)
                     NumiSummaryTile(title: "记账次数", value: "\(summary.recordCount)", variant: .neutral)
                 }
-                distributionSection
+
+                if !expenseDistribution.isEmpty {
+                    distributionSection(title: "支出分布", rows: expenseDistribution, accentColor: expenseAccentColor)
+                }
+
+                if !incomeDistribution.isEmpty {
+                    distributionSection(title: "收入分布", rows: incomeDistribution, accentColor: incomeAccentColor)
+                }
             }
             .padding(NumiSpacing.s5)
+            .padding(.bottom, 120)
         }
         .background(NumiColor.surfacePage)
         .navigationTitle("洞悉")
         .modifier(LargeTitleNavigationChrome())
     }
 
-    private var distributionSection: some View {
+    @ViewBuilder
+    private func distributionSection(
+        title: String,
+        rows: [InsightsDistributionRow],
+        accentColor: Color
+    ) -> some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("支出分布")
+            Text(title)
                 .font(NumiFont.bodyStrong)
                 .foregroundStyle(NumiColor.textPrimary)
-                .accessibilityIdentifier("insights.distribution.title")
-            ForEach(distribution) { item in
+                .accessibilityIdentifier("insights.distribution.\(title)")
+
+            ForEach(rows) { item in
                 VStack(alignment: .leading, spacing: NumiSpacing.s2) {
                     HStack(spacing: NumiSpacing.s3) {
                         CategoryIconView(iconName: item.iconName, size: 36)
@@ -76,7 +100,7 @@ public struct InsightsView: View {
                     }
                     GeometryReader { proxy in
                         RoundedRectangle(cornerRadius: 999)
-                            .fill(NumiColor.accentDeep)
+                            .fill(accentColor)
                             .frame(width: proxy.size.width * item.percentage)
                     }
                     .frame(height: 6)

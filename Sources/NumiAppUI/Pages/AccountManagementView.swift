@@ -236,7 +236,7 @@ public struct AccountManagementView: View {
 
     private func iconName(for type: AccountType) -> String {
         switch type {
-        case .cash: "banknote"
+        case .cash: "centsign.circle"
         case .debitCard: "creditcard"
         case .creditCard: "creditcard.trianglebadge.exclamationmark"
         case .wechat: "message"
@@ -455,7 +455,7 @@ private struct AccountFormView: View {
 
     private func iconName(for type: AccountType) -> String {
         switch type {
-        case .cash: "banknote"
+        case .cash: "centsign.circle"
         case .debitCard: "creditcard"
         case .creditCard: "creditcard.trianglebadge.exclamationmark"
         case .wechat: "message"

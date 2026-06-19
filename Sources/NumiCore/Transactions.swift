@@ -92,9 +92,17 @@ public struct CategoryDistributionItem: Equatable {
 
 public enum CategoryDistribution {
     public static func expense(transactions: [Transaction], currencyCode: String) throws -> [CategoryDistributionItem] {
+        return try distribution(transactions: transactions, type: .expense, currencyCode: currencyCode)
+    }
+
+    public static func income(transactions: [Transaction], currencyCode: String) throws -> [CategoryDistributionItem] {
+        return try distribution(transactions: transactions, type: .income, currencyCode: currencyCode)
+    }
+
+    private static func distribution(transactions: [Transaction], type: TransactionType, currencyCode: String) throws -> [CategoryDistributionItem] {
         var totals: [UUID: Money] = [:]
 
-        for transaction in transactions where transaction.type == .expense {
+        for transaction in transactions where transaction.type == type {
             guard let categoryID = transaction.categoryID else { continue }
             let current = totals[categoryID] ?? .zero(currencyCode: currencyCode)
             totals[categoryID] = try current.adding(transaction.amount)

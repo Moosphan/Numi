@@ -9,6 +9,8 @@ struct RootShellView: View {
     @AppStorage("app.theme.id") private var themeID = NumiTheme.defaultTheme.id
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
+    @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
+    @StateObject private var rateService = ExchangeRateService.shared
 
     enum Tab: String, CaseIterable {
         case transactions = "明细"
@@ -128,6 +130,9 @@ struct RootShellView: View {
             }
         }
         .tint(NumiColor.accentDeep)
+        .task {
+            await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             backgroundTime = Date()
             withAnimation(.easeIn(duration: 0.2)) {
@@ -314,8 +319,9 @@ struct RootShellView: View {
         case .insights:
             let summary = summary()
             let distribution = insightDistribution()
+            let income = insightIncomeDistribution()
             NavigationStack {
-                InsightsView(summary: summary, distribution: distribution)
+                InsightsView(summary: summary, distribution: distribution, incomeDistribution: income)
             }
         case .plans:
             NavigationStack {
@@ -440,6 +446,20 @@ struct RootShellView: View {
 
     private func insightDistribution() -> [InsightsDistributionRow] {
         let items = (try? CategoryDistribution.expense(transactions: store.visibleTransactions, currencyCode: "CNY")) ?? []
+        return items.map { item in
+            let category = store.categories.first { $0.id == item.categoryID }
+            return InsightsDistributionRow(
+                categoryID: item.categoryID,
+                categoryName: category?.name ?? "其他",
+                iconName: category?.icon ?? "ellipsis.circle",
+                amount: item.amount,
+                percentage: item.percentage
+            )
+        }
+    }
+
+    private func insightIncomeDistribution() -> [InsightsDistributionRow] {
+        let items = (try? CategoryDistribution.income(transactions: store.visibleTransactions, currencyCode: "CNY")) ?? []
         return items.map { item in
             let category = store.categories.first { $0.id == item.categoryID }
             return InsightsDistributionRow(
@@ -753,13 +773,9 @@ struct RootShellView: View {
     }
 
     private var currencyOptions: [NumiCurrencyOption] {
-        [
-            NumiCurrencyOption(code: "CNY", title: "人民币", symbol: "¥"),
-            NumiCurrencyOption(code: "USD", title: "美元", symbol: "$"),
-            NumiCurrencyOption(code: "HKD", title: "港币", symbol: "HK$"),
-            NumiCurrencyOption(code: "JPY", title: "日元", symbol: "¥"),
-            NumiCurrencyOption(code: "EUR", title: "欧元", symbol: "€")
-        ]
+        CurrencyDefinition.common.map {
+            NumiCurrencyOption(code: $0.code, title: $0.name, symbol: $0.symbol)
+        }
     }
 
     private static func makeStore() throws -> SwiftDataBookkeepingStore {

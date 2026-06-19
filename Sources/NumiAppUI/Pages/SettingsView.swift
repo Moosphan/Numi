@@ -66,6 +66,14 @@ public struct SettingsView: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.accounts")
 
+                    NavigationLink {
+                        CurrencyManagementView()
+                    } label: {
+                        settingsRow("多货币管理", icon: "dollarsign.circle")
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings.currency")
+
                     settingsRow("导入与导出", icon: "square.and.arrow.up")
                     settingsRow("本地备份", icon: "lock.doc")
                 }

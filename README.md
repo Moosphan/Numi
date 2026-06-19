@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/brand/logo-promo.svg" alt="Numi Logo" width="200">
+  <img src="docs/assets/brand/brand-logo.png" alt="Numi Logo" width="200">
 </p>
 
 <h1 align="center">Numi</h1>
@@ -13,20 +13,13 @@
   <img src="https://img.shields.io/badge/macOS-14%2B-blue?logo=apple" alt="macOS 14+">
   <img src="https://img.shields.io/badge/SwiftUI-✓-orange?logo=swift" alt="SwiftUI">
   <img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey" alt="License: CC BY-NC-SA 4.0">
-  <img src="https://img.shields.io/badge/本地优先-✓-brightgreen" alt="本地优先">
-  <img src="https://img.shields.io/badge/无广告-✓-brightgreen" alt="无广告">
-</p>
-
-<p align="center">
-  Numi 是一款纯本地、无广告、低摩擦、审美克制的个人记账 App。<br>
-  让你在 5 秒内完成一笔记录，在 30 秒内理解本月钱花在哪里。
 </p>
 
 ---
 
 ## ✨ 核心特性
 
-- **🚀 极速记账** - 5秒完成一笔记录，高频路径不超过4次操作
+- **🚀 极速记账** - 5秒完成一笔记录，支持连续速记
 - **🔒 纯本地存储** - 数据只在本机，不上传服务器，完全可控
 - **📊 智能洞察** - 30秒理解消费趋势，月度概览一目了然
 - **💰 预算管理** - 月预算、分类预算、周视图，动态日均预算
