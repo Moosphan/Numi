@@ -83,7 +83,7 @@ public struct TransactionSearchView: View {
 
     private var filteredRows: [TransactionSearchRow] {
         let keyword = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !keyword.isEmpty else { return rows }
+        guard !keyword.isEmpty else { return [] }
 
         return rows.filter { (row: TransactionSearchRow) in
             row.categoryName.localizedCaseInsensitiveContains(keyword)
