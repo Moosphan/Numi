@@ -125,16 +125,18 @@ public struct EditRecordView: View {
                 Button {
                     selectedCategoryID = category.id
                 } label: {
-                    Label(category.name, systemImage: category.icon)
+                    Label {
+                        Text(category.name)
+                    } icon: {
+                        CategoryIconView(category: category, size: 20)
+                    }
                 }
                 .accessibilityIdentifier("category.\(category.name)")
             }
         } label: {
             HStack(spacing: NumiSpacing.s3) {
-                Image(systemName: selectedCategory?.icon ?? "ellipsis.circle")
-                    .font(.system(size: 16, weight: .semibold))
+                CategoryIconView(iconName: selectedCategory?.icon ?? "ellipsis.circle", size: 24)
                     .foregroundStyle(NumiColor.textTertiary)
-                    .frame(width: 24)
                 Text("分类")
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textSecondary)

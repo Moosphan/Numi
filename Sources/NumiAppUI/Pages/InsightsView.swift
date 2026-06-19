@@ -55,10 +55,8 @@ public struct InsightsView: View {
             ForEach(distribution) { item in
                 VStack(alignment: .leading, spacing: NumiSpacing.s2) {
                     HStack(spacing: NumiSpacing.s3) {
-                        Image(systemName: item.iconName)
-                            .font(.system(size: 18, weight: .semibold))
+                        CategoryIconView(iconName: item.iconName, size: 36)
                             .foregroundStyle(NumiColor.textPrimary)
-                            .frame(width: 36, height: 36)
                             .background(NumiColor.surfaceCardSubtle)
                             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                             .accessibilityIdentifier("insights.categoryIcon.\(item.categoryName)")

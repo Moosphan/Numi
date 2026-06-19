@@ -85,10 +85,8 @@ public struct CategoryManagementView: View {
             onVisibilityChange(category, nextHidden)
         } label: {
             HStack(spacing: NumiSpacing.s3) {
-                Image(systemName: category.icon)
-                    .font(.system(size: 17, weight: .semibold))
+                CategoryIconView(category: category, size: 36)
                     .foregroundStyle(NumiColor.textPrimary)
-                    .frame(width: 36, height: 36)
                     .background(NumiColor.surfaceCardSubtle)
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
 

@@ -84,9 +84,7 @@ public struct AddRecordFlowView: View {
                                 }
                             } label: {
                                 VStack(spacing: NumiSpacing.s2) {
-                                    Image(systemName: category.icon)
-                                        .font(.system(size: 28, weight: .medium))
-                                        .frame(width: 68, height: 68)
+                                    CategoryIconView(category: category, size: 68)
                                         .background(NumiColor.surfaceCard)
                                         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
                                     Text(category.name)
@@ -369,10 +367,8 @@ private struct AddRecordEntryContent: View {
 
     private var categorySummaryCard: some View {
         HStack(spacing: NumiSpacing.s3) {
-            Image(systemName: categoryIconName)
-                .font(.system(size: 18, weight: .semibold))
+            CategoryIconView(iconName: categoryIconName, size: 38)
                 .foregroundStyle(NumiColor.accentDeep)
-                .frame(width: 38, height: 38)
                 .background(NumiColor.surfaceCard)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
 

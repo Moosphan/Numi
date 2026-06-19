@@ -58,9 +58,7 @@ public struct RecordDetailView: View {
     private var amountCard: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s4) {
             HStack(spacing: NumiSpacing.s3) {
-                Image(systemName: iconName)
-                    .font(.system(size: 28, weight: .semibold))
-                    .frame(width: 56, height: 56)
+                CategoryIconView(iconName: iconName, size: 56)
                     .background(NumiColor.surfaceCardSubtle)
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
 

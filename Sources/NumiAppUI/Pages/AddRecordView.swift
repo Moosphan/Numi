@@ -78,9 +78,7 @@ public struct AddRecordView: View {
                                 selectedCategoryID = category.id
                             } label: {
                                 VStack(spacing: NumiSpacing.s2) {
-                                    Image(systemName: category.icon)
-                                        .font(.system(size: 28, weight: .medium))
-                                        .frame(width: 62, height: 62)
+                                    CategoryIconView(category: category, size: 62)
                                         .background(category.id == selectedCategoryID ? NumiColor.accentPrimary.opacity(0.52) : NumiColor.surfaceCard)
                                         .overlay {
                                             if category.id == selectedCategoryID {

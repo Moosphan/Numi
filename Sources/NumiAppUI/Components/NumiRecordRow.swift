@@ -29,9 +29,7 @@ public struct NumiRecordRow: View {
 
     public var body: some View {
         HStack(spacing: NumiSpacing.s3) {
-            Image(systemName: iconName)
-                .font(.system(size: style == .grouped ? 19 : 20, weight: .medium))
-                .frame(width: style == .grouped ? 34 : 36, height: style == .grouped ? 34 : 36)
+            CategoryIconView(iconName: iconName, size: style == .grouped ? 34 : 36)
                 .background(NumiColor.surfaceCardSubtle)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
 
