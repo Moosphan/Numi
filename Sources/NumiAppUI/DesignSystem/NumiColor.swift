@@ -37,7 +37,7 @@ private struct NumiThemePalette {
     }
 
     var surfaceCard: Color {
-        mix(base: surfacePage, overlay: .white, amount: theme.id == NumiTheme.brandWarm.id ? 0.04 : 0.05)
+        mix(base: surfacePage, overlay: .white, amount: theme.id == NumiTheme.brandWarm.id ? 0.80 : 0.85)
     }
 
     var surfaceCardSubtle: Color {
