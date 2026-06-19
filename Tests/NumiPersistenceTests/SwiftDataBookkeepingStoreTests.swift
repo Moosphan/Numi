@@ -100,8 +100,8 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
         try store.seedDefaultsIfNeeded()
 
         XCTAssertEqual(store.ledgers.count, 1)
-        XCTAssertEqual(store.categories.filter { $0.kind == .expense }.count, 16)
-        XCTAssertEqual(store.categories.filter { $0.kind == .income }.count, 8)
+        XCTAssertEqual(store.categories.filter { $0.kind == .expense }.count, 28)
+        XCTAssertEqual(store.categories.filter { $0.kind == .income }.count, 19)
         XCTAssertEqual(store.accounts.count, 2)
     }
 
