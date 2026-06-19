@@ -1,0 +1,504 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Numi - Plans</title>
+        <!-- Fonts -->
+        <link href="https://fonts.googleapis.com" rel="preconnect" />
+        <link
+            crossorigin=""
+            href="https://fonts.gstatic.com"
+            rel="preconnect"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+            rel="stylesheet"
+        />
+        <!-- Material Symbols -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <!-- Tailwind Config -->
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "on-primary-container": "#005f22",
+                            "primary-container": "#79d983",
+                            "on-secondary-fixed-variant": "#474746",
+                            "surface-dim": "#dbdad6",
+                            "secondary-fixed": "#e5e2e1",
+                            outline: "#6f7a6d",
+                            "surface-container-highest": "#e3e2df",
+                            "tertiary-fixed": "#ffdad4",
+                            "surface-bright": "#faf9f5",
+                            "on-tertiary-container": "#7a4139",
+                            "secondary-fixed-dim": "#c8c6c5",
+                            "on-surface-variant": "#3f4a3e",
+                            "tertiary-container": "#ffb1a5",
+                            "secondary-container": "#e2dfde",
+                            "on-tertiary-fixed-variant": "#6e372f",
+                            error: "#ba1a1a",
+                            "on-tertiary": "#ffffff",
+                            "on-tertiary-fixed": "#370d08",
+                            tertiary: "#8a4e45",
+                            "surface-tint": "#006e28",
+                            "surface-variant": "#e3e2df",
+                            "inverse-on-surface": "#f2f1ed",
+                            "surface-container": "#efeeea",
+                            "on-primary": "#ffffff",
+                            primary: "#006e28",
+                            "surface-container-low": "#f4f4f0",
+                            "surface-container-lowest": "#ffffff",
+                            "on-error-container": "#93000a",
+                            "on-secondary": "#ffffff",
+                            "on-background": "#1b1c1a",
+                            "on-primary-fixed-variant": "#00531c",
+                            "on-secondary-fixed": "#1c1b1b",
+                            "inverse-surface": "#2f312e",
+                            "primary-fixed-dim": "#7bdb85",
+                            secondary: "#5f5e5e",
+                            "outline-variant": "#becaba",
+                            "primary-fixed": "#97f89f",
+                            "inverse-primary": "#7bdb85",
+                            "surface-container-high": "#e9e8e4",
+                            "error-container": "#ffdad6",
+                            "on-error": "#ffffff",
+                            "on-primary-fixed": "#002107",
+                            "on-secondary-container": "#636262",
+                            "on-surface": "#1b1c1a",
+                            surface: "#faf9f5",
+                            background: "#faf9f5",
+                            "tertiary-fixed-dim": "#ffb4a8",
+                        },
+                        borderRadius: {
+                            DEFAULT: "0.25rem",
+                            lg: "0.5rem",
+                            xl: "0.75rem",
+                            full: "9999px",
+                        },
+                        spacing: {
+                            "stack-lg": "24px",
+                            "margin-desktop": "40px",
+                            "stack-sm": "4px",
+                            "margin-mobile": "20px",
+                            base: "8px",
+                            gutter: "16px",
+                            "stack-md": "12px",
+                        },
+                        fontFamily: {
+                            "headline-lg": ["Inter"],
+                            "label-caps": ["Inter"],
+                            "body-lg": ["Inter"],
+                            "headline-lg-mobile": ["Inter"],
+                            "headline-md": ["Inter"],
+                            "body-md": ["Inter"],
+                            "numeric-data": ["Inter"],
+                        },
+                        fontSize: {
+                            "headline-lg": [
+                                "34px",
+                                {
+                                    lineHeight: "41px",
+                                    letterSpacing: "-0.02em",
+                                    fontWeight: "700",
+                                },
+                            ],
+                            "label-caps": [
+                                "12px",
+                                {
+                                    lineHeight: "16px",
+                                    letterSpacing: "0.05em",
+                                    fontWeight: "600",
+                                },
+                            ],
+                            "body-lg": [
+                                "17px",
+                                {
+                                    lineHeight: "24px",
+                                    letterSpacing: "-0.01em",
+                                    fontWeight: "400",
+                                },
+                            ],
+                            "headline-lg-mobile": [
+                                "28px",
+                                {
+                                    lineHeight: "34px",
+                                    letterSpacing: "-0.01em",
+                                    fontWeight: "700",
+                                },
+                            ],
+                            "headline-md": [
+                                "22px",
+                                {
+                                    lineHeight: "28px",
+                                    letterSpacing: "-0.01em",
+                                    fontWeight: "600",
+                                },
+                            ],
+                            "body-md": [
+                                "15px",
+                                {
+                                    lineHeight: "20px",
+                                    letterSpacing: "0em",
+                                    fontWeight: "400",
+                                },
+                            ],
+                            "numeric-data": [
+                                "20px",
+                                {
+                                    lineHeight: "24px",
+                                    letterSpacing: "-0.02em",
+                                    fontWeight: "500",
+                                },
+                            ],
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            body {
+                min-height: max(884px, 100dvh);
+            }
+        </style>
+    </head>
+    <body
+        class="bg-background text-on-surface antialiased font-body-md min-h-screen flex flex-col items-center"
+    >
+        <div
+            class="w-full max-w-md mx-auto relative min-h-screen bg-background shadow-2xl overflow-hidden"
+        >
+            <!-- TopAppBar -->
+            <header
+                class="fixed top-0 w-full max-w-md bg-surface/80 backdrop-blur-xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] z-50 flex justify-between items-center px-margin-mobile h-[64px]"
+            >
+                <button
+                    class="text-primary hover:opacity-80 active:scale-95 transition-transform flex items-center justify-center"
+                >
+                    <span class="material-symbols-outlined text-[24px]"
+                        >calendar_month</span
+                    >
+                </button>
+                <h1
+                    class="font-headline-md text-headline-md font-bold text-primary"
+                >
+                    Numi
+                </h1>
+                <button
+                    class="text-primary hover:opacity-80 active:scale-95 transition-transform flex items-center justify-center"
+                >
+                    <span class="material-symbols-outlined text-[24px]"
+                        >search</span
+                    >
+                </button>
+            </header>
+            <!-- Main Content Canvas -->
+            <main
+                class="pt-[88px] pb-[120px] px-margin-mobile flex flex-col gap-stack-lg w-full"
+            >
+                <!-- Page Title -->
+                <section class="mb-stack-sm">
+                    <h2
+                        class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface"
+                    >
+                        Plans
+                    </h2>
+                    <p
+                        class="font-body-md text-body-md text-on-surface-variant mt-1"
+                    >
+                        Manage your recurring commitments.
+                    </p>
+                </section>
+                <!-- Active Subscriptions Section -->
+                <section class="flex flex-col gap-stack-md">
+                    <div class="flex justify-between items-end">
+                        <h3
+                            class="font-headline-md text-headline-md text-on-surface"
+                        >
+                            Active Subscriptions
+                        </h3>
+                        <span
+                            class="font-label-caps text-label-caps text-secondary uppercase"
+                            >Monthly</span
+                        >
+                    </div>
+                    <!-- Sub Card 1 -->
+                    <div
+                        class="bg-surface-container-lowest rounded-lg shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-[20px] flex items-center gap-gutter active:scale-[0.98] transition-transform"
+                    >
+                        <div
+                            class="w-[48px] h-[48px] rounded-full overflow-hidden bg-surface-container-low shrink-0 shadow-inner"
+                        >
+                            <img
+                                class="w-full h-full object-cover"
+                                data-alt="A glossy 3D icon of a green music streaming logo on a soft white studio background. Minimalist iOS app aesthetic with subtle ambient occlusion, perfect lighting, smooth reflections, and a premium feel. High fidelity render."
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbOyj9YS96QZvUZd3Q4SFmgG245z8s0A9CtNtKFFRYTz2-PZeOszqTw8aZtygK6x56sWWPZ7DUqbGdo_oaJ4tmgMrnmga56--nKIGGP0oqeFT5y6r_1Ma7rf2RXNuLk26_SJIT71vueQO_Hx4gprjCPYkV0_nQxZqtwRudAsufmG8OPG5MWO5B_iOZDjSj3609Prax6oJHfwfGKOG__w5S9eiVN73mv2fiYAajivL9wqvrNPX-JjH_GaIx7nDFJVyL0uYyIIzTW0Q"
+                            />
+                        </div>
+                        <div class="flex-1 flex flex-col justify-center">
+                            <h4
+                                class="font-body-lg text-body-lg font-medium text-on-surface"
+                            >
+                                Spotify Premium
+                            </h4>
+                            <p class="font-body-md text-body-md text-secondary">
+                                Renews Oct 12
+                            </p>
+                        </div>
+                        <div class="flex flex-col items-end justify-center">
+                            <span
+                                class="font-numeric-data text-numeric-data text-on-surface"
+                                >$10.99</span
+                            >
+                            <div
+                                class="mt-1 px-3 py-1 bg-surface-tint/10 rounded-full flex items-center"
+                            >
+                                <span
+                                    class="font-label-caps text-label-caps text-primary"
+                                    >Active</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Sub Card 2 -->
+                    <div
+                        class="bg-surface-container-lowest rounded-lg shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-[20px] flex items-center gap-gutter active:scale-[0.98] transition-transform"
+                    >
+                        <div
+                            class="w-[48px] h-[48px] rounded-full overflow-hidden bg-surface-container-low shrink-0 shadow-inner"
+                        >
+                            <img
+                                class="w-full h-full object-cover"
+                                data-alt="A frosted glass icon of a cloud symbol over a soft blue background. Sleek modern glassmorphism aesthetic with soft gradients, translucent layers, pristine lighting, minimal white framing, highly detailed digital UI asset."
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuApStYQQ35w_dX3LL6q-v4AGEMDDbFxN9R4qmCU5hUTRsI4MrrTEvkUap0oQDdyCLzAIicN99umUJsuFI6luZiTMnWexZUY-FDjFB7l0I3KbYyUop5zVpD5j2b7BCnZkCpjVXfLwHeN8AFQA4qasqQQQOPRrABxzK0kWB0Dqa2AJBqJru-2cMQTMTH8Nequ19wjTpzA8vNd3eVgGhy7UfKtNifYj3J2lMO2C4h6S4ttL4JjikF5CCxKRLA0KoY1vmISRq-YAgemIzc"
+                            />
+                        </div>
+                        <div class="flex-1 flex flex-col justify-center">
+                            <h4
+                                class="font-body-lg text-body-lg font-medium text-on-surface"
+                            >
+                                iCloud+ 2TB
+                            </h4>
+                            <p class="font-body-md text-body-md text-secondary">
+                                Renews Oct 15
+                            </p>
+                        </div>
+                        <div class="flex flex-col items-end justify-center">
+                            <span
+                                class="font-numeric-data text-numeric-data text-on-surface"
+                                >$9.99</span
+                            >
+                            <div
+                                class="mt-1 px-3 py-1 bg-surface-tint/10 rounded-full flex items-center"
+                            >
+                                <span
+                                    class="font-label-caps text-label-caps text-primary"
+                                    >Active</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Installment Progress Section -->
+                <section class="flex flex-col gap-stack-md mt-stack-sm">
+                    <div class="flex justify-between items-end">
+                        <h3
+                            class="font-headline-md text-headline-md text-on-surface"
+                        >
+                            Installment Progress
+                        </h3>
+                        <button
+                            class="font-label-caps text-label-caps text-primary hover:opacity-80 transition-opacity"
+                        >
+                            VIEW ALL
+                        </button>
+                    </div>
+                    <!-- Installment Card 1 -->
+                    <div
+                        class="bg-surface-container-lowest rounded-lg shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-[20px] flex flex-col gap-stack-md"
+                    >
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-stack-md">
+                                <div
+                                    class="w-[40px] h-[40px] rounded-md overflow-hidden bg-surface-container-low shrink-0 shadow-sm border border-surface-container-highest"
+                                >
+                                    <img
+                                        class="w-full h-full object-cover"
+                                        data-alt="A sleek silver laptop slightly opened on an absolute clean white background. High-end product photography, soft diffuse studio lighting highlighting the metal texture, premium minimalist aesthetic."
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBERGWnq6DlCZleRVQvwtg0wfki28MCHxhvsrXicutJhrLV3xucNULmaudJiLduxoLTmDrmcOC9LfMrrs-zU6CJqhON8QBAtwhl-1ZFHTbwCI6HT5xNt4BXnLmHE6fF9nzNnH-aVKN6jLYFGdu4KkcoIkjbNbQj6ha-la3Ghol_ySWKpJdc47QojNdSseBeVufAGIvgU75ZbBdPc1MFA7qzS8w7sEKRx9ZdfG3prm8vRA-iE2P5TdDKnRd9urDcqStGcC9LCL56Tuo"
+                                    />
+                                </div>
+                                <div class="flex flex-col">
+                                    <h4
+                                        class="font-body-lg text-body-lg font-medium text-on-surface"
+                                    >
+                                        MacBook Pro 14"
+                                    </h4>
+                                    <p
+                                        class="font-body-md text-body-md text-secondary"
+                                    >
+                                        Apple Store
+                                    </p>
+                                </div>
+                            </div>
+                            <span
+                                class="font-numeric-data text-numeric-data text-on-surface"
+                                >$166.58<span class="text-secondary text-[14px]"
+                                    >/mo</span
+                                ></span
+                            >
+                        </div>
+                        <div class="flex flex-col gap-stack-sm">
+                            <div
+                                class="flex justify-between items-center w-full"
+                            >
+                                <span
+                                    class="font-label-caps text-label-caps text-on-surface-variant"
+                                    >4 OF 12 PAID</span
+                                >
+                                <span
+                                    class="font-label-caps text-label-caps text-secondary"
+                                    >$666.32 / $1,999.00</span
+                                >
+                            </div>
+                            <!-- Capsule Progress Bar -->
+                            <div
+                                class="w-full h-[8px] bg-surface-container-high rounded-full overflow-hidden shadow-inner"
+                            >
+                                <div
+                                    class="h-full bg-primary-container rounded-full"
+                                    style="width: 33.33%"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Installment Card 2 -->
+                    <div
+                        class="bg-surface-container-lowest rounded-lg shadow-[0px_4px_20px_rgba(0,0,0,0.04)] p-[20px] flex flex-col gap-stack-md"
+                    >
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-stack-md">
+                                <div
+                                    class="w-[40px] h-[40px] rounded-md overflow-hidden bg-surface-container-low shrink-0 shadow-sm border border-surface-container-highest flex items-center justify-center"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-secondary text-[24px]"
+                                        >chair</span
+                                    >
+                                </div>
+                                <div class="flex flex-col">
+                                    <h4
+                                        class="font-body-lg text-body-lg font-medium text-on-surface"
+                                    >
+                                        Ergo Chair
+                                    </h4>
+                                    <p
+                                        class="font-body-md text-body-md text-secondary"
+                                    >
+                                        Herman Miller
+                                    </p>
+                                </div>
+                            </div>
+                            <span
+                                class="font-numeric-data text-numeric-data text-on-surface"
+                                >$75.00<span class="text-secondary text-[14px]"
+                                    >/mo</span
+                                ></span
+                            >
+                        </div>
+                        <div class="flex flex-col gap-stack-sm">
+                            <div
+                                class="flex justify-between items-center w-full"
+                            >
+                                <span
+                                    class="font-label-caps text-label-caps text-on-surface-variant"
+                                    >10 OF 12 PAID</span
+                                >
+                                <span
+                                    class="font-label-caps text-label-caps text-secondary"
+                                    >$750.00 / $900.00</span
+                                >
+                            </div>
+                            <!-- Capsule Progress Bar -->
+                            <div
+                                class="w-full h-[8px] bg-surface-container-high rounded-full overflow-hidden shadow-inner"
+                            >
+                                <div
+                                    class="h-full bg-primary-container rounded-full"
+                                    style="width: 83.33%"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+            <!-- BottomNavBar -->
+            <nav
+                class="fixed bottom-0 w-full max-w-md bg-surface/80 backdrop-blur-xl rounded-t-xl shadow-[0px_-4px_20px_rgba(0,0,0,0.04)] z-50 flex justify-around items-center px-margin-mobile py-base pb-[calc(8px+env(safe-area-inset-bottom))]"
+            >
+                <!-- Inactive: Transactions -->
+                <button
+                    class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-secondary-container/50 active:scale-90 transition-transform duration-200 w-[64px] py-1 rounded-lg"
+                >
+                    <span class="material-symbols-outlined text-[24px] mb-[2px]"
+                        >receipt_long</span
+                    >
+                    <span
+                        class="font-label-caps text-[10px] font-semibold tracking-wider"
+                        >Transactions</span
+                    >
+                </button>
+                <!-- Inactive: Insights -->
+                <button
+                    class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-secondary-container/50 active:scale-90 transition-transform duration-200 w-[64px] py-1 rounded-lg"
+                >
+                    <span class="material-symbols-outlined text-[24px] mb-[2px]"
+                        >query_stats</span
+                    >
+                    <span
+                        class="font-label-caps text-[10px] font-semibold tracking-wider"
+                        >Insights</span
+                    >
+                </button>
+                <!-- Active: Plans -->
+                <button
+                    class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-full px-4 py-1 active:scale-90 transition-transform duration-200"
+                >
+                    <span
+                        class="material-symbols-outlined text-[24px] mb-[2px]"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >event_note</span
+                    >
+                    <span
+                        class="font-label-caps text-[10px] font-semibold tracking-wider"
+                        >Plans</span
+                    >
+                </button>
+                <!-- Inactive: Profile -->
+                <button
+                    class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-secondary-container/50 active:scale-90 transition-transform duration-200 w-[64px] py-1 rounded-lg"
+                >
+                    <span class="material-symbols-outlined text-[24px] mb-[2px]"
+                        >person</span
+                    >
+                    <span
+                        class="font-label-caps text-[10px] font-semibold tracking-wider"
+                        >Profile</span
+                    >
+                </button>
+            </nav>
+        </div>
+    </body>
+</html>

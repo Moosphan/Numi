@@ -1,0 +1,407 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Numi - Category Management</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            .material-symbols-outlined {
+                font-variation-settings:
+                    "FILL" 0,
+                    "wght" 400,
+                    "GRAD" 0,
+                    "opsz" 24;
+            }
+            body {
+                font-family: "Hanken Grotesk", sans-serif;
+                background-color: #faf9f5;
+            }
+            .ios-glass {
+                background-color: rgba(250, 249, 245, 0.94);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+        </style>
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            outline: "#707974",
+                            "inverse-surface": "#2f312e",
+                            tertiary: "#675780",
+                            "surface-dim": "#dbdad6",
+                            "tertiary-fixed-dim": "#d1beee",
+                            "inverse-primary": "#94d3bd",
+                            "secondary-container": "#bbebf5",
+                            "on-tertiary-fixed": "#221439",
+                            "ink-500": "#7D857F",
+                            "on-primary": "#ffffff",
+                            "error-container": "#ffdad6",
+                            "primary-fixed": "#aff0d8",
+                            "on-secondary-fixed-variant": "#1c4d56",
+                            surface: "#faf9f5",
+                            "primary-container": "#98d8c1",
+                            "paper-100": "#ECEDE8",
+                            background: "#faf9f5",
+                            "surface-container-highest": "#e3e2df",
+                            "on-tertiary-fixed-variant": "#4e4067",
+                            "on-error": "#ffffff",
+                            secondary: "#37656e",
+                            "inverse-on-surface": "#f2f1ed",
+                            "surface-variant": "#e3e2df",
+                            "outline-variant": "#bfc9c3",
+                            "surface-container-low": "#f4f4f0",
+                            "on-secondary": "#ffffff",
+                            "secondary-fixed-dim": "#9fced8",
+                            "surface-container-lowest": "#ffffff",
+                            "on-surface-variant": "#404945",
+                            "expense-blue": "#4D7B84",
+                            "tertiary-fixed": "#ecdcff",
+                            "primary-fixed-dim": "#94d3bd",
+                            "on-secondary-container": "#3d6b74",
+                            "on-background": "#1b1c1a",
+                            "ink-900": "#1E211F",
+                            "paper-050": "#F4F4EF",
+                            "surface-container": "#efeeea",
+                            "income-violet": "#71618B",
+                            "on-tertiary-container": "#5e4e77",
+                            "on-error-container": "#93000a",
+                            "surface-container-high": "#e9e8e4",
+                            primary: "#296956",
+                            "secondary-fixed": "#bbebf5",
+                            "ink-700": "#4D544F",
+                            "on-primary-fixed-variant": "#07513f",
+                            "on-tertiary": "#ffffff",
+                            "on-primary-fixed": "#002118",
+                            error: "#ba1a1a",
+                            "on-secondary-fixed": "#001f24",
+                            "negative-rose": "#9A514A",
+                            "tertiary-container": "#d6c3f3",
+                            "on-primary-container": "#1e604e",
+                            "surface-tint": "#296956",
+                            "on-surface": "#1b1c1a",
+                            "surface-bright": "#faf9f5",
+                            "custom-green": "#79D983",
+                        },
+                        borderRadius: {
+                            DEFAULT: "0.25rem",
+                            lg: "0.5rem",
+                            xl: "0.75rem",
+                            full: "9999px",
+                        },
+                        spacing: {
+                            block: "32px",
+                            micro: "4px",
+                            section: "24px",
+                            standard: "16px",
+                            compact: "8px",
+                            gutter: "20px",
+                        },
+                        fontFamily: {
+                            "title-lg": ["Hanken Grotesk"],
+                            "body-strong": ["Hanken Grotesk"],
+                            "body-small": ["Hanken Grotesk"],
+                            "body-default": ["Hanken Grotesk"],
+                            "amount-xl": ["Hanken Grotesk"],
+                            caption: ["Hanken Grotesk"],
+                            footnote: ["Hanken Grotesk"],
+                            "amount-lg": ["Hanken Grotesk"],
+                        },
+                        fontSize: {
+                            "title-lg": [
+                                "22px",
+                                { lineHeight: "28px", fontWeight: "600" },
+                            ],
+                            "body-strong": [
+                                "17px",
+                                { lineHeight: "23px", fontWeight: "600" },
+                            ],
+                            "body-small": [
+                                "14px",
+                                { lineHeight: "19px", fontWeight: "400" },
+                            ],
+                            "body-default": [
+                                "16px",
+                                { lineHeight: "22px", fontWeight: "400" },
+                            ],
+                            "amount-xl": [
+                                "34px",
+                                {
+                                    lineHeight: "40px",
+                                    letterSpacing: "-0.02em",
+                                    fontWeight: "800",
+                                },
+                            ],
+                            caption: [
+                                "11px",
+                                { lineHeight: "14px", fontWeight: "500" },
+                            ],
+                            footnote: [
+                                "12px",
+                                { lineHeight: "16px", fontWeight: "500" },
+                            ],
+                            "amount-lg": [
+                                "28px",
+                                {
+                                    lineHeight: "34px",
+                                    letterSpacing: "-0.01em",
+                                    fontWeight: "700",
+                                },
+                            ],
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            body {
+                min-height: max(884px, 100dvh);
+            }
+        </style>
+    </head>
+    <body class="bg-background text-on-background min-h-screen pb-32">
+        <!-- Top App Bar -->
+        <header
+            class="ios-glass sticky top-0 z-50 flex justify-between items-center w-full px-gutter h-16 transition-colors duration-200"
+        >
+            <button
+                aria-label="Go back"
+                class="text-primary p-2 -ml-2 rounded-full hover:bg-surface-container-low transition-colors duration-200"
+            >
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <h1 class="font-title-lg text-title-lg text-on-surface">
+                Categories
+            </h1>
+            <div class="w-10"></div>
+            <!-- Spacer for centering -->
+        </header>
+        <main class="px-gutter pt-section">
+            <!-- Tab Navigation -->
+            <div class="flex p-1 bg-surface-container rounded-xl mb-section">
+                <button
+                    class="flex-1 py-2 text-center rounded-lg bg-custom-green text-on-primary font-body-strong text-body-strong shadow-sm transition-all duration-200"
+                >
+                    Expense
+                </button>
+                <button
+                    class="flex-1 py-2 text-center rounded-lg text-on-surface-variant font-body-strong text-body-strong hover:bg-surface-container-highest transition-all duration-200"
+                >
+                    Income
+                </button>
+            </div>
+            <!-- Category List -->
+            <div class="space-y-3">
+                <!-- Category Item: Groceries -->
+                <div
+                    class="flex items-center justify-between p-standard bg-paper-050 rounded-[16px] border border-[rgba(30,33,31,0.06)] group cursor-grab active:cursor-grabbing"
+                >
+                    <div class="flex items-center space-x-standard">
+                        <div
+                            class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-[20px]"
+                        >
+                            🛒
+                        </div>
+                        <div>
+                            <div
+                                class="font-body-strong text-body-strong text-on-surface"
+                            >
+                                Groceries
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center space-x-compact text-outline-variant"
+                    >
+                        <button
+                            class="p-2 hover:text-primary transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >visibility</span
+                            >
+                        </button>
+                        <button
+                            class="p-2 cursor-grab active:cursor-grabbing hover:text-on-surface transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >drag_handle</span
+                            >
+                        </button>
+                    </div>
+                </div>
+                <!-- Category Item: Dining Out -->
+                <div
+                    class="flex items-center justify-between p-standard bg-paper-050 rounded-[16px] border border-[rgba(30,33,31,0.06)] group cursor-grab active:cursor-grabbing"
+                >
+                    <div class="flex items-center space-x-standard">
+                        <div
+                            class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-[20px]"
+                        >
+                            🍽️
+                        </div>
+                        <div>
+                            <div
+                                class="font-body-strong text-body-strong text-on-surface"
+                            >
+                                Dining Out
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center space-x-compact text-outline-variant"
+                    >
+                        <button
+                            class="p-2 hover:text-primary transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >visibility</span
+                            >
+                        </button>
+                        <button
+                            class="p-2 cursor-grab active:cursor-grabbing hover:text-on-surface transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >drag_handle</span
+                            >
+                        </button>
+                    </div>
+                </div>
+                <!-- Category Item: Transport -->
+                <div
+                    class="flex items-center justify-between p-standard bg-paper-050 rounded-[16px] border border-[rgba(30,33,31,0.06)] group cursor-grab active:cursor-grabbing"
+                >
+                    <div class="flex items-center space-x-standard">
+                        <div
+                            class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-[20px]"
+                        >
+                            🚗
+                        </div>
+                        <div>
+                            <div
+                                class="font-body-strong text-body-strong text-on-surface"
+                            >
+                                Transport
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center space-x-compact text-outline-variant"
+                    >
+                        <button
+                            class="p-2 hover:text-primary transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >visibility</span
+                            >
+                        </button>
+                        <button
+                            class="p-2 cursor-grab active:cursor-grabbing hover:text-on-surface transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >drag_handle</span
+                            >
+                        </button>
+                    </div>
+                </div>
+                <!-- Category Item: Utilities (Hidden State) -->
+                <div
+                    class="flex items-center justify-between p-standard bg-paper-050 rounded-[16px] border border-[rgba(30,33,31,0.06)] opacity-60 group cursor-grab active:cursor-grabbing"
+                >
+                    <div class="flex items-center space-x-standard">
+                        <div
+                            class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-[20px] grayscale opacity-50"
+                        >
+                            ⚡
+                        </div>
+                        <div>
+                            <div
+                                class="font-body-strong text-body-strong text-on-surface-variant"
+                            >
+                                Utilities
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center space-x-compact text-outline-variant"
+                    >
+                        <button
+                            class="p-2 hover:text-primary transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >visibility_off</span
+                            >
+                        </button>
+                        <button
+                            class="p-2 cursor-grab active:cursor-grabbing hover:text-on-surface transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >drag_handle</span
+                            >
+                        </button>
+                    </div>
+                </div>
+                <!-- Category Item: Entertainment -->
+                <div
+                    class="flex items-center justify-between p-standard bg-paper-050 rounded-[16px] border border-[rgba(30,33,31,0.06)] group cursor-grab active:cursor-grabbing"
+                >
+                    <div class="flex items-center space-x-standard">
+                        <div
+                            class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-[20px]"
+                        >
+                            🎬
+                        </div>
+                        <div>
+                            <div
+                                class="font-body-strong text-body-strong text-on-surface"
+                            >
+                                Entertainment
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center space-x-compact text-outline-variant"
+                    >
+                        <button
+                            class="p-2 hover:text-primary transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >visibility</span
+                            >
+                        </button>
+                        <button
+                            class="p-2 cursor-grab active:cursor-grabbing hover:text-on-surface transition-colors duration-200 rounded-full hover:bg-surface-container-highest"
+                        >
+                            <span class="material-symbols-outlined text-[20px]"
+                                >drag_handle</span
+                            >
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Add New Category Button -->
+            <button
+                class="w-full mt-block p-standard bg-transparent border-2 border-dashed border-outline-variant rounded-[16px] text-custom-green font-body-strong text-body-strong flex items-center justify-center space-x-compact hover:bg-surface-container-lowest hover:border-custom-green transition-all duration-200"
+            >
+                <span class="material-symbols-outlined text-[20px]">add</span>
+                <span>Add Category</span>
+            </button>
+        </main>
+        <!-- Suppressed Bottom Navigation for this sub-page since it has a "Close/Back" intent to return to Settings/Profile -->
+    </body>
+</html>

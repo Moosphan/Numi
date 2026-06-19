@@ -1,0 +1,490 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2988EEE1464EAB6EDC02CF81 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2AAAE8B4FB81C62673AA39B /* Foundation.framework */; };
+		621AA28B0768D0D8EE2BBF51 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2AAAE8B4FB81C62673AA39B /* Foundation.framework */; };
+		6D3EF073E64AB34C91EF9375 /* RootShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29391BEB7F94A27585652BBF /* RootShellView.swift */; };
+		A713AC4A7AED8A0759F29D7C /* NumiPersistence in Frameworks */ = {isa = PBXBuildFile; fileRef = A92CD85F354DC3DEB50D4889 /* NumiPersistence.framework */; productRef = 49B0CCB2BD9FBE8DE320E47F /* NumiPersistence */; };
+		C0AF6B0ED953948E5945AB3F /* NumiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1E33BC20C6594FD91B8D5E /* NumiApp.swift */; };
+		EB6D1857701F697D2AC62C4E /* NumiCore in Frameworks */ = {isa = PBXBuildFile; fileRef = 290181156B271628BA0F0BAE /* NumiCore.framework */; productRef = 78367D1F4F7703139DF29CA7 /* NumiCore */; };
+		ED52D5BD099B6A05A552F276 /* NumiAppUI in Frameworks */ = {isa = PBXBuildFile; fileRef = E25BD35ADF1CBEB960246799 /* NumiAppUI.framework */; productRef = D83F37D262955481821F9DE1 /* NumiAppUI */; };
+		F38E1D4718F9E8148E82CC8E /* NumiUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8644DC8930962BF9F752256 /* NumiUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		888A7DB95B7DF64A1DCC52AC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5807188572EA88C2C88A681 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C3ADEE0D400E0BFACBBD4426;
+			remoteInfo = Numi;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		222236B1FFD2F12673C10815 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = App/NumiApp/Info.plist; sourceTree = "<group>"; };
+		290181156B271628BA0F0BAE /* NumiCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NumiCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		29391BEB7F94A27585652BBF /* RootShellView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RootShellView.swift; path = App/NumiApp/RootShellView.swift; sourceTree = "<group>"; };
+		327261BA48FE3D7A1F4453B3 /* Numi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Numi.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4576CD8B9EE3DF2AF3AE56DE /* NumiUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NumiUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A92CD85F354DC3DEB50D4889 /* NumiPersistence.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NumiPersistence.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8644DC8930962BF9F752256 /* NumiUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NumiUITests.swift; path = App/NumiUITests/NumiUITests.swift; sourceTree = "<group>"; };
+		CA1E33BC20C6594FD91B8D5E /* NumiApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NumiApp.swift; path = App/NumiApp/NumiApp.swift; sourceTree = "<group>"; };
+		D2AAAE8B4FB81C62673AA39B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		E25BD35ADF1CBEB960246799 /* NumiAppUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NumiAppUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		93CFC2B44B6A4557C3727871 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2988EEE1464EAB6EDC02CF81 /* Foundation.framework in Frameworks */,
+				EB6D1857701F697D2AC62C4E /* NumiCore in Frameworks */,
+				A713AC4A7AED8A0759F29D7C /* NumiPersistence in Frameworks */,
+				ED52D5BD099B6A05A552F276 /* NumiAppUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC130FCF531742230548788A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				621AA28B0768D0D8EE2BBF51 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		072071785D7F479C2819AD35 /* NumiApp */ = {
+			isa = PBXGroup;
+			children = (
+				CA1E33BC20C6594FD91B8D5E /* NumiApp.swift */,
+				29391BEB7F94A27585652BBF /* RootShellView.swift */,
+				222236B1FFD2F12673C10815 /* Info.plist */,
+			);
+			name = NumiApp;
+			sourceTree = "<group>";
+		};
+		17E6B085D970E19F77059596 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				D2AAAE8B4FB81C62673AA39B /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		7F5ACC580A55568546A0D6CC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				327261BA48FE3D7A1F4453B3 /* Numi.app */,
+				4576CD8B9EE3DF2AF3AE56DE /* NumiUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8E3CE21B864DF576D5A450CD /* App */ = {
+			isa = PBXGroup;
+			children = (
+				072071785D7F479C2819AD35 /* NumiApp */,
+				9F8CA004EB77BA511BC23D8E /* NumiUITests */,
+			);
+			name = App;
+			sourceTree = "<group>";
+		};
+		9F8CA004EB77BA511BC23D8E /* NumiUITests */ = {
+			isa = PBXGroup;
+			children = (
+				C8644DC8930962BF9F752256 /* NumiUITests.swift */,
+			);
+			name = NumiUITests;
+			sourceTree = "<group>";
+		};
+		E2A5070E99C408614A3103C9 = {
+			isa = PBXGroup;
+			children = (
+				7F5ACC580A55568546A0D6CC /* Products */,
+				EBF2260CD6C8CADBB7E2D27F /* Frameworks */,
+				8E3CE21B864DF576D5A450CD /* App */,
+			);
+			sourceTree = "<group>";
+		};
+		EBF2260CD6C8CADBB7E2D27F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				17E6B085D970E19F77059596 /* iOS */,
+				290181156B271628BA0F0BAE /* NumiCore.framework */,
+				A92CD85F354DC3DEB50D4889 /* NumiPersistence.framework */,
+				E25BD35ADF1CBEB960246799 /* NumiAppUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AF267FD059DB9791A45BBB3E /* NumiUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 885E0D9DE17AD71BC3F35E14 /* Build configuration list for PBXNativeTarget "NumiUITests" */;
+			buildPhases = (
+				DC5B915768E1A72BE7171CA5 /* Sources */,
+				AC130FCF531742230548788A /* Frameworks */,
+				854D4692C6C4142384A739B5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0D4217A2A75C43BA1EF9E431 /* PBXTargetDependency */,
+			);
+			name = NumiUITests;
+			productName = NumiUITests;
+			productReference = 4576CD8B9EE3DF2AF3AE56DE /* NumiUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		C3ADEE0D400E0BFACBBD4426 /* Numi */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5F480EE7CD85965F80E4ECF7 /* Build configuration list for PBXNativeTarget "Numi" */;
+			buildPhases = (
+				4714A0578DAFA4045A102F77 /* Sources */,
+				93CFC2B44B6A4557C3727871 /* Frameworks */,
+				B60CE3E2CBE3D469887C1A36 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Numi;
+			packageProductDependencies = (
+				78367D1F4F7703139DF29CA7 /* NumiCore */,
+				49B0CCB2BD9FBE8DE320E47F /* NumiPersistence */,
+				D83F37D262955481821F9DE1 /* NumiAppUI */,
+			);
+			productName = Numi;
+			productReference = 327261BA48FE3D7A1F4453B3 /* Numi.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B5807188572EA88C2C88A681 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = 675BEF178298959FC7A49265 /* Build configuration list for PBXProject "Numi" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E2A5070E99C408614A3103C9;
+			packageReferences = (
+				11D3B0526BF9BF8EE8138A21 /* XCLocalSwiftPackageReference "." */,
+			);
+			productRefGroup = 7F5ACC580A55568546A0D6CC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C3ADEE0D400E0BFACBBD4426 /* Numi */,
+				AF267FD059DB9791A45BBB3E /* NumiUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		854D4692C6C4142384A739B5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B60CE3E2CBE3D469887C1A36 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4714A0578DAFA4045A102F77 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0AF6B0ED953948E5945AB3F /* NumiApp.swift in Sources */,
+				6D3EF073E64AB34C91EF9375 /* RootShellView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC5B915768E1A72BE7171CA5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F38E1D4718F9E8148E82CC8E /* NumiUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0D4217A2A75C43BA1EF9E431 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Numi;
+			target = C3ADEE0D400E0BFACBBD4426 /* Numi */;
+			targetProxy = 888A7DB95B7DF64A1DCC52AC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		26E3B931DB4F81573C9975FC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/NumiApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.Numi;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2ABF11027C174D5707475D9D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.NumiUITests;
+				SDKROOT = iphoneos;
+				TEST_TARGET_NAME = Numi;
+			};
+			name = Debug;
+		};
+		54AD2FD3575C2A1280117A6E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		8099AC7051B0FED8D3249EE6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		9AE73F53101F8AF1119FDB5D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/NumiApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.Numi;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EFB081CFF231701CF5B7CFFC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.NumiUITests;
+				SDKROOT = iphoneos;
+				TEST_TARGET_NAME = Numi;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5F480EE7CD85965F80E4ECF7 /* Build configuration list for PBXNativeTarget "Numi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				26E3B931DB4F81573C9975FC /* Release */,
+				9AE73F53101F8AF1119FDB5D /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		675BEF178298959FC7A49265 /* Build configuration list for PBXProject "Numi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8099AC7051B0FED8D3249EE6 /* Debug */,
+				54AD2FD3575C2A1280117A6E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		885E0D9DE17AD71BC3F35E14 /* Build configuration list for PBXNativeTarget "NumiUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EFB081CFF231701CF5B7CFFC /* Release */,
+				2ABF11027C174D5707475D9D /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		11D3B0526BF9BF8EE8138A21 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		49B0CCB2BD9FBE8DE320E47F /* NumiPersistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 11D3B0526BF9BF8EE8138A21 /* XCLocalSwiftPackageReference "." */;
+			productName = NumiPersistence;
+		};
+		78367D1F4F7703139DF29CA7 /* NumiCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 11D3B0526BF9BF8EE8138A21 /* XCLocalSwiftPackageReference "." */;
+			productName = NumiCore;
+		};
+		D83F37D262955481821F9DE1 /* NumiAppUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 11D3B0526BF9BF8EE8138A21 /* XCLocalSwiftPackageReference "." */;
+			productName = NumiAppUI;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B5807188572EA88C2C88A681 /* Project object */;
+}

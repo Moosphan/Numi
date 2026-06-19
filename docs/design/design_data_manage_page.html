@@ -1,0 +1,440 @@
+<!doctype html>
+
+<html class="dark" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Import &amp; Export Data</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            outline: "#707974",
+                            "inverse-surface": "#2f312e",
+                            tertiary: "#675780",
+                            "surface-dim": "#dbdad6",
+                            "tertiary-fixed-dim": "#d1beee",
+                            "inverse-primary": "#94d3bd",
+                            "secondary-container": "#bbebf5",
+                            "on-tertiary-fixed": "#221439",
+                            "ink-500": "#7D857F",
+                            "on-primary": "#ffffff",
+                            "error-container": "#ffdad6",
+                            "primary-fixed": "#aff0d8",
+                            "on-secondary-fixed-variant": "#1c4d56",
+                            surface: "#faf9f5",
+                            "primary-container": "#98d8c1",
+                            "paper-100": "#ECEDE8",
+                            background: "#faf9f5",
+                            "surface-container-highest": "#e3e2df",
+                            "on-tertiary-fixed-variant": "#4e4067",
+                            "on-error": "#ffffff",
+                            secondary: "#37656e",
+                            "inverse-on-surface": "#f2f1ed",
+                            "surface-variant": "#e3e2df",
+                            "outline-variant": "#bfc9c3",
+                            "surface-container-low": "#f4f4f0",
+                            "on-secondary": "#ffffff",
+                            "secondary-fixed-dim": "#9fced8",
+                            "surface-container-lowest": "#ffffff",
+                            "on-surface-variant": "#404945",
+                            "expense-blue": "#4D7B84",
+                            "tertiary-fixed": "#ecdcff",
+                            "primary-fixed-dim": "#94d3bd",
+                            "on-secondary-container": "#3d6b74",
+                            "on-background": "#1b1c1a",
+                            "ink-900": "#1E211F",
+                            "paper-050": "#F4F4EF",
+                            "surface-container": "#efeeea",
+                            "income-violet": "#71618B",
+                            "on-tertiary-container": "#5e4e77",
+                            "on-error-container": "#93000a",
+                            "surface-container-high": "#e9e8e4",
+                            primary: "#296956",
+                            "secondary-fixed": "#bbebf5",
+                            "ink-700": "#4D544F",
+                            "on-primary-fixed-variant": "#07513f",
+                            "on-tertiary": "#ffffff",
+                            "on-primary-fixed": "#002118",
+                            error: "#ba1a1a",
+                            "on-secondary-fixed": "#001f24",
+                            "negative-rose": "#9A514A",
+                            "tertiary-container": "#d6c3f3",
+                            "on-primary-container": "#1e604e",
+                            "surface-tint": "#296956",
+                            "on-surface": "#1b1c1a",
+                            "surface-bright": "#faf9f5",
+                        },
+                        borderRadius: {
+                            DEFAULT: "0.25rem",
+                            lg: "0.5rem",
+                            xl: "0.75rem",
+                            full: "9999px",
+                        },
+                        spacing: {
+                            block: "32px",
+                            micro: "4px",
+                            section: "24px",
+                            standard: "16px",
+                            compact: "8px",
+                            gutter: "20px",
+                        },
+                        fontFamily: {
+                            "title-lg": ["Hanken Grotesk"],
+                            "body-strong": ["Hanken Grotesk"],
+                            "body-small": ["Hanken Grotesk"],
+                            "body-default": ["Hanken Grotesk"],
+                            "amount-xl": ["Hanken Grotesk"],
+                            caption: ["Hanken Grotesk"],
+                            footnote: ["Hanken Grotesk"],
+                            "amount-lg": ["Hanken Grotesk"],
+                        },
+                        fontSize: {
+                            "title-lg": [
+                                "22px",
+                                { lineHeight: "28px", fontWeight: "600" },
+                            ],
+                            "body-strong": [
+                                "17px",
+                                { lineHeight: "23px", fontWeight: "600" },
+                            ],
+                            "body-small": [
+                                "14px",
+                                { lineHeight: "19px", fontWeight: "400" },
+                            ],
+                            "body-default": [
+                                "16px",
+                                { lineHeight: "22px", fontWeight: "400" },
+                            ],
+                            "amount-xl": [
+                                "34px",
+                                {
+                                    lineHeight: "40px",
+                                    letterSpacing: "-0.02em",
+                                    fontWeight: "800",
+                                },
+                            ],
+                            caption: [
+                                "11px",
+                                { lineHeight: "14px", fontWeight: "500" },
+                            ],
+                            footnote: [
+                                "12px",
+                                { lineHeight: "16px", fontWeight: "500" },
+                            ],
+                            "amount-lg": [
+                                "28px",
+                                {
+                                    lineHeight: "34px",
+                                    letterSpacing: "-0.01em",
+                                    fontWeight: "700",
+                                },
+                            ],
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .material-symbols-outlined {
+                font-variation-settings:
+                    "FILL" 0,
+                    "wght" 400,
+                    "GRAD" 0,
+                    "opsz" 24;
+            }
+        </style>
+        <style>
+            body {
+                min-height: max(884px, 100dvh);
+            }
+        </style>
+    </head>
+    <body
+        class="bg-background text-on-background antialiased selection:bg-primary selection:text-on-primary"
+    >
+        <!-- TopAppBar Semantic Shell -->
+        <header
+            class="flex justify-between items-center w-full px-margin-mobile h-16 bg-background border-b border-outline-variant docked full-width top-0 z-50"
+        >
+            <button
+                class="flex items-center justify-center p-2 rounded-full hover:bg-surface-container-low transition-colors duration-200"
+            >
+                <span
+                    class="material-symbols-outlined text-primary"
+                    data-icon="chevron_left"
+                    >chevron_left</span
+                >
+            </button>
+            <h1 class="font-title-lg text-title-lg text-on-surface">
+                Data Management
+            </h1>
+            <div class="w-10"></div>
+            <!-- Spacer for center alignment -->
+        </header>
+        <main class="px-gutter pt-section pb-32 max-w-2xl mx-auto">
+            <!-- Header Section -->
+            <div class="mb-block">
+                <h2
+                    class="font-amount-lg text-amount-lg text-on-background mb-compact"
+                >
+                    Import &amp; Export
+                </h2>
+                <p
+                    class="font-body-default text-body-default text-on-surface-variant"
+                >
+                    Manage your data securely. All operations are performed
+                    locally on your device to ensure maximum privacy.
+                </p>
+            </div>
+            <!-- Privacy Notice Card -->
+            <div
+                class="bg-surface-container-low rounded-xl p-standard mb-block border border-outline-variant flex gap-standard items-start"
+            >
+                <div
+                    class="bg-primary-container p-2 rounded-full flex-shrink-0"
+                >
+                    <span
+                        class="material-symbols-outlined text-on-primary-container"
+                        data-icon="shield_lock"
+                        data-weight="fill"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >shield_lock</span
+                    >
+                </div>
+                <div>
+                    <h3
+                        class="font-body-strong text-body-strong text-on-background mb-micro"
+                    >
+                        Local Only Privacy
+                    </h3>
+                    <p
+                        class="font-body-small text-body-small text-on-surface-variant"
+                    >
+                        Your financial data never leaves your device. We do not
+                        store your transactions on any external servers. Exports
+                        are saved directly to your local file system.
+                    </p>
+                </div>
+            </div>
+            <!-- Active Operation (Progress Bar) - Initially Hidden -->
+            <div
+                class="hidden bg-surface rounded-xl p-standard mb-block shadow-sm border border-outline-variant"
+                id="operation-progress"
+            >
+                <div class="flex justify-between items-center mb-compact">
+                    <span
+                        class="font-body-strong text-body-strong text-on-background"
+                        id="progress-label"
+                        >Exporting Data...</span
+                    >
+                    <span
+                        class="font-caption text-caption text-primary"
+                        id="progress-percentage"
+                        >45%</span
+                    >
+                </div>
+                <div
+                    class="w-full bg-surface-container-highest rounded-full h-2 overflow-hidden"
+                >
+                    <div
+                        class="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
+                        id="progress-bar-fill"
+                        style="width: 45%"
+                    ></div>
+                </div>
+                <p
+                    class="font-footnote text-footnote text-on-surface-variant mt-micro"
+                    id="progress-details"
+                >
+                    Processing 1,204 transactions
+                </p>
+            </div>
+            <!-- Export Options -->
+            <section class="mb-block">
+                <h3
+                    class="font-title-lg text-title-lg text-on-background mb-standard"
+                >
+                    Export
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-standard">
+                    <!-- Export CSV -->
+                    <button
+                        class="bg-surface rounded-xl p-standard border border-outline-variant hover:bg-surface-container-low transition-colors duration-200 flex flex-col items-start text-left group"
+                        onclick="
+                            simulateOperation(
+                                'Exporting CSV...',
+                                'CSV export completed',
+                            )
+                        "
+                    >
+                        <div
+                            class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center mb-standard group-hover:bg-primary-container transition-colors"
+                        >
+                            <span
+                                class="material-symbols-outlined text-on-surface-variant group-hover:text-on-primary-container"
+                                data-icon="csv"
+                                >csv</span
+                            >
+                        </div>
+                        <h4
+                            class="font-body-strong text-body-strong text-on-background mb-micro"
+                        >
+                            Export CSV
+                        </h4>
+                        <p
+                            class="font-body-small text-body-small text-on-surface-variant"
+                        >
+                            Spreadsheet compatible format. Best for analysis in
+                            Excel or Numbers.
+                        </p>
+                    </button>
+                    <!-- Export JSON -->
+                    <button
+                        class="bg-surface rounded-xl p-standard border border-outline-variant hover:bg-surface-container-low transition-colors duration-200 flex flex-col items-start text-left group"
+                        onclick="
+                            simulateOperation(
+                                'Creating Backup...',
+                                'JSON backup completed',
+                            )
+                        "
+                    >
+                        <div
+                            class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center mb-standard group-hover:bg-primary-container transition-colors"
+                        >
+                            <span
+                                class="material-symbols-outlined text-on-surface-variant group-hover:text-on-primary-container"
+                                data-icon="data_object"
+                                >data_object</span
+                            >
+                        </div>
+                        <h4
+                            class="font-body-strong text-body-strong text-on-background mb-micro"
+                        >
+                            Export JSON (Backup)
+                        </h4>
+                        <p
+                            class="font-body-small text-body-small text-on-surface-variant"
+                        >
+                            Complete raw data backup. Recommended for safe
+                            keeping or migrating devices.
+                        </p>
+                    </button>
+                </div>
+            </section>
+            <!-- Import Options -->
+            <section>
+                <h3
+                    class="font-title-lg text-title-lg text-on-background mb-standard"
+                >
+                    Import
+                </h3>
+                <!-- Import from File -->
+                <div
+                    class="bg-surface rounded-xl p-standard border border-outline-variant border-dashed"
+                >
+                    <div
+                        class="flex flex-col items-center justify-center py-section text-center"
+                    >
+                        <div
+                            class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-standard"
+                        >
+                            <span
+                                class="material-symbols-outlined text-ink-500 text-3xl"
+                                data-icon="upload_file"
+                                >upload_file</span
+                            >
+                        </div>
+                        <h4
+                            class="font-body-strong text-body-strong text-on-background mb-micro"
+                        >
+                            Import from File
+                        </h4>
+                        <p
+                            class="font-body-small text-body-small text-on-surface-variant max-w-sm mb-standard"
+                        >
+                            Select a previously exported JSON backup file to
+                            restore your data. This will merge with existing
+                            records.
+                        </p>
+                        <label
+                            class="cursor-pointer bg-primary text-on-primary font-body-strong text-body-strong py-3 px-6 rounded-full hover:opacity-90 transition-opacity active:scale-95 inline-flex items-center gap-2"
+                        >
+                            <span
+                                class="material-symbols-outlined"
+                                data-icon="folder_open"
+                                >folder_open</span
+                            >
+                            Choose File
+                            <input
+                                accept=".json"
+                                class="hidden"
+                                onchange="simulateImport()"
+                                type="file"
+                            />
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <!-- BottomNavBar Semantic Shell - Suppressed because this is a sub-page/settings page, not a main destination -->
+        <script>
+            function simulateOperation(label, completeMessage) {
+                const progressContainer =
+                    document.getElementById("operation-progress");
+                const progressLabel = document.getElementById("progress-label");
+                const progressBar =
+                    document.getElementById("progress-bar-fill");
+                const progressPercentage = document.getElementById(
+                    "progress-percentage",
+                );
+
+                progressContainer.classList.remove("hidden");
+                progressLabel.textContent = label;
+
+                let progress = 0;
+                progressBar.style.width = "0%";
+                progressPercentage.textContent = "0%";
+
+                const interval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(interval);
+
+                        setTimeout(() => {
+                            progressContainer.classList.add("hidden");
+                            // In a real app, show a toast notification here
+                            alert(completeMessage);
+                        }, 500);
+                    }
+
+                    progressBar.style.width = `${progress}%`;
+                    progressPercentage.textContent = `${Math.floor(progress)}%`;
+                }, 200);
+            }
+
+            function simulateImport() {
+                simulateOperation(
+                    "Reading File...",
+                    "Data imported successfully",
+                );
+            }
+        </script>
+    </body>
+</html>

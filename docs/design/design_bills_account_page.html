@@ -1,0 +1,331 @@
+<!doctype html>
+
+<html class="light" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Numi - Ledger Selection</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "surface-container-low": "#f4f4f0",
+                            "negative-rose": "#9A514A",
+                            primary: "#296956",
+                            "ink-500": "#7D857F",
+                            "tertiary-fixed": "#ecdcff",
+                            "on-surface-variant": "#404945",
+                            "tertiary-container": "#d6c3f3",
+                            "surface-container": "#efeeea",
+                            "on-surface": "#1b1c1a",
+                            "secondary-fixed-dim": "#9fced8",
+                            surface: "#faf9f5",
+                            "error-container": "#ffdad6",
+                            "on-secondary-fixed": "#001f24",
+                            "on-primary-container": "#1e604e",
+                            "surface-dim": "#dbdad6",
+                            "inverse-surface": "#2f312e",
+                            "paper-100": "#ECEDE8",
+                            "surface-variant": "#e3e2df",
+                            tertiary: "#675780",
+                            "inverse-primary": "#94d3bd",
+                            background: "#faf9f5",
+                            "on-error": "#ffffff",
+                            "on-tertiary-fixed": "#221439",
+                            "on-primary-fixed-variant": "#07513f",
+                            "surface-container-lowest": "#ffffff",
+                            "on-primary": "#ffffff",
+                            error: "#ba1a1a",
+                            "secondary-fixed": "#bbebf5",
+                            "expense-blue": "#4D7B84",
+                            "surface-container-highest": "#e3e2df",
+                            "on-tertiary-fixed-variant": "#4e4067",
+                            "on-error-container": "#93000a",
+                            "ink-700": "#4D544F",
+                            "surface-tint": "#296956",
+                            "primary-container": "#98d8c1",
+                            "inverse-on-surface": "#f2f1ed",
+                            outline: "#707974",
+                            "on-tertiary": "#ffffff",
+                            "surface-container-high": "#e9e8e4",
+                            secondary: "#37656e",
+                            "on-secondary-fixed-variant": "#1c4d56",
+                            "on-tertiary-container": "#5e4e77",
+                            "tertiary-fixed-dim": "#d1beee",
+                            "ink-900": "#1E211F",
+                            "on-secondary": "#ffffff",
+                            "on-background": "#1b1c1a",
+                            "primary-fixed-dim": "#94d3bd",
+                            "secondary-container": "#bbebf5",
+                            "income-violet": "#71618B",
+                            "surface-bright": "#faf9f5",
+                            "paper-050": "#F4F4EF",
+                            "on-primary-fixed": "#002118",
+                            "primary-fixed": "#aff0d8",
+                            "on-secondary-container": "#3d6b74",
+                            "outline-variant": "#bfc9c3",
+                        },
+                        borderRadius: {
+                            DEFAULT: "0.25rem",
+                            lg: "0.5rem",
+                            xl: "0.75rem",
+                            "2xl": "1rem",
+                            full: "9999px",
+                        },
+                        spacing: {
+                            compact: "8px",
+                            standard: "16px",
+                            block: "32px",
+                            micro: "4px",
+                            gutter: "20px",
+                            section: "24px",
+                        },
+                        fontFamily: {
+                            "title-lg": ["Hanken Grotesk"],
+                            footnote: ["Hanken Grotesk"],
+                            caption: ["Hanken Grotesk"],
+                            "amount-xl": ["Hanken Grotesk"],
+                            "body-strong": ["Hanken Grotesk"],
+                            "body-default": ["Hanken Grotesk"],
+                            "body-small": ["Hanken Grotesk"],
+                            "amount-lg": ["Hanken Grotesk"],
+                            "headline-md": ["Hanken Grotesk"],
+                        },
+                        fontSize: {
+                            "title-lg": [
+                                "22px",
+                                { lineHeight: "28px", fontWeight: "600" },
+                            ],
+                            footnote: [
+                                "12px",
+                                { lineHeight: "16px", fontWeight: "500" },
+                            ],
+                            caption: [
+                                "11px",
+                                { lineHeight: "14px", fontWeight: "500" },
+                            ],
+                            "amount-xl": [
+                                "34px",
+                                {
+                                    lineHeight: "40px",
+                                    letterSpacing: "-0.02em",
+                                    fontWeight: "800",
+                                },
+                            ],
+                            "body-strong": [
+                                "17px",
+                                { lineHeight: "23px", fontWeight: "600" },
+                            ],
+                            "body-default": [
+                                "16px",
+                                { lineHeight: "22px", fontWeight: "400" },
+                            ],
+                            "body-small": [
+                                "14px",
+                                { lineHeight: "19px", fontWeight: "400" },
+                            ],
+                            "amount-lg": [
+                                "28px",
+                                {
+                                    lineHeight: "34px",
+                                    letterSpacing: "-0.01em",
+                                    fontWeight: "700",
+                                },
+                            ],
+                            "headline-md": [
+                                "24px",
+                                { lineHeight: "32px", fontWeight: "700" },
+                            ],
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            body {
+                background-color: #faf9f5; /* surface */
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+
+            /* Glassmorphism utilities */
+            .glass-nav {
+                background-color: rgba(250, 249, 245, 0.94);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+            }
+
+            .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .hide-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        </style>
+        <style>
+            body {
+                min-height: max(884px, 100dvh);
+            }
+        </style>
+    </head>
+    <body class="bg-surface text-on-surface flex flex-col min-h-screen">
+        <!-- TopAppBar from JSON -->
+        <header
+            class="bg-background dark:bg-background docked full-width top-0 border-b border-outline-variant dark:border-outline-variant transition-colors duration-200 flex justify-between items-center w-full px-gutter h-16 sticky z-40 glass-nav"
+        >
+            <button
+                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant dark:text-on-surface-variant"
+            >
+                <span class="material-symbols-outlined" data-icon="chevron_left"
+                    >chevron_left</span
+                >
+            </button>
+            <h1
+                class="font-headline-md text-headline-md text-on-surface dark:text-on-surface"
+            >
+                October 2023
+            </h1>
+            <button
+                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-low transition-colors duration-200 text-on-surface-variant dark:text-on-surface-variant"
+            >
+                <span
+                    class="material-symbols-outlined"
+                    data-icon="chevron_right"
+                    >chevron_right</span
+                >
+            </button>
+        </header>
+        <!-- Main Content Canvas -->
+        <main class="flex-1 px-gutter py-section pb-32">
+            <!-- Contextual Page Title -->
+            <div class="mb-section">
+                <h2
+                    class="font-title-lg text-title-lg text-on-surface mb-micro"
+                >
+                    Your Ledgers
+                </h2>
+                <p class="font-body-small text-body-small text-ink-500">
+                    Select a workspace to view transactions.
+                </p>
+            </div>
+            <!-- Ledger List -->
+            <div class="flex flex-col gap-standard">
+                <!-- Active Ledger Card -->
+                <button
+                    class="w-full text-left bg-surface-container border border-primary-fixed-dim rounded-2xl p-standard flex items-center gap-standard active:scale-[0.98] transition-transform duration-200 relative overflow-hidden group"
+                >
+                    <div
+                        class="absolute inset-0 bg-primary-fixed opacity-10"
+                    ></div>
+                    <div
+                        class="w-12 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0"
+                    >
+                        <span class="material-symbols-outlined text-[24px]"
+                            >home</span
+                        >
+                    </div>
+                    <div class="flex-1">
+                        <h3
+                            class="font-body-strong text-body-strong text-on-surface"
+                        >
+                            Daily Life
+                        </h3>
+                        <p class="font-body-small text-body-small text-ink-500">
+                            142 transactions
+                        </p>
+                    </div>
+                    <div
+                        class="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0"
+                    >
+                        <span
+                            class="material-symbols-outlined text-on-primary text-[16px] font-bold"
+                            style="
+                                font-variation-settings:
+                                    &quot;FILL&quot; 0,
+                                    &quot;wght&quot; 700;
+                            "
+                            >check</span
+                        >
+                    </div>
+                </button>
+                <!-- Inactive Ledger Card 1 -->
+                <button
+                    class="w-full text-left bg-surface-container-low border border-transparent rounded-2xl p-standard flex items-center gap-standard active:scale-[0.98] transition-transform duration-200"
+                >
+                    <div
+                        class="w-12 h-12 rounded-xl bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0"
+                    >
+                        <span class="material-symbols-outlined text-[24px]"
+                            >flight_takeoff</span
+                        >
+                    </div>
+                    <div class="flex-1">
+                        <h3
+                            class="font-body-strong text-body-strong text-on-surface"
+                        >
+                            Travel Fund
+                        </h3>
+                        <p class="font-body-small text-body-small text-ink-500">
+                            34 transactions
+                        </p>
+                    </div>
+                    <div
+                        class="w-6 h-6 rounded-full border border-outline-variant shrink-0"
+                    ></div>
+                </button>
+                <!-- Inactive Ledger Card 2 -->
+                <button
+                    class="w-full text-left bg-surface-container-low border border-transparent rounded-2xl p-standard flex items-center gap-standard active:scale-[0.98] transition-transform duration-200"
+                >
+                    <div
+                        class="w-12 h-12 rounded-xl bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0"
+                    >
+                        <span class="material-symbols-outlined text-[24px]"
+                            >work</span
+                        >
+                    </div>
+                    <div class="flex-1">
+                        <h3
+                            class="font-body-strong text-body-strong text-on-surface"
+                        >
+                            Freelance Business
+                        </h3>
+                        <p class="font-body-small text-body-small text-ink-500">
+                            89 transactions
+                        </p>
+                    </div>
+                    <div
+                        class="w-6 h-6 rounded-full border border-outline-variant shrink-0"
+                    ></div>
+                </button>
+            </div>
+        </main>
+        <!-- Fixed Bottom Action Area -->
+        <div
+            class="fixed bottom-0 left-0 w-full px-gutter pb-8 pt-4 glass-nav border-t border-surface-container z-50"
+        >
+            <button
+                class="w-full bg-primary-fixed text-on-primary-fixed-variant font-body-strong text-body-strong h-14 rounded-full flex items-center justify-center gap-compact active:opacity-80 transition-opacity"
+            >
+                <span class="material-symbols-outlined">add</span>
+                Create New Ledger
+            </button>
+        </div>
+    </body>
+</html>

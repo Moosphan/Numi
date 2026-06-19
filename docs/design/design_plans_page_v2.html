@@ -1,0 +1,494 @@
+<!doctype html>
+
+<html class="light" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+            name="viewport"
+        />
+        <title>Numi - Budget</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            .material-symbols-outlined {
+                font-variation-settings:
+                    "FILL" 0,
+                    "wght" 400,
+                    "GRAD" 0,
+                    "opsz" 24;
+            }
+            .material-symbols-outlined.filled {
+                font-variation-settings:
+                    "FILL" 1,
+                    "wght" 400,
+                    "GRAD" 0,
+                    "opsz" 24;
+            }
+        </style>
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "surface-container-low": "#f4f4f0",
+                            "negative-rose": "#9A514A",
+                            primary: "#296956",
+                            "ink-500": "#7D857F",
+                            "tertiary-fixed": "#ecdcff",
+                            "on-surface-variant": "#404945",
+                            "tertiary-container": "#d6c3f3",
+                            "surface-container": "#efeeea",
+                            "on-surface": "#1b1c1a",
+                            "secondary-fixed-dim": "#9fced8",
+                            surface: "#faf9f5",
+                            "error-container": "#ffdad6",
+                            "on-secondary-fixed": "#001f24",
+                            "on-primary-container": "#1e604e",
+                            "surface-dim": "#dbdad6",
+                            "inverse-surface": "#2f312e",
+                            "paper-100": "#ECEDE8",
+                            "surface-variant": "#e3e2df",
+                            tertiary: "#675780",
+                            "inverse-primary": "#94d3bd",
+                            background: "#faf9f5",
+                            "on-error": "#ffffff",
+                            "on-tertiary-fixed": "#221439",
+                            "on-primary-fixed-variant": "#07513f",
+                            "surface-container-lowest": "#ffffff",
+                            "on-primary": "#ffffff",
+                            error: "#ba1a1a",
+                            "secondary-fixed": "#bbebf5",
+                            "expense-blue": "#4D7B84",
+                            "surface-container-highest": "#e3e2df",
+                            "on-tertiary-fixed-variant": "#4e4067",
+                            "on-error-container": "#93000a",
+                            "ink-700": "#4D544F",
+                            "surface-tint": "#296956",
+                            "primary-container": "#98d8c1",
+                            "inverse-on-surface": "#f2f1ed",
+                            outline: "#707974",
+                            "on-tertiary": "#ffffff",
+                            "surface-container-high": "#e9e8e4",
+                            secondary: "#37656e",
+                            "on-secondary-fixed-variant": "#1c4d56",
+                            "on-tertiary-container": "#5e4e77",
+                            "tertiary-fixed-dim": "#d1beee",
+                            "ink-900": "#1E211F",
+                            "on-secondary": "#ffffff",
+                            "on-background": "#1b1c1a",
+                            "primary-fixed-dim": "#94d3bd",
+                            "secondary-container": "#bbebf5",
+                            "income-violet": "#71618B",
+                            "surface-bright": "#faf9f5",
+                            "paper-050": "#F4F4EF",
+                            "on-primary-fixed": "#002118",
+                            "primary-fixed": "#aff0d8",
+                            "on-secondary-container": "#3d6b74",
+                            "outline-variant": "#bfc9c3",
+                            "mint-green": "#79D983",
+                        },
+                        borderRadius: {
+                            DEFAULT: "0.25rem",
+                            lg: "0.5rem",
+                            xl: "0.75rem",
+                            full: "9999px",
+                            card: "16px",
+                        },
+                        spacing: {
+                            compact: "8px",
+                            standard: "16px",
+                            block: "32px",
+                            micro: "4px",
+                            gutter: "20px",
+                            section: "24px",
+                        },
+                        fontFamily: {
+                            "title-lg": ["Hanken Grotesk"],
+                            footnote: ["Hanken Grotesk"],
+                            caption: ["Hanken Grotesk"],
+                            "amount-xl": ["Hanken Grotesk"],
+                            "body-strong": ["Hanken Grotesk"],
+                            "body-default": ["Hanken Grotesk"],
+                            "body-small": ["Hanken Grotesk"],
+                            "amount-lg": ["Hanken Grotesk"],
+                        },
+                        fontSize: {
+                            "title-lg": [
+                                "22px",
+                                { lineHeight: "28px", fontWeight: "600" },
+                            ],
+                            footnote: [
+                                "12px",
+                                { lineHeight: "16px", fontWeight: "500" },
+                            ],
+                            caption: [
+                                "11px",
+                                { lineHeight: "14px", fontWeight: "500" },
+                            ],
+                            "amount-xl": [
+                                "34px",
+                                {
+                                    lineHeight: "40px",
+                                    letterSpacing: "-0.02em",
+                                    fontWeight: "800",
+                                },
+                            ],
+                            "body-strong": [
+                                "17px",
+                                { lineHeight: "23px", fontWeight: "600" },
+                            ],
+                            "body-default": [
+                                "16px",
+                                { lineHeight: "22px", fontWeight: "400" },
+                            ],
+                            "body-small": [
+                                "14px",
+                                { lineHeight: "19px", fontWeight: "400" },
+                            ],
+                            "amount-lg": [
+                                "28px",
+                                {
+                                    lineHeight: "34px",
+                                    letterSpacing: "-0.01em",
+                                    fontWeight: "700",
+                                },
+                            ],
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            body {
+                min-height: max(884px, 100dvh);
+            }
+        </style>
+    </head>
+    <body
+        class="bg-background text-on-surface font-body-default antialiased pb-24"
+    >
+        <!-- TopAppBar -->
+        <header
+            class="sticky top-0 w-full z-40 bg-background/94 backdrop-blur-md border-b border-outline-variant transition-colors duration-200"
+        >
+            <div
+                class="flex justify-between items-center w-full px-gutter h-16"
+            >
+                <button
+                    class="text-on-surface-variant hover:bg-surface-container-low rounded-full p-2 transition-colors duration-200 focus:outline-none flex items-center justify-center"
+                >
+                    <span
+                        class="material-symbols-outlined"
+                        data-icon="chevron_left"
+                        >chevron_left</span
+                    >
+                </button>
+                <h1
+                    class="font-title-lg text-title-lg text-on-surface text-center flex-1"
+                >
+                    October 2023
+                </h1>
+                <button
+                    class="text-on-surface-variant hover:bg-surface-container-low rounded-full p-2 transition-colors duration-200 focus:outline-none flex items-center justify-center"
+                >
+                    <span
+                        class="material-symbols-outlined"
+                        data-icon="chevron_right"
+                        >chevron_right</span
+                    >
+                </button>
+            </div>
+        </header>
+        <!-- Main Content Canvas -->
+        <main
+            class="px-gutter pt-section pb-block max-w-2xl mx-auto space-y-section"
+        >
+            <!-- Hero: Total Monthly Budget -->
+            <section>
+                <div
+                    class="bg-paper-050 rounded-card p-section flex flex-col gap-standard shadow-sm border border-outline-variant/30"
+                >
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2
+                                class="font-body-strong text-body-strong text-on-surface"
+                            >
+                                Monthly Budget
+                            </h2>
+                            <p
+                                class="font-body-small text-body-small text-ink-500"
+                            >
+                                18 days left
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p
+                                class="font-amount-lg text-amount-lg text-on-surface"
+                            >
+                                $1,450
+                            </p>
+                            <p
+                                class="font-body-small text-body-small text-ink-500"
+                            >
+                                of $2,000
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div
+                        class="h-4 bg-surface-container-high rounded-full overflow-hidden w-full relative"
+                    >
+                        <div
+                            class="absolute top-0 left-0 h-full bg-[#79D983] rounded-full transition-all duration-500 ease-out"
+                            style="width: 72.5%"
+                        ></div>
+                    </div>
+                    <div class="flex justify-between items-center pt-micro">
+                        <span
+                            class="font-footnote text-footnote text-primary bg-primary-container px-2 py-1 rounded-md"
+                            >On Track</span
+                        >
+                        <span
+                            class="font-footnote text-footnote text-on-surface-variant"
+                            >$550 remaining</span
+                        >
+                    </div>
+                </div>
+            </section>
+            <!-- Category Budgets List -->
+            <section class="space-y-standard">
+                <h3
+                    class="font-body-strong text-body-strong text-on-surface mb-compact"
+                >
+                    Category Budgets
+                </h3>
+                <div class="flex flex-col gap-3">
+                    <!-- Dining -->
+                    <div
+                        class="bg-paper-050 rounded-card p-standard flex items-center gap-standard"
+                    >
+                        <div
+                            class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-2xl shrink-0"
+                        >
+                            🍔
+                        </div>
+                        <div class="flex-1 flex flex-col gap-micro">
+                            <div class="flex justify-between items-center">
+                                <span
+                                    class="font-body-strong text-body-strong text-on-surface"
+                                    >Dining</span
+                                >
+                                <span
+                                    class="font-body-strong text-body-strong text-on-surface"
+                                    >$320<span
+                                        class="font-body-small text-body-small text-ink-500 font-normal"
+                                    >
+                                        / $400</span
+                                    ></span
+                                >
+                            </div>
+                            <div
+                                class="h-2 bg-surface-container-high rounded-full overflow-hidden w-full relative"
+                            >
+                                <div
+                                    class="absolute top-0 left-0 h-full bg-mint-green rounded-full opacity-80"
+                                    style="width: 80%"
+                                ></div>
+                            </div>
+                            <p
+                                class="font-caption text-caption text-ink-500 text-right mt-1"
+                            >
+                                $80 left
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Shopping -->
+                    <div
+                        class="bg-paper-050 rounded-card p-standard flex items-center gap-standard"
+                    >
+                        <div
+                            class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-2xl shrink-0"
+                        >
+                            🛍️
+                        </div>
+                        <div class="flex-1 flex flex-col gap-micro">
+                            <div class="flex justify-between items-center">
+                                <span
+                                    class="font-body-strong text-body-strong text-on-surface"
+                                    >Shopping</span
+                                >
+                                <span
+                                    class="font-body-strong text-body-strong text-on-surface"
+                                    >$150<span
+                                        class="font-body-small text-body-small text-ink-500 font-normal"
+                                    >
+                                        / $200</span
+                                    ></span
+                                >
+                            </div>
+                            <div
+                                class="h-2 bg-surface-container-high rounded-full overflow-hidden w-full relative"
+                            >
+                                <div
+                                    class="absolute top-0 left-0 h-full bg-mint-green rounded-full opacity-80"
+                                    style="width: 75%"
+                                ></div>
+                            </div>
+                            <p
+                                class="font-caption text-caption text-ink-500 text-right mt-1"
+                            >
+                                $50 left
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Transport -->
+                    <div
+                        class="bg-paper-050 rounded-card p-standard flex items-center gap-standard"
+                    >
+                        <div
+                            class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-2xl shrink-0"
+                        >
+                            🚗
+                        </div>
+                        <div class="flex-1 flex flex-col gap-micro">
+                            <div class="flex justify-between items-center">
+                                <span
+                                    class="font-body-strong text-body-strong text-on-surface"
+                                    >Transport</span
+                                >
+                                <span
+                                    class="font-body-strong text-body-strong text-on-surface"
+                                    >$90<span
+                                        class="font-body-small text-body-small text-ink-500 font-normal"
+                                    >
+                                        / $150</span
+                                    ></span
+                                >
+                            </div>
+                            <div
+                                class="h-2 bg-surface-container-high rounded-full overflow-hidden w-full relative"
+                            >
+                                <div
+                                    class="absolute top-0 left-0 h-full bg-mint-green rounded-full opacity-80"
+                                    style="width: 60%"
+                                ></div>
+                            </div>
+                            <p
+                                class="font-caption text-caption text-ink-500 text-right mt-1"
+                            >
+                                $60 left
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Groceries (Over budget example) -->
+                    <div
+                        class="bg-paper-050 rounded-card p-standard flex items-center gap-standard border border-error-container/50"
+                    >
+                        <div
+                            class="w-12 h-12 rounded-full bg-error-container/30 flex items-center justify-center text-2xl shrink-0"
+                        >
+                            🛒
+                        </div>
+                        <div class="flex-1 flex flex-col gap-micro">
+                            <div class="flex justify-between items-center">
+                                <span
+                                    class="font-body-strong text-body-strong text-on-surface"
+                                    >Groceries</span
+                                >
+                                <span
+                                    class="font-body-strong text-body-strong text-error"
+                                    >$420<span
+                                        class="font-body-small text-body-small text-ink-500 font-normal"
+                                    >
+                                        / $400</span
+                                    ></span
+                                >
+                            </div>
+                            <div
+                                class="h-2 bg-surface-container-high rounded-full overflow-hidden w-full relative"
+                            >
+                                <div
+                                    class="absolute top-0 left-0 h-full bg-negative-rose rounded-full"
+                                    style="width: 100%"
+                                ></div>
+                            </div>
+                            <p
+                                class="font-caption text-caption text-error text-right mt-1"
+                            >
+                                -$20 over
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <!-- BottomNavBar -->
+        <nav
+            class="fixed bottom-0 w-full z-50 flex justify-around items-center h-20 bg-surface/94 backdrop-blur-md px-gutter border-t border-outline-variant/30"
+        >
+            <!-- Transactions (Inactive) -->
+            <a
+                class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:opacity-80 active:scale-95 transition-transform group"
+                href="#"
+            >
+                <span
+                    class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors"
+                    data-icon="receipt_long"
+                    >receipt_long</span
+                >
+                <span class="font-caption text-caption">Transactions</span>
+            </a>
+            <!-- Insights (Inactive) -->
+            <a
+                class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:opacity-80 active:scale-95 transition-transform group"
+                href="#"
+            >
+                <span
+                    class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors"
+                    data-icon="insert_chart"
+                    >insert_chart</span
+                >
+                <span class="font-caption text-caption">Insights</span>
+            </a>
+            <!-- Plans (Active) -->
+            <a
+                class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-95 transition-transform shadow-sm"
+                href="#"
+            >
+                <span
+                    class="material-symbols-outlined filled mb-1"
+                    data-icon="event_note"
+                    >event_note</span
+                >
+                <span class="font-caption text-caption font-semibold"
+                    >Plans</span
+                >
+            </a>
+            <!-- Profile (Inactive) -->
+            <a
+                class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:opacity-80 active:scale-95 transition-transform group"
+                href="#"
+            >
+                <span
+                    class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors"
+                    data-icon="person"
+                    >person</span
+                >
+                <span class="font-caption text-caption">Profile</span>
+            </a>
+        </nav>
+    </body>
+</html>
