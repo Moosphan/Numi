@@ -183,8 +183,8 @@ public struct TransactionsHomeView: View {
 
     private var summaryGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: NumiSpacing.s3) {
-            NumiSummaryTile(title: "支出", value: summary.expense.formatted(), systemImage: "banknote", variant: .expense)
-            NumiSummaryTile(title: "收入", value: summary.income.formatted(), systemImage: "dollarsign.circle", variant: .income)
+            NumiSummaryTile(title: "支出", value: summary.expense.formatted(), systemImage: "cart", variant: .expense)
+            NumiSummaryTile(title: "收入", value: summary.income.formatted(), systemImage: "creditcard", variant: .income)
         }
     }
 
@@ -294,7 +294,8 @@ public struct TransactionsHomeView: View {
                     .textCase(nil)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, NumiSpacing.s5)
-                    .padding(.bottom, 4)
+                    .padding(.top, NumiSpacing.s4)
+                    .padding(.bottom, NumiSpacing.s2)
                     .background(NumiColor.surfacePage)
                     .accessibilityIdentifier("home.sectionDate.\(section.id)")
             }

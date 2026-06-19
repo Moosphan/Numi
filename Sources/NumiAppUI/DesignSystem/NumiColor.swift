@@ -77,7 +77,7 @@ private struct NumiThemePalette {
     }
 
     var incomeBackground: Color {
-        mix(base: surfacePage, overlay: positiveText, amount: 0.12)
+        positiveText.opacity(0.18)
     }
 
     var incomeText: Color {

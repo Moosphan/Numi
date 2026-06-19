@@ -73,38 +73,42 @@ struct RootShellView: View {
             if !isAddingRecord && !isTransactionSearchPresented {
                 VStack(spacing: 0) {
                     Spacer()
-                    HStack(spacing: 0) {
-                        ForEach(Tab.allCases, id: \.self) { tab in
-                            Button {
-                                selectedTab = tab
-                            } label: {
-                                VStack(spacing: NumiChromeMetrics.tabBarLabelSpacing) {
-                                    Image(systemName: tab.systemImage)
-                                        .font(.system(size: NumiChromeMetrics.tabBarSymbolSize, weight: .medium))
-                                    Text(tab.rawValue)
-                                        .font(.system(size: 11, weight: selectedTab == tab ? .medium : .regular))
-                                }
-                                .foregroundStyle(selectedTab == tab ? NumiColor.textPrimary : NumiColor.textTertiary)
-                                .frame(maxWidth: .infinity, minHeight: NumiChromeMetrics.tabBarItemMinHeight)
-                                .background {
-                                    if selectedTab == tab {
-                                        Capsule()
-                                            .fill(NumiColor.accentPrimary.opacity(0.14))
-                                            .frame(
-                                                width: NumiChromeMetrics.tabBarSelectionWidth,
-                                                height: NumiChromeMetrics.tabBarSelectionHeight
-                                            )
+                    ZStack(alignment: .leading) {
+                        // Sliding indicator
+                        Capsule()
+                            .fill(NumiColor.accentPrimary.opacity(0.14))
+                            .frame(
+                                width: NumiChromeMetrics.tabBarSelectionWidth,
+                                height: NumiChromeMetrics.tabBarSelectionHeight
+                            )
+                            .offset(x: indicatorOffset)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: selectedTab)
+
+                        HStack(spacing: 0) {
+                            ForEach(Tab.allCases, id: \.self) { tab in
+                                Button {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        selectedTab = tab
                                     }
+                                } label: {
+                                    VStack(spacing: NumiChromeMetrics.tabBarLabelSpacing) {
+                                        Image(systemName: tab.systemImage)
+                                            .font(.system(size: NumiChromeMetrics.tabBarSymbolSize, weight: .medium))
+                                        Text(tab.rawValue)
+                                            .font(.system(size: 11, weight: selectedTab == tab ? .medium : .regular))
+                                    }
+                                    .foregroundStyle(selectedTab == tab ? NumiColor.textPrimary : NumiColor.textTertiary)
+                                    .frame(maxWidth: .infinity, minHeight: NumiChromeMetrics.tabBarItemMinHeight)
                                 }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("tab.\(tab.rawValue)")
                             }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("tab.\(tab.rawValue)")
                         }
                     }
                     .padding(.horizontal, 14)
                     .padding(.top, NumiChromeMetrics.tabBarTopPadding)
                     .padding(.bottom, NumiChromeMetrics.tabBarBottomPadding)
-                    .background(NumiColor.surfaceFloatingSolid.opacity(0.94))
+                    .background(.ultraThinMaterial)
                 }
                 .ignoresSafeArea(.keyboard, edges: .bottom)
             }
@@ -743,6 +747,13 @@ struct RootShellView: View {
             into: store,
             resetBeforeSeeding: DemoDataSeeder.shouldReset(from: environment)
         )
+    }
+
+    private var indicatorOffset: CGFloat {
+        let index = CGFloat(Tab.allCases.firstIndex(of: selectedTab) ?? 0)
+        let tabWidth = (UIScreen.main.bounds.width - 28) / CGFloat(Tab.allCases.count)
+        let centerOffset = (tabWidth - NumiChromeMetrics.tabBarSelectionWidth) / 2
+        return index * tabWidth + centerOffset
     }
 }
 
