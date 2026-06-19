@@ -2,7 +2,6 @@ import SwiftUI
 
 public struct NumiBottomSheet<Content: View>: View {
     private let title: String
-    private let showsGrabber: Bool
     private let accessibilityPrefix: String?
     private let dismissAccessibilitySuffix: String
     private let titleAccessibilitySuffix: String
@@ -27,7 +26,6 @@ public struct NumiBottomSheet<Content: View>: View {
         @ViewBuilder content: () -> Content
     ) {
         self.title = title
-        self.showsGrabber = showsGrabber
         self.accessibilityPrefix = accessibilityPrefix
         self.dismissAccessibilitySuffix = dismissAccessibilitySuffix
         self.titleAccessibilitySuffix = titleAccessibilitySuffix
@@ -41,24 +39,13 @@ public struct NumiBottomSheet<Content: View>: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            if showsGrabber {
-                Capsule()
-                    .fill(NumiColor.textTertiary.opacity(0.28))
-                    .frame(width: 38, height: 5)
-                    .padding(.top, 20)
-                    .padding(.bottom, 8)
-            } else {
-                Color.clear
-                    .frame(height: 10)
-            }
-
             HStack(spacing: NumiSpacing.s3) {
                 Button(action: onDismiss) {
                     Text(dismissTitle)
                 }
-                    .font(NumiFont.body)
-                    .foregroundStyle(NumiColor.toolbarIcon)
-                    .modifier(AccessibilityIDModifier(identifier: accessibilityID(dismissAccessibilitySuffix)))
+                .font(NumiFont.body)
+                .foregroundStyle(NumiColor.toolbarIcon)
+                .modifier(AccessibilityIDModifier(identifier: accessibilityID(dismissAccessibilitySuffix)))
 
                 Spacer(minLength: NumiSpacing.s2)
 
@@ -74,9 +61,9 @@ public struct NumiBottomSheet<Content: View>: View {
                     Button(action: onConfirm) {
                         Text(confirmTitle)
                     }
-                        .font(NumiFont.bodyStrong)
-                        .foregroundStyle(NumiColor.accentDeep)
-                        .modifier(AccessibilityIDModifier(identifier: accessibilityID(confirmAccessibilitySuffix)))
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .modifier(AccessibilityIDModifier(identifier: accessibilityID(confirmAccessibilitySuffix)))
                 } else {
                     Color.clear
                         .frame(width: 44, height: 28)
@@ -84,12 +71,13 @@ public struct NumiBottomSheet<Content: View>: View {
                 }
             }
             .padding(.horizontal, NumiSpacing.s4)
-            .padding(.bottom, NumiSpacing.s2)
+            .padding(.vertical, 12)
 
             content
         }
         .background(NumiColor.surfacePage)
         .presentationBackground(NumiColor.surfacePage)
+        .presentationDragIndicator(.visible)
         .tint(NumiColor.accentDeep)
     }
 

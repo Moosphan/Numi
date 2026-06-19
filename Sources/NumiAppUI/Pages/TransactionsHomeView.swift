@@ -129,7 +129,6 @@ public struct TransactionsHomeView: View {
         .sheet(isPresented: $showsPeriodPicker) {
             homePeriodPickerSheet
                 .presentationDetents([.height(320)])
-                .presentationDragIndicator(.hidden)
                 .presentationCornerRadius(28)
         }
     }

@@ -347,7 +347,6 @@ private struct AddRecordEntryContent: View {
         .sheet(isPresented: $isDatePickerPresented) {
             datePickerSheet
                 .presentationDetents([.height(430)])
-                .presentationDragIndicator(.hidden)
                 .presentationCornerRadius(28)
         }
         .toolbar {
@@ -598,7 +597,6 @@ private struct AddRecordEntryContent: View {
     private var datePickerSheet: some View {
         NumiBottomSheet(
             title: "选择日期",
-            showsGrabber: false,
             accessibilityPrefix: "sheet.datePicker",
             dismissAccessibilitySuffix: "cancel",
             confirmAccessibilitySuffix: "confirm",

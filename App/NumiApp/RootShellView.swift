@@ -1,11 +1,14 @@
 import SwiftUI
 import Foundation
+import LocalAuthentication
 import NumiCore
 import NumiPersistence
 import NumiAppUI
 
 struct RootShellView: View {
     @AppStorage("app.theme.id") private var themeID = NumiTheme.defaultTheme.id
+    @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
+    @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
 
     enum Tab: String, CaseIterable {
         case transactions = "明细"
@@ -34,6 +37,10 @@ struct RootShellView: View {
     @State private var shareSheetPayload: ShareSheetPayload?
     @State private var selectedHomePeriod: HomePeriod = .month
     @State private var homeAnchorDate = Date()
+    @State private var isLocked = false
+    @State private var isBlurred = false
+    @State private var backgroundTime: Date?
+    @State private var lockTimer: Timer?
 
     init() {
         do {
@@ -113,7 +120,53 @@ struct RootShellView: View {
                 .ignoresSafeArea(.keyboard, edges: .bottom)
             }
         }
+        .overlay {
+            if isBlurred || isLocked {
+                blurOverlay
+                    .transition(.opacity)
+                    .animation(.easeIn(duration: 0.3), value: isBlurred || isLocked)
+            }
+        }
         .tint(NumiColor.accentDeep)
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            backgroundTime = Date()
+            withAnimation(.easeIn(duration: 0.2)) {
+                if isAutoBlurEnabled {
+                    isBlurred = true
+                }
+            }
+            // Start timer to check if we should lock after 2 minutes
+            lockTimer?.invalidate()
+            lockTimer = Timer.scheduledTimer(withTimeInterval: 120, repeats: false) { _ in
+                if isLockEnabled {
+                    DispatchQueue.main.async {
+                        withAnimation(.easeIn(duration: 0.3)) {
+                            isLocked = true
+                        }
+                    }
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            lockTimer?.invalidate()
+            lockTimer = nil
+
+            let shouldLock: Bool
+            if let backgroundTime {
+                shouldLock = Date().timeIntervalSince(backgroundTime) >= 120
+            } else {
+                shouldLock = false
+            }
+
+            if isLockEnabled && shouldLock {
+                isLocked = true
+            } else {
+                withAnimation(.easeOut(duration: 0.4)) {
+                    isBlurred = false
+                }
+            }
+            backgroundTime = nil
+        }
         .sheet(isPresented: $isAddingRecord, onDismiss: {
             isAddingRecord = false
         }) {
@@ -754,6 +807,64 @@ struct RootShellView: View {
         let tabWidth = (UIScreen.main.bounds.width - 28) / CGFloat(Tab.allCases.count)
         let centerOffset = (tabWidth - NumiChromeMetrics.tabBarSelectionWidth) / 2
         return index * tabWidth + centerOffset
+    }
+
+    private var blurOverlay: some View {
+        ZStack {
+            // Blurred background
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            if isLocked {
+                NumiLockScreen(isLocked: Binding(
+                    get: { isLocked },
+                    set: { newValue in
+                        withAnimation(.easeOut(duration: 0.4)) {
+                            isLocked = newValue
+                            if !newValue {
+                                isBlurred = false
+                            }
+                        }
+                    }
+                ))
+            } else {
+                VStack(spacing: NumiSpacing.s4) {
+                    Image(systemName: "eye.slash.fill")
+                        .font(.system(size: 48, weight: .medium))
+                        .foregroundStyle(NumiColor.textSecondary)
+
+                    Text("应用已模糊")
+                        .font(NumiFont.bodyStrong)
+                        .foregroundStyle(NumiColor.textPrimary)
+                }
+            }
+        }
+    }
+
+    private func authenticateUser(completion: @escaping (Bool) -> Void) {
+        let context = LAContext()
+        var error: NSError?
+
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            let reason = "验证身份以解锁应用"
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
+                DispatchQueue.main.async {
+                    completion(success)
+                }
+            }
+        } else if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            let reason = "验证身份以解锁应用"
+            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, _ in
+                DispatchQueue.main.async {
+                    completion(success)
+                }
+            }
+        } else {
+            DispatchQueue.main.async {
+                completion(true)
+            }
+        }
     }
 }
 

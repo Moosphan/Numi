@@ -11,10 +11,6 @@ public struct ThemeSelectionView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text("主题")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(NumiColor.textSecondary)
-
                     VStack(spacing: 0) {
                         ForEach(Array(NumiTheme.allCases.enumerated()), id: \.element.id) { index, theme in
                             let isSelected = themeID == theme.id

@@ -1,4 +1,5 @@
 import SwiftUI
+import LocalAuthentication
 import NumiCore
 
 public struct SettingsView: View {
@@ -8,6 +9,14 @@ public struct SettingsView: View {
     private let onAccountVisibilityChange: (Account, Bool) -> Void
     private let onAccountCreate: (AccountDraft) -> Void
     private let onAccountUpdate: (Account, AccountDraft) -> Void
+
+    @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
+    @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
+    @AppStorage("app.privacy.lockMethod") private var lockMethod: String = "biometric"
+    @AppStorage("app.privacy.passcode") private var storedPasscode: String = ""
+    @State private var showLockMethodSheet = false
+    @State private var showPasscodeSetup = false
+    @State private var passcodeMode: PasscodeMode = .setup
 
     public init(
         categories: [NumiCore.Category] = [],
@@ -66,8 +75,14 @@ public struct SettingsView: View {
                     accessibilityID: "settings.section.security",
                     cardAccessibilityID: "settings.card.security"
                 ) {
-                    settingsRow("隐私锁", icon: "faceid")
-                    settingsRow("后台自动模糊", icon: "eye.slash")
+                    privacyLockRow
+                    if isLockEnabled {
+                        lockMethodRow
+                        if lockMethod == "passcode" || lockMethod == "both" {
+                            changePasscodeRow
+                        }
+                    }
+                    autoBlurRow
                 }
 
                 settingsSection(
@@ -119,14 +134,233 @@ public struct SettingsView: View {
         }
     }
 
+    private var privacyLockRow: some View {
+        HStack(spacing: NumiSpacing.s3) {
+            Image(systemName: "faceid")
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 36, height: 36)
+                .background(NumiColor.accentPrimary.opacity(0.15))
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                .foregroundStyle(NumiColor.accentPrimary)
+
+            Text("隐私锁")
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(NumiColor.textPrimary)
+
+            Spacer(minLength: NumiSpacing.s3)
+
+            Toggle("", isOn: $isLockEnabled)
+                .labelsHidden()
+                .tint(NumiColor.accentDeep)
+                .onChange(of: isLockEnabled) { _, newValue in
+                    if newValue {
+                        showLockMethodSheet = true
+                    }
+                }
+        }
+        .padding(.horizontal, NumiSpacing.s4)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NumiColor.surfaceCard)
+        .sheet(isPresented: $showLockMethodSheet) {
+            lockMethodSheet
+                .presentationDetents([.height(280)])
+                .presentationCornerRadius(28)
+        }
+    }
+
+    private var lockMethodRow: some View {
+        Button {
+            showLockMethodSheet = true
+        } label: {
+            HStack(spacing: NumiSpacing.s3) {
+                Image(systemName: "lock.shield")
+                    .font(.system(size: 17, weight: .semibold))
+                    .frame(width: 36, height: 36)
+                    .background(NumiColor.accentPrimary.opacity(0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                    .foregroundStyle(NumiColor.accentPrimary)
+
+                Text("解锁方式")
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundStyle(NumiColor.textPrimary)
+
+                Spacer(minLength: NumiSpacing.s3)
+
+                Text(lockMethodDisplayName)
+                    .font(NumiFont.bodySmall)
+                    .foregroundStyle(NumiColor.textTertiary)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(NumiColor.textTertiary)
+            }
+            .padding(.horizontal, NumiSpacing.s4)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(NumiColor.surfaceCard)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var lockMethodDisplayName: String {
+        switch lockMethod {
+        case "biometric":
+            return "生物识别"
+        case "passcode":
+            return "数字密码"
+        case "both":
+            return "生物识别 + 密码"
+        default:
+            return "生物识别"
+        }
+    }
+
+    private var changePasscodeRow: some View {
+        Button {
+            passcodeMode = .change
+            showPasscodeSetup = true
+        } label: {
+            HStack(spacing: NumiSpacing.s3) {
+                Image(systemName: "key")
+                    .font(.system(size: 17, weight: .semibold))
+                    .frame(width: 36, height: 36)
+                    .background(NumiColor.accentPrimary.opacity(0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                    .foregroundStyle(NumiColor.accentPrimary)
+
+                Text("修改密码")
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundStyle(NumiColor.textPrimary)
+
+                Spacer(minLength: NumiSpacing.s3)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(NumiColor.textTertiary)
+            }
+            .padding(.horizontal, NumiSpacing.s4)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(NumiColor.surfaceCard)
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $showPasscodeSetup) {
+            NumiPasscodeSheet(
+                isPresented: $showPasscodeSetup,
+                mode: passcodeMode
+            )
+            .presentationDetents([.height(480)])
+            .presentationCornerRadius(28)
+        }
+    }
+
+    private var autoBlurRow: some View {
+        HStack(spacing: NumiSpacing.s3) {
+            Image(systemName: "eye.slash")
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 36, height: 36)
+                .background(NumiColor.accentPrimary.opacity(0.15))
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                .foregroundStyle(NumiColor.accentPrimary)
+
+            Text("后台自动模糊")
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(NumiColor.textPrimary)
+
+            Spacer(minLength: NumiSpacing.s3)
+
+            Toggle("", isOn: $isAutoBlurEnabled)
+                .labelsHidden()
+                .tint(NumiColor.accentDeep)
+        }
+        .padding(.horizontal, NumiSpacing.s4)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NumiColor.surfaceCard)
+    }
+
+    private var isBiometricAvailable: Bool {
+        let context = LAContext()
+        var error: NSError?
+        return context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+    }
+
+    private var lockMethodSheet: some View {
+        NumiOptionSheet(
+            title: "解锁方式",
+            options: [
+                NumiOptionItem(
+                    id: "biometric",
+                    icon: "faceid",
+                    title: "生物识别",
+                    subtitle: isBiometricAvailable ? "使用 Face ID 或 Touch ID" : "设备不支持生物识别",
+                    isDisabled: !isBiometricAvailable
+                ),
+                NumiOptionItem(
+                    id: "passcode",
+                    icon: "key.fill",
+                    title: "数字密码",
+                    subtitle: "使用6位数字密码解锁"
+                ),
+                NumiOptionItem(
+                    id: "both",
+                    icon: "lock.fill",
+                    title: "生物识别 + 密码",
+                    subtitle: isBiometricAvailable ? "两种方式都可使用" : "设备不支持生物识别",
+                    isDisabled: !isBiometricAvailable
+                )
+            ],
+            selectedID: lockMethod,
+            onSelect: { option in
+                lockMethod = option.id
+                if option.id == "passcode" || option.id == "both" {
+                    if storedPasscode.isEmpty {
+                        passcodeMode = .setup
+                        showPasscodeSetup = true
+                    }
+                }
+                showLockMethodSheet = false
+            },
+            onDismiss: {
+                showLockMethodSheet = false
+            }
+        )
+    }
+
+    private func authenticateUser(completion: @escaping (Bool) -> Void) {
+        let context = LAContext()
+        var error: NSError?
+
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            let reason = "验证身份以启用隐私锁"
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
+                DispatchQueue.main.async {
+                    completion(success)
+                }
+            }
+        } else if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            let reason = "验证身份以启用隐私锁"
+            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, _ in
+                DispatchQueue.main.async {
+                    completion(success)
+                }
+            }
+        } else {
+            DispatchQueue.main.async {
+                completion(true)
+            }
+        }
+    }
+
     private func settingsRow(_ title: String, icon: String) -> some View {
         HStack(spacing: NumiSpacing.s3) {
             Image(systemName: icon)
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 36, height: 36)
-                .background(NumiColor.surfaceCardSubtle)
+                .background(NumiColor.accentPrimary.opacity(0.15))
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
-                .foregroundStyle(NumiColor.toolbarIcon)
+                .foregroundStyle(NumiColor.accentPrimary)
 
             Text(title)
                 .font(.system(size: 17, weight: .medium))
