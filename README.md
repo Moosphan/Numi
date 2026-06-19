@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/brand/logo-reference-smile.svg" alt="Numi Logo" width="200">
+  <img src="docs/assets/brand/logo-promo.svg" alt="Numi Logo" width="200">
 </p>
 
 <h1 align="center">Numi</h1>
