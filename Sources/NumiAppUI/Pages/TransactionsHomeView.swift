@@ -205,30 +205,30 @@ public struct TransactionsHomeView: View {
                 .scrollIndicators(.hidden)
             }
         } else {
-            List {
-                Section {
+            ScrollView {
+                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                     summaryGrid
-                        .listRowInsets(EdgeInsets(top: NumiSpacing.s3, leading: NumiSpacing.s5, bottom: NumiSpacing.s2, trailing: NumiSpacing.s5))
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                }
+                        .padding(.horizontal, NumiSpacing.s5)
+                        .padding(.top, NumiSpacing.s3)
+                        .padding(.bottom, NumiSpacing.s2)
 
-                recordsList
+                    recordsList
+                }
+                .padding(.bottom, 120)
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 120)
-            }
+            .scrollIndicators(.hidden)
         }
     }
 
     private var recordsList: some View {
-        Group {
-            ForEach(sections) { section in
-                Section {
-                    VStack(spacing: 0) {
-                        ForEach(Array(section.rows.enumerated()), id: \.element.id) { index, row in
+        ForEach(sections) { section in
+            Section {
+                VStack(spacing: 0) {
+                    ForEach(Array(section.rows.enumerated()), id: \.element.id) { index, row in
+                        let isFirst = index == 0
+                        let isLast = index == section.rows.count - 1
+
+                        PressableRow(onSelect: { onSelect(row.transaction) }) {
                             NumiRecordRow(
                                 transaction: row.transaction,
                                 categoryName: row.categoryName,
@@ -236,57 +236,67 @@ public struct TransactionsHomeView: View {
                                 subtitle: row.subtitle,
                                 style: .grouped
                             )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                onSelect(row.transaction)
+                        }
+                        .background(NumiColor.surfaceCard)
+                        .clipShape(UnevenRoundedRectangle(
+                            topLeadingRadius: isFirst ? NumiRadius.xl : 0,
+                            bottomLeadingRadius: isLast ? NumiRadius.xl : 0,
+                            bottomTrailingRadius: isLast ? NumiRadius.xl : 0,
+                            topTrailingRadius: isFirst ? NumiRadius.xl : 0,
+                            style: .continuous
+                        ))
+                        .overlay {
+                            UnevenRoundedRectangle(
+                                topLeadingRadius: isFirst ? NumiRadius.xl : 0,
+                                bottomLeadingRadius: isLast ? NumiRadius.xl : 0,
+                                bottomTrailingRadius: isLast ? NumiRadius.xl : 0,
+                                topTrailingRadius: isFirst ? NumiRadius.xl : 0,
+                                style: .continuous
+                            )
+                            .strokeBorder(.white.opacity(0.44), lineWidth: 0.9)
+                        }
+                        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+                        .contextMenu {
+                            Button {
+                                onEdit(row.transaction)
+                            } label: {
+                                Label("编辑", systemImage: "square.and.pencil")
                             }
-                            .contextMenu {
-                                Button {
-                                    onEdit(row.transaction)
-                                } label: {
-                                    Label("编辑", systemImage: "square.and.pencil")
-                                }
-                                .accessibilityIdentifier("action.context.editRecord")
+                            .accessibilityIdentifier("action.context.editRecord")
 
-                                Button {
-                                    pendingDelete = row.transaction
-                                } label: {
-                                    Label("删除", systemImage: "trash")
-                                }
-                                .accessibilityIdentifier("action.context.deleteRecord")
-
-                                Button {
-                                    onShare(row.transaction)
-                                } label: {
-                                    Label("分享", systemImage: "square.and.arrow.up")
-                                }
-                                .accessibilityIdentifier("action.context.shareRecord")
+                            Button {
+                                pendingDelete = row.transaction
+                            } label: {
+                                Label("删除", systemImage: "trash")
                             }
+                            .accessibilityIdentifier("action.context.deleteRecord")
 
-                            if index < section.rows.count - 1 {
-                                Divider()
-                                    .padding(.leading, 62)
+                            Button {
+                                onShare(row.transaction)
+                            } label: {
+                                Label("分享", systemImage: "square.and.arrow.up")
                             }
+                            .accessibilityIdentifier("action.context.shareRecord")
+                        }
+
+                        if !isLast {
+                            Divider()
+                                .padding(.leading, 62)
                         }
                     }
-                    .background(NumiColor.surfaceCard)
-                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous)
-                            .strokeBorder(.white.opacity(0.44), lineWidth: 0.9)
-                    }
-                    .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
-                    .listRowInsets(EdgeInsets(top: 0, leading: NumiSpacing.s5, bottom: NumiSpacing.s4, trailing: NumiSpacing.s5))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                } header: {
-                    Text(section.title)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(NumiColor.textSecondary.opacity(section.id == "today" || section.id == "yesterday" ? 1 : 0.92))
-                        .textCase(nil)
-                        .padding(.bottom, 4)
-                        .accessibilityIdentifier("home.sectionDate.\(section.id)")
                 }
+                .padding(.horizontal, NumiSpacing.s5)
+                .padding(.bottom, NumiSpacing.s4)
+            } header: {
+                Text(section.title)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(NumiColor.textSecondary.opacity(section.id == "today" || section.id == "yesterday" ? 1 : 0.92))
+                    .textCase(nil)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, NumiSpacing.s5)
+                    .padding(.bottom, 4)
+                    .background(NumiColor.surfacePage)
+                    .accessibilityIdentifier("home.sectionDate.\(section.id)")
             }
         }
     }
@@ -491,5 +501,19 @@ private struct HomeToolbarChrome<Principal: View, Trailing: View>: ViewModifier 
         #else
         content
         #endif
+    }
+}
+
+// MARK: - PressableRow
+
+private struct PressableRow<Content: View>: View {
+    let onSelect: () -> Void
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        content
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onSelect)
     }
 }
