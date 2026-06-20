@@ -4,6 +4,7 @@ import LocalAuthentication
 import NumiCore
 import NumiPersistence
 import NumiAppUI
+import NumiAppUI
 
 struct RootShellView: View {
     @AppStorage("app.theme.id") private var themeID = NumiTheme.defaultTheme.id
@@ -43,6 +44,8 @@ struct RootShellView: View {
     @State private var isBlurred = false
     @State private var backgroundTime: Date?
     @State private var lockTimer: Timer?
+    @State private var aiRecordToast: String?
+    @State private var showAIRecordToast = false
 
     init() {
         do {
@@ -132,6 +135,26 @@ struct RootShellView: View {
         .tint(NumiColor.accentDeep)
         .task {
             await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .init("NumiIncomingURL"))) { notification in
+            if let url = notification.object as? URL {
+                handleIncomingURL(url)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if showAIRecordToast, let msg = aiRecordToast {
+                Text(msg)
+                    .font(NumiFont.bodySmall)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, NumiSpacing.s4)
+                    .padding(.vertical, 10)
+                    .background(msg.contains("失败") ? Color.red.opacity(0.9) : Color.green.opacity(0.9))
+                    .clipShape(Capsule())
+                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+                    .padding(.bottom, 140)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.easeInOut(duration: 0.3), value: showAIRecordToast)
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             backgroundTime = Date()
@@ -775,6 +798,87 @@ struct RootShellView: View {
     private var currencyOptions: [NumiCurrencyOption] {
         CurrencyDefinition.common.map {
             NumiCurrencyOption(code: $0.code, title: $0.name, symbol: $0.symbol)
+        }
+    }
+
+    // MARK: - URL Scheme 处理
+
+    /// numi://record?text=午饭35块
+    private func handleIncomingURL(_ url: URL) {
+        guard url.scheme == "numi", url.host == "record" else { return }
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        guard let text = components?.queryItems?.first(where: { $0.name == "text" })?.value, !text.isEmpty else {
+            showToast("缺少 text 参数")
+            return
+        }
+
+        Task {
+            await performAIRecord(text: text)
+        }
+    }
+
+    private func performAIRecord(text: String) async {
+        let defaults = UserDefaults.standard
+        let provider = defaults.string(forKey: "app.ai.provider") ?? "claude"
+        let claudeKey = defaults.string(forKey: "app.ai.claudeAPIKey") ?? ""
+        let qwenKey = defaults.string(forKey: "app.ai.qwenAPIKey") ?? ""
+        let dsKey = defaults.string(forKey: "app.ai.deepseekAPIKey") ?? ""
+
+        // 选择 parser
+        let parser: TransactionLLMService
+        switch provider {
+        case "qwen" where !qwenKey.isEmpty:
+            parser = QwenTransactionParser(apiKey: qwenKey)
+        case "deepseek" where !dsKey.isEmpty:
+            parser = DeepSeekTransactionParser(apiKey: dsKey)
+        case "claude" where !claudeKey.isEmpty:
+            parser = ClaudeTransactionParser(apiKey: claudeKey)
+        default:
+            // 尝试任意可用 key
+            if !dsKey.isEmpty {
+                parser = DeepSeekTransactionParser(apiKey: dsKey)
+            } else if !claudeKey.isEmpty {
+                parser = ClaudeTransactionParser(apiKey: claudeKey)
+            } else if !qwenKey.isEmpty {
+                parser = QwenTransactionParser(apiKey: qwenKey)
+            } else {
+                showToast("请先在设置中配置 AI 服务密钥")
+                return
+            }
+        }
+
+        let categories = store.categories.map(\.name)
+
+        do {
+            let parsed = try await parser.parseTransaction(text, categories: categories)
+
+            guard let category = store.categories.first(where: { $0.name == parsed.categoryName }),
+                  let account = store.accounts.first else {
+                showToast("分类或账户匹配失败")
+                return
+            }
+
+            let money = try Money(decimalString: "\(parsed.amount)", currencyCode: "CNY")
+            _ = try store.createTransaction(
+                type: parsed.type,
+                amount: money,
+                categoryID: category.id,
+                accountID: account.id,
+                note: parsed.note
+            )
+
+            let symbol = parsed.type == .income ? "+" : "-"
+            showToast("已记录 \(parsed.categoryName) \(symbol)¥\(parsed.amount)")
+        } catch {
+            showToast("记账失败：\(error.localizedDescription)")
+        }
+    }
+
+    private func showToast(_ message: String) {
+        aiRecordToast = message
+        withAnimation { showAIRecordToast = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation { showAIRecordToast = false }
         }
     }
 

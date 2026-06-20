@@ -1,12 +1,14 @@
 import Foundation
 
-/// 基于 Claude API 的账单解析器
-public final class ClaudeTransactionParser: TransactionLLMService, @unchecked Sendable {
+/// 基于通义千问 API 的账单解析器
+public final class QwenTransactionParser: TransactionLLMService, @unchecked Sendable {
     private let apiKey: String
     private let session: URLSession
+    private let model: String
 
-    public init(apiKey: String, session: URLSession = .shared) {
+    public init(apiKey: String, model: String = "qwen-turbo", session: URLSession = .shared) {
         self.apiKey = apiKey
+        self.model = model
         self.session = session
     }
 
@@ -46,38 +48,35 @@ public final class ClaudeTransactionParser: TransactionLLMService, @unchecked Se
         """
     }
 
-    // MARK: - Claude API
+    // MARK: - Qwen API
 
     private func callLLM(prompt: String) async throws -> ParsedTransactionDTO {
-        guard let url = URL(string: "https://api.anthropic.com/v1/messages") else {
+        guard let url = URL(string: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions") else {
             throw LLMError.invalidURL
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.timeoutInterval = 15
 
         let body: [String: Any] = [
-            "model": "claude-haiku-4-5-20251001",
-            "max_tokens": 256,
-            "messages": [["role": "user", "content": prompt]]
+            "model": model,
+            "messages": [["role": "user", "content": prompt]],
+            "max_tokens": 256
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (data, response) = try await session.data(for: request)
 
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw LLMError.invalidResponse
-        }
-        guard httpResponse.statusCode == 200 else {
-            throw LLMError.httpError(httpResponse.statusCode)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+            throw LLMError.httpError(code)
         }
 
-        let claudeResp = try JSONDecoder().decode(ClaudeResponse.self, from: data)
-        guard let content = claudeResp.content.first?.text else {
+        let qwenResp = try JSONDecoder().decode(QwenResponse.self, from: data)
+        guard let content = qwenResp.choices.first?.message.content else {
             throw LLMError.emptyResponse
         }
 
@@ -111,7 +110,6 @@ public final class ClaudeTransactionParser: TransactionLLMService, @unchecked Se
     // MARK: - Helpers
 
     private func extractJSON(from text: String) -> String {
-        // 去掉 ```json ... ``` 包裹
         if let start = text.range(of: "{"),
            let end = text.range(of: "}", options: .backwards) {
             return String(text[start.lowerBound..<end.upperBound])
@@ -120,63 +118,14 @@ public final class ClaudeTransactionParser: TransactionLLMService, @unchecked Se
     }
 }
 
-// MARK: - Claude Response
+// MARK: - Qwen Response
 
-private struct ClaudeResponse: Decodable {
-    let content: [ContentBlock]
-    struct ContentBlock: Decodable {
-        let text: String
-    }
-}
-
-// MARK: - Errors
-
-public enum LLMError: Error, LocalizedError {
-    case invalidURL
-    case invalidResponse
-    case httpError(Int)
-    case emptyResponse
-    case invalidJSON
-
-    public var errorDescription: String? {
-        switch self {
-        case .invalidURL: return "请求地址无效"
-        case .invalidResponse: return "服务器响应无效"
-        case .httpError(let code): return "服务器错误 (\(code))"
-        case .emptyResponse: return "AI 返回为空"
-        case .invalidJSON: return "AI 返回格式错误"
+private struct QwenResponse: Decodable {
+    let choices: [Choice]
+    struct Choice: Decodable {
+        let message: Message
+        struct Message: Decodable {
+            let content: String
         }
-    }
-}
-
-// MARK: - ISO8601 Extensions
-
-extension ISO8601DateFormatter {
-    convenience init(_ options: Options) {
-        self.init()
-        formatOptions = options
-    }
-}
-
-// MARK: - Shared Mapper
-
-enum LLMMapper {
-    private static let formatter: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime]
-        return f
-    }()
-
-    static func parseDate(_ string: String?) -> Date {
-        guard let string else { return Date() }
-        return formatter.date(from: string) ?? Date()
-    }
-
-    static func extractJSON(from text: String) -> String {
-        if let start = text.range(of: "{"),
-           let end = text.range(of: "}", options: .backwards) {
-            return String(text[start.lowerBound..<end.upperBound])
-        }
-        return text
     }
 }
