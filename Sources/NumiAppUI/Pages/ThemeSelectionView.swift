@@ -52,10 +52,7 @@ public struct ThemeSelectionView: View {
                     }
                     .background(NumiColor.surfaceCard)
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .stroke(NumiColor.separator, lineWidth: 1)
-                    }
+                    .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
 
                     Text("切换后会同步更新基础控件、工具栏、输入面板和弹窗配色。")
                         .font(NumiFont.footnote)

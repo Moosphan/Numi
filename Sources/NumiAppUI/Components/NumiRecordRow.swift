@@ -29,9 +29,9 @@ public struct NumiRecordRow: View {
 
     public var body: some View {
         HStack(spacing: NumiSpacing.s3) {
-            CategoryIconView(iconName: iconName, size: style == .grouped ? 34 : 36)
+            CategoryIconView(iconName: iconName, size: style == .grouped ? 48 : 36)
                 .background(NumiColor.surfaceCardSubtle)
-                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
 
             VStack(alignment: .leading, spacing: NumiSpacing.s1) {
                 Text(categoryName)
@@ -56,7 +56,7 @@ public struct NumiRecordRow: View {
         }
         .padding(.horizontal, style == .grouped ? 16 : 14)
         .padding(.vertical, style == .grouped ? 12 : 14)
-        .frame(minHeight: style == .grouped ? 76 : nil)
+        .frame(minHeight: style == .grouped ? 80 : nil)
         .background(rowBackground)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilitySummary)

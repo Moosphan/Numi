@@ -9,6 +9,9 @@ public struct SettingsView: View {
     private let onAccountVisibilityChange: (Account, Bool) -> Void
     private let onAccountCreate: (AccountDraft) -> Void
     private let onAccountUpdate: (Account, AccountDraft) -> Void
+    private let onCategoryCreate: ((CategoryKind, String, String) -> Void)?
+    private let onCategoryDelete: ((NumiCore.Category) -> Void)?
+    private let onAccountDelete: ((Account) -> Void)?
 
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
@@ -51,7 +54,10 @@ public struct SettingsView: View {
         onCategoryVisibilityChange: @escaping (NumiCore.Category, Bool) -> Void = { _, _ in },
         onAccountVisibilityChange: @escaping (Account, Bool) -> Void = { _, _ in },
         onAccountCreate: @escaping (AccountDraft) -> Void = { _ in },
-        onAccountUpdate: @escaping (Account, AccountDraft) -> Void = { _, _ in }
+        onAccountUpdate: @escaping (Account, AccountDraft) -> Void = { _, _ in },
+        onCategoryCreate: ((CategoryKind, String, String) -> Void)? = nil,
+        onCategoryDelete: ((NumiCore.Category) -> Void)? = nil,
+        onAccountDelete: ((Account) -> Void)? = nil
     ) {
         self.categories = categories
         self.accounts = accounts
@@ -59,6 +65,9 @@ public struct SettingsView: View {
         self.onAccountVisibilityChange = onAccountVisibilityChange
         self.onAccountCreate = onAccountCreate
         self.onAccountUpdate = onAccountUpdate
+        self.onCategoryCreate = onCategoryCreate
+        self.onCategoryDelete = onCategoryDelete
+        self.onAccountDelete = onAccountDelete
     }
 
     public var body: some View {
@@ -72,7 +81,9 @@ public struct SettingsView: View {
                     NavigationLink {
                         CategoryManagementView(
                             categories: categories,
-                            onVisibilityChange: onCategoryVisibilityChange
+                            onVisibilityChange: onCategoryVisibilityChange,
+                            onCategoryCreate: onCategoryCreate,
+                            onCategoryDelete: onCategoryDelete
                         )
                     } label: {
                         settingsRow("分类管理", icon: "square.grid.2x2")
@@ -85,7 +96,8 @@ public struct SettingsView: View {
                             accounts: accounts,
                             onVisibilityChange: onAccountVisibilityChange,
                             onCreate: onAccountCreate,
-                            onUpdate: onAccountUpdate
+                            onUpdate: onAccountUpdate,
+                            onDelete: onAccountDelete
                         )
                     } label: {
                         settingsRow("账户管理", icon: "creditcard")
@@ -222,10 +234,7 @@ public struct SettingsView: View {
             }
             .background(NumiColor.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(NumiColor.separator, lineWidth: 1)
-            }
+            .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
             .accessibilityIdentifier(cardAccessibilityID)
         }
     }
@@ -571,10 +580,7 @@ public struct SettingsView: View {
                             .padding(.vertical, 12)
                             .background(NumiColor.surfaceCard)
                             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
-                            .overlay {
-                                RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous)
-                                    .stroke(NumiColor.separator, lineWidth: 1)
-                            }
+                            .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
                     }
 
                     // Test button

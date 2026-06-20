@@ -5,23 +5,27 @@ import NumiCore
 public struct AccountManagementView: View {
     @State private var localAccounts: [Account]
     @State private var editingDraft: AccountDraft?
+    @State private var pendingDelete: Account?
 
     private let accounts: [Account]
     private let onVisibilityChange: (Account, Bool) -> Void
     private let onCreate: (AccountDraft) -> Void
     private let onUpdate: (Account, AccountDraft) -> Void
+    private let onDelete: ((Account) -> Void)?
 
     public init(
         accounts: [Account],
         onVisibilityChange: @escaping (Account, Bool) -> Void,
         onCreate: @escaping (AccountDraft) -> Void = { _ in },
-        onUpdate: @escaping (Account, AccountDraft) -> Void = { _, _ in }
+        onUpdate: @escaping (Account, AccountDraft) -> Void = { _, _ in },
+        onDelete: ((Account) -> Void)? = nil
     ) {
         self.accounts = accounts
         self._localAccounts = State(initialValue: accounts)
         self.onVisibilityChange = onVisibilityChange
         self.onCreate = onCreate
         self.onUpdate = onUpdate
+        self.onDelete = onDelete
     }
 
     public var body: some View {
@@ -45,10 +49,7 @@ public struct AccountManagementView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(NumiColor.surfaceCard)
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(NumiColor.separator, lineWidth: 1)
-                }
+                .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
 
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
                     Text("账户")
@@ -65,10 +66,7 @@ public struct AccountManagementView: View {
                     }
                     .background(NumiColor.surfaceCard)
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .stroke(NumiColor.separator, lineWidth: 1)
-                    }
+                    .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
                 }
             }
             .padding(.horizontal, NumiSpacing.s5)
@@ -94,6 +92,25 @@ public struct AccountManagementView: View {
             AccountFormView(draft: draft) { savedDraft in
                 save(savedDraft)
             }
+        }
+        .confirmationDialog(
+            "删除这个账户？",
+            isPresented: Binding(
+                get: { pendingDelete != nil },
+                set: { if !$0 { pendingDelete = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingDelete
+        ) { account in
+            Button("删除", role: .destructive) {
+                onDelete?(account)
+                pendingDelete = nil
+            }
+            Button("取消", role: .cancel) {
+                pendingDelete = nil
+            }
+        } message: { account in
+            Text("删除「\(account.name)」后不可恢复，关联的历史账单仍会保留该账户信息。")
         }
         .onChange(of: accounts) { _, newValue in
             localAccounts = newValue
@@ -121,79 +138,78 @@ public struct AccountManagementView: View {
     }
 
     private func accountRow(_ account: Account) -> some View {
-        Button {
-            let nextHidden = !isAccountHidden(account.id)
-            setAccountHidden(account, isHidden: nextHidden)
-            onVisibilityChange(account, nextHidden)
-        } label: {
-            HStack(spacing: NumiSpacing.s3) {
-                Image(systemName: iconName(for: account.type))
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(NumiColor.toolbarIcon)
-                    .frame(width: 36, height: 36)
-                    .background(NumiColor.surfaceCardSubtle)
-                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+        HStack(spacing: NumiSpacing.s3) {
+            Image(systemName: iconName(for: account.type))
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(NumiColor.toolbarIcon)
+                .frame(width: 36, height: 36)
+                .background(NumiColor.surfaceCardSubtle)
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
 
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: NumiSpacing.s1) {
                     Text(account.name)
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
+
                     if isAccountHidden(account.id) {
                         Text("已隐藏")
-                            .font(NumiFont.footnote)
+                            .font(NumiFont.caption)
                             .foregroundStyle(NumiColor.textTertiary)
-                    } else {
-                        HStack(spacing: NumiSpacing.s1) {
-                            Text(typeName(for: account.type))
-                            Text("·")
-                            Text(account.isIncludedInAssets ? "计入资产" : "不计入资产")
-                                .accessibilityIdentifier("account.includedStatus.\(account.name)")
-                        }
-                        .font(NumiFont.footnote)
-                        .foregroundStyle(NumiColor.textTertiary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(NumiColor.surfaceCardSubtle)
+                            .clipShape(Capsule())
                     }
                 }
 
-                Spacer()
-
-                Text(account.balance.formatted())
-                    .font(NumiFont.bodyStrong)
-                    .foregroundStyle(NumiColor.textPrimary)
-                    .monospacedDigit()
-
-                Button {
-                    editingDraft = .existing(account)
-                } label: {
-                    Image(systemName: "pencil")
-                        .font(.system(size: 15, weight: .semibold))
-                        .frame(width: 32, height: 32)
+                HStack(spacing: NumiSpacing.s1) {
+                    Text(typeName(for: account.type))
+                    Text("·")
+                    Text(account.isIncludedInAssets ? "计入资产" : "不计入资产")
+                        .accessibilityIdentifier("account.includedStatus.\(account.name)")
                 }
-                .buttonStyle(.borderless)
-                .accessibilityLabel("编辑\(account.name)")
-                .accessibilityIdentifier("action.editAccount.\(account.name)")
-
-                Toggle(
-                    "显示账户",
-                    isOn: Binding(
-                        get: { !isAccountHidden(account.id) },
-                        set: { isVisible in
-                            setAccountHidden(account, isHidden: !isVisible)
-                            onVisibilityChange(account, !isVisible)
-                        }
-                    )
-                )
-                .labelsHidden()
-                .allowsHitTesting(false)
+                .font(NumiFont.footnote)
+                .foregroundStyle(NumiColor.textTertiary)
             }
-            .padding(.horizontal, NumiSpacing.s4)
-            .padding(.vertical, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(NumiColor.surfaceCard)
-            .contentShape(Rectangle())
+
+            Spacer()
+
+            Text(account.balance.formatted())
+                .font(NumiFont.bodyStrong)
+                .foregroundStyle(NumiColor.textPrimary)
+                .monospacedDigit()
         }
-        .buttonStyle(.plain)
-        .tint(NumiColor.accentPrimary)
-        .accessibilityIdentifier("toggle.account.\(account.name)")
+        .padding(.horizontal, NumiSpacing.s4)
+        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NumiColor.surfaceCard)
+        .contentShape(Rectangle())
+        .contextMenu {
+            Button {
+                editingDraft = .existing(account)
+            } label: {
+                Label("编辑", systemImage: "square.and.pencil")
+            }
+
+            Button {
+                let nextHidden = !isAccountHidden(account.id)
+                setAccountHidden(account, isHidden: nextHidden)
+                onVisibilityChange(account, nextHidden)
+            } label: {
+                Label(isAccountHidden(account.id) ? "显示" : "隐藏",
+                      systemImage: isAccountHidden(account.id) ? "eye" : "eye.slash")
+            }
+
+            Divider()
+
+            Button(role: .destructive) {
+                pendingDelete = account
+            } label: {
+                Label("删除", systemImage: "trash")
+            }
+        }
+        .accessibilityIdentifier("account.\(account.name)")
     }
 
     private func save(_ draft: AccountDraft) {
@@ -399,6 +415,8 @@ private struct AccountFormView: View {
                     Text("调整余额会直接更新账户当前余额；已有账单仍保留在明细中。")
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(NumiColor.surfacePage)
             .navigationTitle(draft.sourceAccount == nil ? "新增账户" : "编辑账户")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

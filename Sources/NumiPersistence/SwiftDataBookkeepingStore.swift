@@ -205,6 +205,46 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         try save()
     }
 
+    @discardableResult
+    public func createCategory(
+        kind: CategoryKind,
+        name: String,
+        icon: String,
+        isHidden: Bool = false
+    ) throws -> NumiCore.Category {
+        let existing = fetchCategoryEntities().filter { $0.kindRawValue == kind.rawValue }
+        let maxOrder = existing.map(\.sortOrder).max() ?? 0
+        let entity = CategoryEntity(
+            id: UUID(),
+            kind: kind,
+            name: name,
+            icon: icon,
+            isHidden: isHidden,
+            sortOrder: maxOrder + 1
+        )
+        context.insert(entity)
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+        return entity.domainModel
+    }
+
+    public func deleteCategory(id: UUID) throws {
+        guard let entity = fetchCategoryEntities().first(where: { $0.id == id }) else { return }
+        context.delete(entity)
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
+    public func deleteAccount(id: UUID) throws {
+        guard let entity = fetchAccountEntities().first(where: { $0.id == id }) else { return }
+        context.delete(entity)
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
     public func resetAllData() throws {
         try delete(fetchTransactionEntities(includeDeleted: true))
         try delete(fetchBudgetSettingEntities())

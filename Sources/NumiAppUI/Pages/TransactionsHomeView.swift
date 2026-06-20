@@ -111,6 +111,11 @@ public struct TransactionsHomeView: View {
                     Button("删除", role: .destructive) {
                         onDelete(transaction)
                         showsUndo = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                            withAnimation {
+                                showsUndo = false
+                            }
+                        }
                     }
                     .accessibilityIdentifier("action.confirmDeleteRecord")
 

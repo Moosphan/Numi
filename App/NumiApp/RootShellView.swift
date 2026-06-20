@@ -406,6 +406,27 @@ struct RootShellView: View {
                         } catch {
                             initializationError = error.localizedDescription
                         }
+                    },
+                    onCategoryCreate: { kind, name, icon in
+                        do {
+                            try store.createCategory(kind: kind, name: name, icon: icon)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onCategoryDelete: { category in
+                        do {
+                            try store.deleteCategory(id: category.id)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onAccountDelete: { account in
+                        do {
+                            try store.deleteAccount(id: account.id)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
                     }
                 )
             }

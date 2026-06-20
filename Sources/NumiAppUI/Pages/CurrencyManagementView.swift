@@ -214,10 +214,7 @@ public struct CurrencyManagementView: View {
         }
         .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous)
-                .stroke(NumiColor.separator, lineWidth: 1)
-        }
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 
     // MARK: - Search Bar
@@ -316,10 +313,7 @@ public struct CurrencyManagementView: View {
             }
             .background(NumiColor.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous)
-                    .stroke(NumiColor.separator, lineWidth: 1)
-            }
+            .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
         }
     }
 
