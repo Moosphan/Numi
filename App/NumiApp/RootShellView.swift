@@ -46,6 +46,10 @@ struct RootShellView: View {
     @State private var lockTimer: Timer?
     @State private var aiRecordToast: String?
     @State private var showAIRecordToast = false
+    @State private var insightsDimension: InsightsTimeDimension = .month
+    @State private var insightsAnchorDate = Date()
+    @State private var selectedCategoryRow: InsightsDistributionRow?
+    @State private var selectedCategoryType: String = "expense"
 
     init() {
         do {
@@ -340,11 +344,44 @@ struct RootShellView: View {
                 }
             }
         case .insights:
-            let summary = summary()
-            let distribution = insightDistribution()
-            let income = insightIncomeDistribution()
+            let summary = insightsSummary()
+            let distribution = insightsDistribution()
+            let income = insightsIncomeDistribution()
+            let periodTitle = insightsPeriodTitle
+
             NavigationStack {
-                InsightsView(summary: summary, distribution: distribution, incomeDistribution: income)
+                InsightsView(
+                    summary: summary,
+                    distribution: distribution,
+                    incomeDistribution: income,
+                    periodTitle: periodTitle,
+                    onPreviousPeriod: { moveInsightsPeriod(-1) },
+                    onNextPeriod: { moveInsightsPeriod(1) },
+                    onTimeDimensionChange: { dim in
+                        insightsDimension = dim
+                        insightsAnchorDate = Date()
+                    },
+                    onSelectCategory: { row, type in
+                        selectedCategoryRow = row
+                        selectedCategoryType = type
+                    }
+                )
+                .navigationDestination(isPresented: Binding(
+                    get: { selectedCategoryRow != nil },
+                    set: { if !$0 { selectedCategoryRow = nil } }
+                )) {
+                    if let row = selectedCategoryRow {
+                        let accentColor = selectedCategoryType == "expense" ? NumiColor.expenseText : NumiColor.incomeText
+                        CategoryTransactionsDetailView(
+                            categoryName: row.categoryName,
+                            iconName: row.iconName,
+                            transactions: categoryTransactions(for: row.categoryID),
+                            categories: store.categories,
+                            accentColor: accentColor,
+                            periodTitle: insightsPeriodTitle
+                        )
+                    }
+                }
             }
         case .plans:
             NavigationStack {
@@ -506,8 +543,86 @@ struct RootShellView: View {
             }
     }
 
-    private func insightDistribution() -> [InsightsDistributionRow] {
-        let items = (try? CategoryDistribution.expense(transactions: store.visibleTransactions, currencyCode: "CNY")) ?? []
+    // MARK: - Insights Data
+
+    private var insightsFilteredTransactions: [NumiCore.Transaction] {
+        let interval = insightsDateInterval
+        return store.visibleTransactions.filter { interval.contains($0.occurredAt) }
+    }
+
+    private var insightsDateInterval: DateInterval {
+        let cal = calendar
+        switch insightsDimension {
+        case .day:
+            return DateInterval(start: cal.startOfDay(for: insightsAnchorDate), duration: 86400)
+        case .week:
+            return cal.dateInterval(of: .weekOfYear, for: insightsAnchorDate) ?? DateInterval(start: insightsAnchorDate, duration: 86400)
+        case .month:
+            return cal.dateInterval(of: .month, for: insightsAnchorDate) ?? DateInterval(start: insightsAnchorDate, duration: 86400)
+        case .quarter:
+            let month = cal.component(.month, from: insightsAnchorDate)
+            let startMonth = ((month - 1) / 3) * 3 + 1
+            var components = cal.dateComponents([.year], from: insightsAnchorDate)
+            components.month = startMonth
+            components.day = 1
+            let start = cal.date(from: components) ?? cal.startOfDay(for: insightsAnchorDate)
+            let end = cal.date(byAdding: .month, value: 3, to: start) ?? start
+            return DateInterval(start: start, end: end)
+        case .year:
+            return cal.dateInterval(of: .year, for: insightsAnchorDate) ?? DateInterval(start: insightsAnchorDate, duration: 86400)
+        }
+    }
+
+    private var insightsPeriodTitle: String {
+        let interval = insightsDateInterval
+        let start = interval.start
+        switch insightsDimension {
+        case .day:
+            return monthDayWeekdayFormatter.string(from: start)
+        case .week:
+            let end = calendar.date(byAdding: .day, value: -1, to: interval.end) ?? interval.end
+            return "\(monthDayFormatter.string(from: start)) - \(monthDayFormatter.string(from: end))"
+        case .month:
+            return yearMonthFormatter.string(from: start)
+        case .quarter:
+            let quarter = ((calendar.component(.month, from: start) - 1) / 3) + 1
+            let year = calendar.component(.year, from: start)
+            return "\(year)年第\(quarter)季度"
+        case .year:
+            return "\(calendar.component(.year, from: start))年"
+        }
+    }
+
+    private func moveInsightsPeriod(_ offset: Int) {
+        switch insightsDimension {
+        case .day:
+            insightsAnchorDate = calendar.date(byAdding: .day, value: offset, to: insightsAnchorDate) ?? insightsAnchorDate
+        case .week:
+            insightsAnchorDate = calendar.date(byAdding: .weekOfYear, value: offset, to: insightsAnchorDate) ?? insightsAnchorDate
+        case .month:
+            insightsAnchorDate = calendar.date(byAdding: .month, value: offset, to: insightsAnchorDate) ?? insightsAnchorDate
+        case .quarter:
+            insightsAnchorDate = calendar.date(byAdding: .month, value: offset * 3, to: insightsAnchorDate) ?? insightsAnchorDate
+        case .year:
+            insightsAnchorDate = calendar.date(byAdding: .year, value: offset, to: insightsAnchorDate) ?? insightsAnchorDate
+        }
+    }
+
+    private func categoryTransactions(for categoryID: UUID) -> [NumiCore.Transaction] {
+        insightsFilteredTransactions
+            .filter { $0.categoryID == categoryID }
+            .sorted { $0.occurredAt > $1.occurredAt }
+    }
+
+    private func insightsSummary() -> TransactionSummary {
+        let txs = insightsFilteredTransactions
+        return (try? TransactionSummary.monthly(transactions: txs, currencyCode: "CNY"))
+            ?? TransactionSummary(expense: .zero(currencyCode: "CNY"), income: .zero(currencyCode: "CNY"), balance: .zero(currencyCode: "CNY"), recordCount: 0)
+    }
+
+    private func insightsDistribution() -> [InsightsDistributionRow] {
+        let txs = insightsFilteredTransactions
+        let items = (try? CategoryDistribution.expense(transactions: txs, currencyCode: "CNY")) ?? []
         return items.map { item in
             let category = store.categories.first { $0.id == item.categoryID }
             return InsightsDistributionRow(
@@ -520,8 +635,9 @@ struct RootShellView: View {
         }
     }
 
-    private func insightIncomeDistribution() -> [InsightsDistributionRow] {
-        let items = (try? CategoryDistribution.income(transactions: store.visibleTransactions, currencyCode: "CNY")) ?? []
+    private func insightsIncomeDistribution() -> [InsightsDistributionRow] {
+        let txs = insightsFilteredTransactions
+        let items = (try? CategoryDistribution.income(transactions: txs, currencyCode: "CNY")) ?? []
         return items.map { item in
             let category = store.categories.first { $0.id == item.categoryID }
             return InsightsDistributionRow(
