@@ -387,9 +387,58 @@ struct RootShellView: View {
             NavigationStack {
                 PlansView(
                     budgets: budgetCards(),
+                    subscriptions: store.subscriptions,
+                    installmentPlans: store.installmentPlans,
+                    installmentPeriods: store.installmentPeriods,
+                    categories: store.categories,
+                    accounts: store.accounts,
                     onSaveBudget: { period, amount, isEnabled in
                         do {
                             try store.upsertBudgetSetting(period: period, amount: amount, isEnabled: isEnabled)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onAddSubscription: { sub in
+                        do {
+                            try store.createSubscription(sub)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onUpdateSubscription: { sub in
+                        do {
+                            try store.updateSubscription(sub)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onDeleteSubscription: { id in
+                        do {
+                            try store.deleteSubscription(id: id)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onAddInstallmentPlan: { plan in
+                        do {
+                            try store.createInstallmentPlan(plan)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onUpdateInstallmentPlan: { plan in
+                        // 分期更新需要重新生成期次，暂时只支持删除重建
+                        do {
+                            try store.deleteInstallmentPlan(id: plan.id)
+                            try store.createInstallmentPlan(plan)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onDeleteInstallmentPlan: { id in
+                        do {
+                            try store.deleteInstallmentPlan(id: id)
                         } catch {
                             initializationError = error.localizedDescription
                         }

@@ -116,6 +116,81 @@ final class BudgetSettingEntity {
     }
 }
 
+@Model
+final class SubscriptionEntity {
+    @Attribute(.unique) var id: UUID
+    var name: String
+    var amountMinorUnits: Int64
+    var currencyCode: String
+    var cycleRawValue: String
+    var categoryID: UUID?
+    var accountID: UUID?
+    var nextBillingDate: Date
+    var isEnabled: Bool
+    var note: String
+
+    init(id: UUID, name: String, amountMinorUnits: Int64, currencyCode: String, cycleRawValue: String, categoryID: UUID?, accountID: UUID?, nextBillingDate: Date, isEnabled: Bool, note: String) {
+        self.id = id
+        self.name = name
+        self.amountMinorUnits = amountMinorUnits
+        self.currencyCode = currencyCode
+        self.cycleRawValue = cycleRawValue
+        self.categoryID = categoryID
+        self.accountID = accountID
+        self.nextBillingDate = nextBillingDate
+        self.isEnabled = isEnabled
+        self.note = note
+    }
+}
+
+@Model
+final class InstallmentPlanEntity {
+    @Attribute(.unique) var id: UUID
+    var name: String
+    var totalAmountMinorUnits: Int64
+    var currencyCode: String
+    var feePerPeriodMinorUnits: Int64
+    var periodCount: Int
+    var firstPaymentDate: Date
+    var accountID: UUID?
+    var categoryID: UUID?
+    var note: String
+
+    init(id: UUID, name: String, totalAmountMinorUnits: Int64, currencyCode: String, feePerPeriodMinorUnits: Int64, periodCount: Int, firstPaymentDate: Date, accountID: UUID?, categoryID: UUID?, note: String) {
+        self.id = id
+        self.name = name
+        self.totalAmountMinorUnits = totalAmountMinorUnits
+        self.currencyCode = currencyCode
+        self.feePerPeriodMinorUnits = feePerPeriodMinorUnits
+        self.periodCount = periodCount
+        self.firstPaymentDate = firstPaymentDate
+        self.accountID = accountID
+        self.categoryID = categoryID
+        self.note = note
+    }
+}
+
+@Model
+final class InstallmentPeriodEntity {
+    @Attribute(.unique) var id: UUID
+    var planID: UUID
+    var periodIndex: Int
+    var dueDate: Date
+    var isRecorded: Bool
+    var isPaid: Bool
+    var transactionID: UUID?
+
+    init(id: UUID, planID: UUID, periodIndex: Int, dueDate: Date, isRecorded: Bool, isPaid: Bool, transactionID: UUID?) {
+        self.id = id
+        self.planID = planID
+        self.periodIndex = periodIndex
+        self.dueDate = dueDate
+        self.isRecorded = isRecorded
+        self.isPaid = isPaid
+        self.transactionID = transactionID
+    }
+}
+
 @MainActor
 public final class SwiftDataBookkeepingStore: ObservableObject {
     @Published public private(set) var changeRevision = 0
@@ -131,6 +206,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             AccountEntity.self,
             TransactionEntity.self,
             BudgetSettingEntity.self,
+            SubscriptionEntity.self,
+            InstallmentPlanEntity.self,
+            InstallmentPeriodEntity.self,
             configurations: configuration
         )
         self.context = ModelContext(container)
@@ -144,6 +222,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             AccountEntity.self,
             TransactionEntity.self,
             BudgetSettingEntity.self,
+            SubscriptionEntity.self,
+            InstallmentPlanEntity.self,
+            InstallmentPeriodEntity.self,
             configurations: configuration
         )
         self.context = ModelContext(container)
@@ -235,6 +316,137 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         try save()
         changeRevision += 1
         objectWillChange.send()
+    }
+
+    // MARK: - Subscriptions
+
+    public var subscriptions: [Subscription] {
+        fetchSubscriptionEntities().map(\.domainModel)
+    }
+
+    public func createSubscription(_ sub: Subscription) throws {
+        let entity = SubscriptionEntity(
+            id: sub.id,
+            name: sub.name,
+            amountMinorUnits: sub.amount.minorUnits,
+            currencyCode: sub.amount.currencyCode,
+            cycleRawValue: sub.cycle.rawValue,
+            categoryID: sub.categoryID,
+            accountID: sub.accountID,
+            nextBillingDate: sub.nextBillingDate,
+            isEnabled: sub.isEnabled,
+            note: sub.note
+        )
+        context.insert(entity)
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
+    public func updateSubscription(_ sub: Subscription) throws {
+        guard let entity = fetchSubscriptionEntities().first(where: { $0.id == sub.id }) else { return }
+        entity.name = sub.name
+        entity.amountMinorUnits = sub.amount.minorUnits
+        entity.currencyCode = sub.amount.currencyCode
+        entity.cycleRawValue = sub.cycle.rawValue
+        entity.categoryID = sub.categoryID
+        entity.accountID = sub.accountID
+        entity.nextBillingDate = sub.nextBillingDate
+        entity.isEnabled = sub.isEnabled
+        entity.note = sub.note
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
+    public func deleteSubscription(id: UUID) throws {
+        guard let entity = fetchSubscriptionEntities().first(where: { $0.id == id }) else { return }
+        context.delete(entity)
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
+    private func fetchSubscriptionEntities() -> [SubscriptionEntity] {
+        (try? context.fetch(FetchDescriptor<SubscriptionEntity>())) ?? []
+    }
+
+    // MARK: - Installment Plans
+
+    public var installmentPlans: [InstallmentPlan] {
+        fetchInstallmentPlanEntities().map(\.domainModel)
+    }
+
+    public var installmentPeriods: [InstallmentPeriod] {
+        fetchInstallmentPeriodEntities().map(\.domainModel)
+    }
+
+    public func createInstallmentPlan(_ plan: InstallmentPlan) throws {
+        let entity = InstallmentPlanEntity(
+            id: plan.id,
+            name: plan.name,
+            totalAmountMinorUnits: plan.totalAmount.minorUnits,
+            currencyCode: plan.totalAmount.currencyCode,
+            feePerPeriodMinorUnits: plan.feePerPeriod.minorUnits,
+            periodCount: plan.periodCount,
+            firstPaymentDate: plan.firstPaymentDate,
+            accountID: plan.accountID,
+            categoryID: plan.categoryID,
+            note: plan.note
+        )
+        context.insert(entity)
+
+        // 自动生成每期记录
+        let dueDates = plan.generateDueDates()
+        for (index, date) in dueDates.enumerated() {
+            let period = InstallmentPeriodEntity(
+                id: UUID(),
+                planID: plan.id,
+                periodIndex: index,
+                dueDate: date,
+                isRecorded: false,
+                isPaid: false,
+                transactionID: nil
+            )
+            context.insert(period)
+        }
+
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
+    public func deleteInstallmentPlan(id: UUID) throws {
+        // 删除关联的期次
+        let periods = fetchInstallmentPeriodEntities().filter { $0.planID == id }
+        for period in periods {
+            context.delete(period)
+        }
+        // 删除计划
+        if let entity = fetchInstallmentPlanEntities().first(where: { $0.id == id }) {
+            context.delete(entity)
+        }
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
+    public func updateInstallmentPeriod(_ period: InstallmentPeriod) throws {
+        guard let entity = fetchInstallmentPeriodEntities().first(where: { $0.id == period.id }) else { return }
+        entity.isRecorded = period.isRecorded
+        entity.isPaid = period.isPaid
+        entity.transactionID = period.transactionID
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
+    private func fetchInstallmentPlanEntities() -> [InstallmentPlanEntity] {
+        (try? context.fetch(FetchDescriptor<InstallmentPlanEntity>())) ?? []
+    }
+
+    private func fetchInstallmentPeriodEntities() -> [InstallmentPeriodEntity] {
+        (try? context.fetch(FetchDescriptor<InstallmentPeriodEntity>())) ?? []
     }
 
     public func deleteAccount(id: UUID) throws {
@@ -709,6 +921,52 @@ private extension BudgetSettingEntity {
             period: BudgetPeriod(rawValue: periodRawValue) ?? .month,
             amount: Money(minorUnits: amountMinorUnits, currencyCode: currencyCode),
             isEnabled: isEnabled
+        )
+    }
+}
+
+private extension SubscriptionEntity {
+    var domainModel: Subscription {
+        Subscription(
+            id: id,
+            name: name,
+            amount: Money(minorUnits: amountMinorUnits, currencyCode: currencyCode),
+            cycle: SubscriptionCycle(rawValue: cycleRawValue) ?? .monthly,
+            categoryID: categoryID,
+            accountID: accountID,
+            nextBillingDate: nextBillingDate,
+            isEnabled: isEnabled,
+            note: note
+        )
+    }
+}
+
+private extension InstallmentPlanEntity {
+    var domainModel: InstallmentPlan {
+        InstallmentPlan(
+            id: id,
+            name: name,
+            totalAmount: Money(minorUnits: totalAmountMinorUnits, currencyCode: currencyCode),
+            feePerPeriod: Money(minorUnits: feePerPeriodMinorUnits, currencyCode: currencyCode),
+            periodCount: periodCount,
+            firstPaymentDate: firstPaymentDate,
+            accountID: accountID,
+            categoryID: categoryID,
+            note: note
+        )
+    }
+}
+
+private extension InstallmentPeriodEntity {
+    var domainModel: InstallmentPeriod {
+        InstallmentPeriod(
+            id: id,
+            planID: planID,
+            periodIndex: periodIndex,
+            dueDate: dueDate,
+            isRecorded: isRecorded,
+            isPaid: isPaid,
+            transactionID: transactionID
         )
     }
 }
