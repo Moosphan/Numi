@@ -14,6 +14,13 @@ public struct ExchangeRateData: Codable, Equatable {
     }
 }
 
+// MARK: - Fetch Result
+
+public enum FetchRateResult {
+    case success
+    case failure(String)
+}
+
 // MARK: - Exchange Rate Service
 
 public final class ExchangeRateService: ObservableObject {
@@ -37,21 +44,31 @@ public final class ExchangeRateService: ObservableObject {
            Date().timeIntervalSince(cached.lastUpdated) < 3600 {
             return
         }
-        await fetchRates(base: base)
+        _ = await fetchRates(base: base)
     }
 
-    /// 强制刷新汇率
+    /// 强制刷新汇率，返回结果
     @MainActor
-    public func fetchRates(base: String = "CNY") async {
-        guard let url = URL(string: "https://open.er-api.com/v6/latest/\(base)") else { return }
+    @discardableResult
+    public func fetchRates(base: String = "CNY") async -> FetchRateResult {
+        guard let url = URL(string: "https://api.frankfurter.dev/v2/rates?base=\(base)") else {
+            return .failure("请求地址无效")
+        }
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let decoded = try JSONDecoder().decode(ExchangeRateAPIResponse.self, from: data)
+            let (data, response) = try await URLSession.shared.data(from: url)
 
-            var rates = decoded.rates
-            // 添加 base 自身汇率为 1
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+                return .failure("服务器返回错误 (\(httpResponse.statusCode))")
+            }
+
+            let items = try JSONDecoder().decode([FrankfurterRateItem].self, from: data)
+
+            var rates: [String: Double] = [:]
             rates[base] = 1.0
+            for item in items {
+                rates[item.quote] = item.rate
+            }
 
             let rateData = ExchangeRateData(
                 baseCode: base,
@@ -60,8 +77,9 @@ public final class ExchangeRateService: ObservableObject {
             )
             self.rateData = rateData
             saveCache(rateData)
+            return .success
         } catch {
-            // 静默失败，保留缓存
+            return .failure(error.localizedDescription)
         }
     }
 
@@ -96,8 +114,9 @@ public final class ExchangeRateService: ObservableObject {
 
 // MARK: - API Response
 
-private struct ExchangeRateAPIResponse: Decodable {
-    let result: String
-    let base_code: String
-    let rates: [String: Double]
+private struct FrankfurterRateItem: Decodable {
+    let date: String
+    let base: String
+    let quote: String
+    let rate: Double
 }

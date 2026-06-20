@@ -7,6 +7,8 @@ public struct CurrencyManagementView: View {
     @StateObject private var rateService = ExchangeRateService.shared
     @State private var searchText = ""
     @State private var isRefreshing = false
+    @State private var toastMessage: String?
+    @State private var showToast = false
     @FocusState private var isSearchFocused: Bool
 
     public init() {}
@@ -42,6 +44,21 @@ public struct CurrencyManagementView: View {
         .task {
             if isAutoUpdateEnabled {
                 await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if showToast, let message = toastMessage {
+                Text(message)
+                    .font(NumiFont.bodySmall)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, NumiSpacing.s4)
+                    .padding(.vertical, 10)
+                    .background(message.contains("失败") || message.contains("错误") ? Color.red.opacity(0.9) : Color.green.opacity(0.9))
+                    .clipShape(Capsule())
+                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+                    .padding(.bottom, 100)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.easeInOut(duration: 0.3), value: showToast)
             }
         }
     }
@@ -142,19 +159,28 @@ public struct CurrencyManagementView: View {
             Button {
                 isRefreshing = true
                 Task {
-                    await rateService.fetchRates(base: defaultCurrencyCode)
+                    let result = await rateService.fetchRates(base: defaultCurrencyCode)
                     isRefreshing = false
+                    switch result {
+                    case .success:
+                        showToast("汇率更新成功")
+                    case .failure(let message):
+                        showToast("刷新失败：\(message)")
+                    }
                 }
             } label: {
                 HStack(spacing: NumiSpacing.s3) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 17, weight: .semibold))
-                        .frame(width: 36, height: 36)
-                        .background(NumiColor.accentPrimary.opacity(0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
-                        .foregroundStyle(NumiColor.accentPrimary)
-                        .rotationEffect(.degrees(isRefreshing ? 360 : 0))
-                        .animation(isRefreshing ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isRefreshing)
+                    ZStack {
+                        RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous)
+                            .fill(NumiColor.accentPrimary.opacity(0.15))
+                            .frame(width: 36, height: 36)
+
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(NumiColor.accentPrimary)
+                            .rotationEffect(.degrees(isRefreshing ? 360 : 0))
+                            .animation(isRefreshing ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isRefreshing)
+                    }
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("手动刷新汇率")
@@ -305,7 +331,7 @@ public struct CurrencyManagementView: View {
                 .font(.system(size: 14))
                 .foregroundStyle(NumiColor.textTertiary)
 
-            Text("汇率数据来源：ExchangeRate API")
+            Text("汇率数据来源：Frankfurter API")
                 .font(NumiFont.caption)
                 .foregroundStyle(NumiColor.textTertiary)
         }
@@ -336,6 +362,18 @@ public struct CurrencyManagementView: View {
             return String(format: "1:%.2f", rate)
         } else {
             return String(format: "1:%.4f", rate)
+        }
+    }
+
+    private func showToast(_ message: String) {
+        toastMessage = message
+        withAnimation {
+            showToast = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation {
+                showToast = false
+            }
         }
     }
 }
