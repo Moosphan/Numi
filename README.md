@@ -20,13 +20,14 @@
 ## ✨ 核心特性
 
 - **🚀 极速记账** - 5秒完成一笔记录，支持连续速记
+- **🎙️ 语音记账** - Siri 语音指令，AI 自动解析生成账单
 - **🔒 纯本地存储** - 数据只在本机，不上传服务器，完全可控
 - **📊 智能洞察** - 30秒理解消费趋势，月度概览一目了然
 - **💰 预算管理** - 月预算、分类预算、周视图，动态日均预算
 - **🔄 订阅/分期** - 自动提醒固定扣费，分期记录清晰管理
-- **🌍 多币种** - 支持全球币种，汇率手动设置
+- **🌍 多币种** - 24 种常用货币，自动更新汇率
 - **🎨 审美克制** - 轻、快、温和、清晰的视觉语言
-- **🛡️ 隐私保护** - Face ID 解锁，后台自动模糊
+- **🛡️ 隐私保护** - Face ID / 密码解锁，后台自动模糊
 
 ## 📱 功能概览
 
@@ -35,11 +36,13 @@
 - 快速记账面板
 - 分类与二级分类管理
 - 账户/钱包管理
+- **Siri 语音记账** — "糯米记账 午饭35块"，AI 自动解析
 
 ### 数据洞察
 - 明细列表、搜索、筛选
 - 月度概览与基础趋势
 - 按日期分组，每日小计
+- 支出分布与收入分布面板
 
 ### 预算系统
 - 月预算与分类预算
@@ -51,26 +54,42 @@
 - 分期记录管理
 - 报销标记
 
+### 多货币管理
+- 24 种常用货币（CNY/USD/EUR/GBP/JPY/KRW/HKD 等）
+- 自动更新汇率（基于 Frankfurter API）
+- 手动刷新汇率
+- 默认货币设置与货币搜索
+
 ### 数据管理
 - 本地数据库存储
 - CSV/JSON 导出
 - 数据导入与恢复
+
+### 安全与隐私
+- 隐私锁 — 支持 Face ID / Touch ID / 数字密码
+- 解锁方式选择 — 生物识别、密码、或两者兼有
+- 后台自动模糊 — 切到后台自动模糊界面，带 fade 动画
+- 2 分钟延迟锁定 — 短暂离开不会触发锁定
 
 ## 🏗️ 项目结构
 
 ```
 Numi/
 ├── App/                    # 应用主入口
-│   └── NumiApp/           # SwiftUI App 生命周期
+│   ├── NumiApp/           # SwiftUI App 生命周期
+│   └── NumiUITests/       # UI 测试
+├── NumiIntents/            # App Intents 扩展（Siri 语音记账）
 ├── Sources/               # 核心源码
 │   ├── NumiCore/          # 核心业务逻辑与领域模型
-│   ├── NumiPersistence/   # 数据持久化层
+│   │   └── AI/            # AI 解析层（Claude/千问/DeepSeek）
+│   ├── NumiPersistence/   # 数据持久化层（SwiftData）
 │   └── NumiAppUI/         # UI 组件库与设计系统
-├── Tests/                 # 单元测试
-├── docs/                  # 文档与设计资源
-│   ├── assets/           # 品牌资源与图片
-│   ├── design/           # UI 设计稿
-│   └── prd/              # 产品需求文档
+├── Tests/                 # 测试
+│   ├── NumiCoreTests/     # 单元测试 + 集成测试
+│   └── NumiPersistenceTests/ # 持久化测试 + E2E 测试
+├── docs/                  # 文档
+│   ├── assets/           # 品牌资源
+│   └── tech/             # 技术方案文档
 └── scripts/               # 工具脚本
 ```
 
@@ -81,6 +100,9 @@ Numi/
 - **架构**: 模块化设计，关注点分离
 - **最低支持**: iOS 17.0 / macOS 14.0
 - **依赖管理**: Swift Package Manager
+- **持久化**: SwiftData
+- **AI 解析**: Claude / 通义千问 / DeepSeek（可选）
+- **Siri 集成**: App Intents + AppShortcutsProvider
 
 ## 🚀 快速开始
 
@@ -184,19 +206,37 @@ ruby scripts/generate_xcodeproj.rb
 5. 可选：添加备注、选择账户
 6. 点击保存，完成！
 
+### 语音记账
+
+1. 进入"我的" → "AI 服务"，配置 API Key
+2. 对 Siri 说："糯米记账 午饭35块"
+3. AI 自动解析类型、金额、分类、日期
+4. Siri 语音回复确认
+
+**支持的语音短语：**
+- "糯米记账 xxx"
+- "糯米记一笔 xxx"
+- "用 Numi 记一笔 xxx"
+
 ### 查看趋势
 
-1. 底部 Tab 切换到"趋势"
+1. 底部 Tab 切换到"洞悉"
 2. 查看本月收支概览
-3. 分类分布一目了然
+3. 支出分布与收入分布一目了然
 4. 左右切换月份查看历史
 
 ### 设置预算
 
-1. 进入"我的" → "预算管理"
-2. 设置月度总预算
-3. 可选：为各分类设置预算
-4. 实时查看剩余额度
+1. 进入"计划"
+2. 设置月度/周度预算
+3. 实时查看剩余额度与日均建议
+
+### 多货币管理
+
+1. 进入"我的" → "多货币管理"
+2. 选择默认货币
+3. 开启自动更新汇率（每天首次打开时更新）
+4. 搜索查看各货币汇率
 
 ## 🎨 设计原则
 
@@ -209,11 +249,47 @@ Numi 的设计遵循以下原则：
 
 ## 🔒 隐私与安全
 
-- **数据本地化** - 所有数据存储在本地数据库
+- **数据本地化** - 所有数据存储在本地数据库（SwiftData）
 - **无云端同步** - 不依赖云服务，不用账号登录
-- **隐私锁** - 支持 Face ID / Touch ID 解锁
-- **后台模糊** - 进入后台自动模糊界面
+- **隐私锁** - 支持 Face ID / Touch ID / 数字密码解锁
+- **后台模糊** - 进入后台自动模糊界面，2 分钟后才触发锁定
 - **数据导出** - 随时导出完整数据，可独立迁移
+- **API Key 本地存储** - AI 服务密钥仅存在本地，不上传
+
+## 🧪 测试
+
+项目包含完整的测试套件：
+
+### 单元测试（100 个，全部通过）
+- `ParsedTransactionTests` — AI 解析结果模型
+- `LLMMapperTests` — JSON 提取与日期解析
+- `LLMErrorTests` — 错误类型处理
+- `ClaudeTransactionParserTests` — Claude 解析器（Mock）
+- `QwenTransactionParserTests` — 千问解析器（Mock）
+- `DeepSeekTransactionParserTests` — DeepSeek 解析器（Mock）
+- `TransactionServiceTests` — 持久化服务
+
+### 集成测试（需配置 API Key）
+- 真实 API 调用验证（DeepSeek/Claude/千问）
+- E2E 测试：AI 解析 → 分类匹配 → SwiftData 持久化 → 余额更新
+
+### E2E UI 测试
+- URL Scheme 触发真实记账 → 验证首页出现记录
+
+```bash
+# 运行所有测试
+swift test
+
+# 运行集成测试（需配置 Key）
+DEEPSEEK_API_KEY=sk-xxx swift test --filter IntegrationTests
+
+# 运行 E2E UI 测试
+xcodebuild test -scheme Numi -only-testing:NumiUITests/AIBillRecordingE2ETests
+```
+
+## 📚 技术文档
+
+- [Siri 语音记账技术方案](docs/tech/siri-voice-bill-recording.md) — 架构设计、模块详解、自动化测试方案
 
 ## 🤝 贡献指南
 
@@ -252,6 +328,7 @@ Numi 的设计遵循以下原则：
 ## 🙏 致谢
 
 - 感谢 [Cookie 记账](https://apps.apple.com/app/cookie-记账/id1549963920) 提供的灵感参考
+- 感谢 [Frankfurter API](https://frankfurter.dev) 提供免费汇率数据
 - 感谢所有贡献者的努力
 - 感谢 SwiftUI 社区的支持
 
