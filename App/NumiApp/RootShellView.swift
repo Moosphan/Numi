@@ -364,6 +364,7 @@ struct RootShellView: View {
                 SettingsView(
                     categories: store.categories,
                     accounts: store.accounts,
+                    transactions: store.visibleTransactions,
                     onCategoryVisibilityChange: { category, isHidden in
                         do {
                             try store.updateCategoryVisibility(id: category.id, isHidden: isHidden)
@@ -463,10 +464,27 @@ struct RootShellView: View {
             .compactMap { key, rows -> TransactionHomeSection? in
                 guard let date = homeSectionDayKeyFormatter.date(from: key) else { return nil }
                 let sortedRows = rows.sorted { $0.transaction.occurredAt > $1.transaction.occurredAt }
+
+                // 计算当日支出和收入
+                var expenseMinor: Int64 = 0
+                var incomeMinor: Int64 = 0
+                for row in rows {
+                    switch row.transaction.type {
+                    case .expense: expenseMinor += row.transaction.amount.minorUnits
+                    case .income: incomeMinor += row.transaction.amount.minorUnits
+                    case .transfer: break
+                    }
+                }
+                let currencyCode = rows.first?.transaction.amount.currencyCode ?? "CNY"
+                let dailyExpense = expenseMinor > 0 ? Money(minorUnits: expenseMinor, currencyCode: currencyCode) : nil
+                let dailyIncome = incomeMinor > 0 ? Money(minorUnits: incomeMinor, currencyCode: currencyCode) : nil
+
                 return TransactionHomeSection(
                     id: homeSectionAccessibilityIdentifier(for: date, fallback: key),
                     title: homeSectionTitle(for: date),
-                    rows: sortedRows
+                    rows: sortedRows,
+                    dailyExpense: dailyExpense,
+                    dailyIncome: dailyIncome
                 )
             }
             .sorted { $0.rows.first?.transaction.occurredAt ?? .distantPast > $1.rows.first?.transaction.occurredAt ?? .distantPast }

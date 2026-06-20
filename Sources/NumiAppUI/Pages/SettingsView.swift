@@ -5,6 +5,7 @@ import NumiCore
 public struct SettingsView: View {
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
+    private let transactions: [NumiCore.Transaction]
     private let onCategoryVisibilityChange: (NumiCore.Category, Bool) -> Void
     private let onAccountVisibilityChange: (Account, Bool) -> Void
     private let onAccountCreate: (AccountDraft) -> Void
@@ -51,6 +52,7 @@ public struct SettingsView: View {
     public init(
         categories: [NumiCore.Category] = [],
         accounts: [Account] = [],
+        transactions: [NumiCore.Transaction] = [],
         onCategoryVisibilityChange: @escaping (NumiCore.Category, Bool) -> Void = { _, _ in },
         onAccountVisibilityChange: @escaping (Account, Bool) -> Void = { _, _ in },
         onAccountCreate: @escaping (AccountDraft) -> Void = { _ in },
@@ -61,6 +63,7 @@ public struct SettingsView: View {
     ) {
         self.categories = categories
         self.accounts = accounts
+        self.transactions = transactions
         self.onCategoryVisibilityChange = onCategoryVisibilityChange
         self.onAccountVisibilityChange = onAccountVisibilityChange
         self.onAccountCreate = onAccountCreate
@@ -94,6 +97,8 @@ public struct SettingsView: View {
                     NavigationLink {
                         AccountManagementView(
                             accounts: accounts,
+                            transactions: transactions,
+                            categories: categories,
                             onVisibilityChange: onAccountVisibilityChange,
                             onCreate: onAccountCreate,
                             onUpdate: onAccountUpdate,

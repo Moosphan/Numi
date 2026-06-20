@@ -35,11 +35,15 @@ public struct TransactionHomeSection: Identifiable {
     public let id: String
     public let title: String
     public let rows: [TransactionHomeRow]
+    public let dailyExpense: Money?
+    public let dailyIncome: Money?
 
-    public init(id: String, title: String, rows: [TransactionHomeRow]) {
+    public init(id: String, title: String, rows: [TransactionHomeRow], dailyExpense: Money? = nil, dailyIncome: Money? = nil) {
         self.id = id
         self.title = title
         self.rows = rows
+        self.dailyExpense = dailyExpense
+        self.dailyIncome = dailyIncome
     }
 }
 
@@ -292,16 +296,43 @@ public struct TransactionsHomeView: View {
                 .padding(.horizontal, NumiSpacing.s5)
                 .padding(.bottom, NumiSpacing.s4)
             } header: {
-                Text(section.title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(NumiColor.textSecondary.opacity(section.id == "today" || section.id == "yesterday" ? 1 : 0.92))
-                    .textCase(nil)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, NumiSpacing.s5)
-                    .padding(.top, NumiSpacing.s4)
-                    .padding(.bottom, NumiSpacing.s2)
-                    .background(NumiColor.surfacePage)
-                    .accessibilityIdentifier("home.sectionDate.\(section.id)")
+                HStack {
+                    Text(section.title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(NumiColor.textSecondary.opacity(section.id == "today" || section.id == "yesterday" ? 1 : 0.92))
+
+                    Spacer()
+
+                    HStack(spacing: NumiSpacing.s1) {
+                        if let expense = section.dailyExpense, expense.minorUnits > 0 {
+                            Text("-\(expense.formatted())")
+                                .font(NumiFont.caption)
+                                .foregroundStyle(NumiColor.expenseText)
+                                .monospacedDigit()
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(NumiColor.expenseBackground)
+                                .clipShape(Capsule())
+                        }
+                        if let income = section.dailyIncome, income.minorUnits > 0 {
+                            Text("+\(income.formatted())")
+                                .font(NumiFont.caption)
+                                .foregroundStyle(NumiColor.incomeText)
+                                .monospacedDigit()
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(NumiColor.incomeBackground)
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
+                .textCase(nil)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, NumiSpacing.s5)
+                .padding(.top, NumiSpacing.s4)
+                .padding(.bottom, NumiSpacing.s2)
+                .background(NumiColor.surfacePage)
+                .accessibilityIdentifier("home.sectionDate.\(section.id)")
             }
         }
     }

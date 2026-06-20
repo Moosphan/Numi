@@ -11,6 +11,7 @@ public struct AddRecordFlowView: View {
 
     @State private var selectedType: TransactionType = .expense
     @State private var selectedDraft: TransactionDraft?
+    @State private var savedContext: SavedRecordContext?
 
     public init(
         categories: [NumiCore.Category],
@@ -43,6 +44,7 @@ public struct AddRecordFlowView: View {
                         categories: categories,
                         accounts: accounts,
                         currencyOptions: currencyOptions,
+                        savedContext: savedContext,
                         onBack: {
                             withAnimation(.spring(response: 0.32, dampingFraction: 0.88)) {
                                 selectedDraft = nil
@@ -50,7 +52,21 @@ public struct AddRecordFlowView: View {
                         },
                         onSave: { type, money, category, account, targetAccount, occurredAt, note in
                             onSave(type, money, category, account, targetAccount, occurredAt, note)
+                            savedContext = SavedRecordContext(
+                                accountID: account?.id,
+                                targetAccountID: targetAccount?.id,
+                                occurredAt: occurredAt,
+                                currencyCode: money.currencyCode
+                            )
+                        },
+                        onDone: {
                             dismiss()
+                        },
+                        onAddAnother: {
+                            // 回到分类选择页，保留上下文
+                            withAnimation(.spring(response: 0.32, dampingFraction: 0.88)) {
+                                selectedDraft = nil
+                            }
                         }
                     )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -156,6 +172,19 @@ public struct AddRecordFlowView: View {
     }
 }
 
+/// 保存上下文，用于"再记一笔"保留日期/账户/币种
+struct SavedRecordContext {
+    let accountID: UUID?
+    let targetAccountID: UUID?
+    let occurredAt: Date
+    let currencyCode: String
+
+    /// 只保留日期部分，时间用当前时间，避免多笔记录时间戳相同导致排序问题
+    var dateOnly: Date {
+        Calendar.current.startOfDay(for: occurredAt)
+    }
+}
+
 public struct TransactionDraft: Hashable, Identifiable {
     public let type: TransactionType
     public let categoryID: UUID?
@@ -175,8 +204,11 @@ private struct AddRecordEditorOverlay: View {
     let categories: [NumiCore.Category]
     let accounts: [Account]
     let currencyOptions: [NumiCurrencyOption]
+    let savedContext: SavedRecordContext?
     let onBack: () -> Void
     let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Void
+    let onDone: () -> Void
+    let onAddAnother: () -> Void
 
     @State private var dragOffset: CGFloat = 0
 
@@ -227,7 +259,10 @@ private struct AddRecordEditorOverlay: View {
                             accounts: accounts,
                             currencyOptions: currencyOptions,
                             bottomSafeAreaInset: bottomInset,
-                            onSave: onSave
+                            savedContext: savedContext,
+                            onSave: onSave,
+                            onDone: onDone,
+                            onAddAnother: onAddAnother
                         )
                     }
                     .background(NumiColor.surfacePage)
@@ -301,7 +336,10 @@ private struct AddRecordEntryContent: View {
     let accounts: [Account]
     let currencyOptions: [NumiCurrencyOption]
     let bottomSafeAreaInset: CGFloat
+    let savedContext: SavedRecordContext?
     let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Void
+    let onDone: () -> Void
+    let onAddAnother: () -> Void
 
     @State private var selectedAccountID: UUID?
     @State private var selectedTargetAccountID: UUID?
@@ -319,17 +357,26 @@ private struct AddRecordEntryContent: View {
         accounts: [Account],
         currencyOptions: [NumiCurrencyOption],
         bottomSafeAreaInset: CGFloat = 0,
-        onSave: @escaping (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Void
+        savedContext: SavedRecordContext? = nil,
+        onSave: @escaping (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Void,
+        onDone: @escaping () -> Void = {},
+        onAddAnother: @escaping () -> Void = {}
     ) {
         self.draft = draft
         self.categories = categories
         self.accounts = accounts
         self.currencyOptions = currencyOptions
         self.bottomSafeAreaInset = bottomSafeAreaInset
+        self.savedContext = savedContext
         self.onSave = onSave
-        let initialCurrency = currencyOptions.first?.code ?? "CNY"
+        self.onDone = onDone
+        self.onAddAnother = onAddAnother
+        let initialCurrency = savedContext?.currencyCode ?? currencyOptions.first?.code ?? "CNY"
         _selectedCurrencyCode = State(initialValue: initialCurrency)
         _inputState = State(initialValue: MoneyInputState(currencyCode: initialCurrency))
+        _selectedDate = State(initialValue: Date())  // 始终用当前时间
+        _selectedAccountID = State(initialValue: savedContext?.accountID)
+        _selectedTargetAccountID = State(initialValue: savedContext?.targetAccountID)
     }
 
     var body: some View {
@@ -355,8 +402,14 @@ private struct AddRecordEntryContent: View {
                     isNoteFocused = false
                 }
                 Spacer()
+                Button("再记一笔") {
+                    save()
+                    onAddAnother()
+                }
+                .disabled(!canSubmit)
                 Button(draft.type == .transfer ? "保存转账" : "记一笔") {
                     save()
+                    onDone()
                 }
                 .disabled(!canSubmit)
                 .accessibilityIdentifier("action.keyboardSubmitRecord")
@@ -399,21 +452,41 @@ private struct AddRecordEntryContent: View {
                 dateAccessorySystemImage: "calendar.badge.clock",
                 onDateShortcut: presentDatePicker
             )
-            Button {
-                save()
-            } label: {
-                Text(draft.type == .transfer ? "保存转账" : "记一笔")
-                    .font(NumiFont.bodyStrong)
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(NumiColor.accentPrimary)
-                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
-                    .foregroundStyle(NumiColor.textPrimary)
+            HStack(spacing: NumiSpacing.s2) {
+                Button {
+                    save()
+                    onAddAnother()
+                } label: {
+                    Text("再记一笔")
+                        .font(NumiFont.bodyStrong)
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .background(NumiColor.controlFill)
+                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+                        .foregroundStyle(NumiColor.accentDeep)
+                }
+                .buttonStyle(.plain)
+                .disabled(!canSubmit)
+                .opacity(isNoteFocused ? 0.001 : 1)
+                .allowsHitTesting(!isNoteFocused)
+                .accessibilityIdentifier("action.saveAndAddAnother")
+
+                Button {
+                    save()
+                    onDone()
+                } label: {
+                    Text(draft.type == .transfer ? "保存转账" : "记一笔")
+                        .font(NumiFont.bodyStrong)
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .background(NumiColor.accentPrimary)
+                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+                        .foregroundStyle(NumiColor.textPrimary)
+                }
+                .buttonStyle(.plain)
+                .disabled(!canSubmit)
+                .opacity(isNoteFocused ? 0.001 : 1)
+                .allowsHitTesting(!isNoteFocused)
+                .accessibilityIdentifier("action.submitRecord")
             }
-            .buttonStyle(.plain)
-            .disabled(!canSubmit)
-            .opacity(isNoteFocused ? 0.001 : 1)
-            .allowsHitTesting(!isNoteFocused)
-            .accessibilityIdentifier("action.submitRecord")
         }
         .padding(.horizontal, NumiSpacing.s4)
         .padding(.top, NumiSpacing.s2)

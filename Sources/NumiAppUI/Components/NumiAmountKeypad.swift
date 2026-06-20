@@ -76,7 +76,10 @@ public struct NumiAmountKeypad: View {
         if ["+", "-", "="].contains(key) {
             return NumiColor.controlFillStrong.opacity(0.72)
         }
-        return NumiColor.surfaceCard
+        if key == "delete.left" {
+            return NumiColor.controlFill
+        }
+        return NumiColor.controlFill
     }
 
     private func handle(_ key: String) {

@@ -8,6 +8,8 @@ public struct AccountManagementView: View {
     @State private var pendingDelete: Account?
 
     private let accounts: [Account]
+    private let transactions: [NumiCore.Transaction]
+    private let categories: [NumiCore.Category]
     private let onVisibilityChange: (Account, Bool) -> Void
     private let onCreate: (AccountDraft) -> Void
     private let onUpdate: (Account, AccountDraft) -> Void
@@ -15,12 +17,16 @@ public struct AccountManagementView: View {
 
     public init(
         accounts: [Account],
+        transactions: [NumiCore.Transaction] = [],
+        categories: [NumiCore.Category] = [],
         onVisibilityChange: @escaping (Account, Bool) -> Void,
         onCreate: @escaping (AccountDraft) -> Void = { _ in },
         onUpdate: @escaping (Account, AccountDraft) -> Void = { _, _ in },
         onDelete: ((Account) -> Void)? = nil
     ) {
         self.accounts = accounts
+        self.transactions = transactions
+        self.categories = categories
         self._localAccounts = State(initialValue: accounts)
         self.onVisibilityChange = onVisibilityChange
         self.onCreate = onCreate
@@ -58,7 +64,16 @@ public struct AccountManagementView: View {
 
                     VStack(spacing: 0) {
                         ForEach(visibleRows) { account in
-                            accountRow(account)
+                            NavigationLink {
+                                AccountDetailView(
+                                    account: account,
+                                    transactions: transactionsForAccount(account),
+                                    categories: categories
+                                )
+                            } label: {
+                                accountRow(account)
+                            }
+                            .buttonStyle(.plain)
                             if account.id != visibleRows.last?.id {
                                 Divider().padding(.leading, 36 + NumiSpacing.s3)
                             }
@@ -175,10 +190,15 @@ public struct AccountManagementView: View {
 
             Spacer()
 
-            Text(account.balance.formatted())
-                .font(NumiFont.bodyStrong)
-                .foregroundStyle(NumiColor.textPrimary)
-                .monospacedDigit()
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("余额")
+                    .font(NumiFont.caption)
+                    .foregroundStyle(NumiColor.textTertiary)
+                Text(account.balance.formatted())
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.textPrimary)
+                    .monospacedDigit()
+            }
         }
         .padding(.horizontal, NumiSpacing.s4)
         .padding(.vertical, 16)
@@ -210,6 +230,12 @@ public struct AccountManagementView: View {
             }
         }
         .accessibilityIdentifier("account.\(account.name)")
+    }
+
+    private func transactionsForAccount(_ account: Account) -> [NumiCore.Transaction] {
+        transactions
+            .filter { $0.accountID == account.id || $0.targetAccountID == account.id }
+            .sorted { $0.occurredAt > $1.occurredAt }
     }
 
     private func save(_ draft: AccountDraft) {
@@ -495,6 +521,271 @@ private struct AccountFormView: View {
         case .liability: "负债"
         case .other: "其他"
         }
+    }
+}
+
+// MARK: - AccountDetailView
+
+struct AccountDetailView: View {
+    let account: Account
+    let transactions: [NumiCore.Transaction]
+    let categories: [NumiCore.Category]
+
+    private var expenseTotal: Money {
+        let filtered = transactions.filter { $0.type == .expense }
+        guard let first = filtered.first else { return .zero(currencyCode: account.balance.currencyCode) }
+        return filtered.dropFirst().reduce(first.amount) { partial, tx in
+            (try? partial.adding(tx.amount)) ?? partial
+        }
+    }
+
+    private var incomeTotal: Money {
+        let filtered = transactions.filter { $0.type == .income }
+        guard let first = filtered.first else { return .zero(currencyCode: account.balance.currencyCode) }
+        return filtered.dropFirst().reduce(first.amount) { partial, tx in
+            (try? partial.adding(tx.amount)) ?? partial
+        }
+    }
+
+    /// 初始金额 = 当前余额 - 收入 + 支出
+    private var initialBalance: Money {
+        let code = account.balance.currencyCode
+        var result = account.balance
+        // 减去收入
+        for tx in transactions where tx.type == .income {
+            result = (try? result.subtracting(tx.amount)) ?? result
+        }
+        // 加回支出
+        for tx in transactions where tx.type == .expense {
+            result = (try? result.adding(tx.amount)) ?? result
+        }
+        return result
+    }
+
+    /// 按时间正序排列的交易，用于计算每笔后的余额
+    private var sortedTransactions: [NumiCore.Transaction] {
+        transactions.sorted { $0.occurredAt < $1.occurredAt }
+    }
+
+    /// 计算每笔交易后的余额快照
+    private var balanceSnapshots: [UUID: Money] {
+        var snapshots: [UUID: Money] = [:]
+        var running = initialBalance
+        for tx in sortedTransactions {
+            switch tx.type {
+            case .expense:
+                running = (try? running.subtracting(tx.amount)) ?? running
+            case .income:
+                running = (try? running.adding(tx.amount)) ?? running
+            case .transfer:
+                if tx.accountID == account.id {
+                    running = (try? running.subtracting(tx.amount)) ?? running
+                } else if tx.targetAccountID == account.id {
+                    running = (try? running.adding(tx.amount)) ?? running
+                }
+            }
+            snapshots[tx.id] = running
+        }
+        return snapshots
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: NumiSpacing.s5) {
+                // 账户信息卡片
+                VStack(alignment: .leading, spacing: NumiSpacing.s3) {
+                    HStack(spacing: NumiSpacing.s3) {
+                        Image(systemName: iconName)
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundStyle(NumiColor.accentDeep)
+                            .frame(width: 48, height: 48)
+                            .background(NumiColor.surfaceCardSubtle)
+                            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(account.name)
+                                .font(NumiFont.title)
+                                .foregroundStyle(NumiColor.textPrimary)
+                            Text(typeName)
+                                .font(NumiFont.bodySmall)
+                                .foregroundStyle(NumiColor.textTertiary)
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: NumiSpacing.s2) {
+                        Text("当前余额")
+                            .font(NumiFont.bodySmall)
+                            .foregroundStyle(NumiColor.textSecondary)
+                        Text(account.balance.formatted())
+                            .font(NumiFont.amountLarge)
+                            .foregroundStyle(NumiColor.textPrimary)
+                            .monospacedDigit()
+                    }
+
+                    Divider()
+
+                    HStack(spacing: NumiSpacing.s4) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("初始金额")
+                                .font(NumiFont.caption)
+                                .foregroundStyle(NumiColor.textTertiary)
+                            Text(initialBalance.formatted())
+                                .font(NumiFont.bodyStrong)
+                                .foregroundStyle(NumiColor.textPrimary)
+                                .monospacedDigit()
+                        }
+
+                        Spacer()
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("累计支出")
+                                .font(NumiFont.caption)
+                                .foregroundStyle(NumiColor.textTertiary)
+                            Text(expenseTotal.formatted())
+                                .font(NumiFont.bodyStrong)
+                                .foregroundStyle(NumiColor.expenseText)
+                                .monospacedDigit()
+                        }
+
+                        Spacer()
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("累计收入")
+                                .font(NumiFont.caption)
+                                .foregroundStyle(NumiColor.textTertiary)
+                            Text(incomeTotal.formatted())
+                                .font(NumiFont.bodyStrong)
+                                .foregroundStyle(NumiColor.incomeText)
+                                .monospacedDigit()
+                        }
+                    }
+
+                    HStack(spacing: NumiSpacing.s4) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("交易笔数")
+                                .font(NumiFont.caption)
+                                .foregroundStyle(NumiColor.textTertiary)
+                            Text("\(transactions.count)")
+                                .font(NumiFont.bodyStrong)
+                                .foregroundStyle(NumiColor.textPrimary)
+                        }
+
+                        Spacer()
+                    }
+                }
+                .padding(NumiSpacing.s5)
+                .background(NumiColor.surfaceCard)
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+                .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+
+                // 最近交易记录
+                if !transactions.isEmpty {
+                    VStack(alignment: .leading, spacing: NumiSpacing.s3) {
+                        Text("最近交易")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(NumiColor.textSecondary)
+
+                        VStack(spacing: 0) {
+                            ForEach(Array(transactions.prefix(20).enumerated()), id: \.element.id) { index, tx in
+                                transactionRow(tx)
+                                if index < min(transactions.count, 20) - 1 {
+                                    Divider().padding(.leading, 48 + NumiSpacing.s3)
+                                }
+                            }
+                        }
+                        .background(NumiColor.surfaceCard)
+                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+                        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+                    }
+                }
+            }
+            .padding(.horizontal, NumiSpacing.s5)
+            .padding(.top, NumiSpacing.s4)
+            .padding(.bottom, 120)
+        }
+        .background(NumiColor.surfacePage)
+        .navigationTitle("账户详情")
+        .modifier(LargeTitleNavigationChrome())
+    }
+
+    private func transactionRow(_ tx: NumiCore.Transaction) -> some View {
+        let category = categories.first { $0.id == tx.categoryID }
+        let isIncome = tx.type == .income
+        let prefix = isIncome ? "+" : (tx.type == .transfer ? "" : "-")
+        let balance = balanceSnapshots[tx.id]
+
+        return HStack(spacing: NumiSpacing.s3) {
+            CategoryIconView(iconName: category?.icon ?? "ellipsis.circle", size: 36)
+                .foregroundStyle(NumiColor.textPrimary)
+                .background(NumiColor.surfaceCardSubtle)
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(category?.name ?? (tx.type == .transfer ? "转账" : "其他"))
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.textPrimary)
+                HStack(spacing: NumiSpacing.s1) {
+                    Text(dateFormatter.string(from: tx.occurredAt))
+                    if !tx.note.isEmpty {
+                        Text("·")
+                        Text(tx.note)
+                    }
+                }
+                .font(NumiFont.bodySmall)
+                .foregroundStyle(NumiColor.textTertiary)
+                .lineLimit(1)
+            }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(prefix)\(tx.amount.formatted())")
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.textPrimary)
+                    .monospacedDigit()
+                if let balance {
+                    Text("余额 \(balance.formatted())")
+                        .font(NumiFont.caption)
+                        .foregroundStyle(NumiColor.textTertiary)
+                        .monospacedDigit()
+                }
+            }
+        }
+        .padding(.horizontal, NumiSpacing.s4)
+        .padding(.vertical, 12)
+    }
+
+    private var iconName: String {
+        switch account.type {
+        case .cash: "centsign.circle"
+        case .debitCard: "creditcard"
+        case .creditCard: "creditcard.trianglebadge.exclamationmark"
+        case .wechat: "message"
+        case .alipay: "qrcode"
+        case .virtual: "wallet.pass"
+        case .liability: "minus.circle"
+        case .other: "ellipsis.circle"
+        }
+    }
+
+    private var typeName: String {
+        switch account.type {
+        case .cash: "现金"
+        case .debitCard: "储蓄卡"
+        case .creditCard: "信用卡"
+        case .wechat: "微信"
+        case .alipay: "支付宝"
+        case .virtual: "虚拟账户"
+        case .liability: "负债"
+        case .other: "其他"
+        }
+    }
+
+    private var dateFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "zh_CN")
+        f.dateFormat = "M月d日 HH:mm"
+        return f
     }
 }
 
