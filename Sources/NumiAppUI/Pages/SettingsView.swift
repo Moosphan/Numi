@@ -76,6 +76,9 @@ public struct SettingsView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
+                // 统计小卡片
+                statsRow
+
                 settingsSection(
                     title: "数据",
                     accessibilityID: "settings.section.data",
@@ -117,6 +120,14 @@ public struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.currency")
+
+                    NavigationLink {
+                        SyncSettingsView()
+                    } label: {
+                        settingsRow("iCloud 云同步", icon: "icloud")
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings.sync")
 
                     settingsRow("导入与导出", icon: "square.and.arrow.up")
                     settingsRow("本地备份", icon: "lock.doc")
@@ -219,6 +230,80 @@ public struct SettingsView: View {
         .background(NumiColor.surfacePage)
         .navigationTitle("我的")
         .modifier(LargeTitleNavigationChrome())
+    }
+
+    // MARK: - Stats Row
+
+    private var statsRow: some View {
+        HStack(spacing: NumiSpacing.s2) {
+            statCard(
+                icon: "calendar",
+                title: "记账天数",
+                value: "\(recordDays)"
+            )
+
+            statCard(
+                icon: "chart.line.uptrend.xyaxis",
+                title: "日均支出",
+                value: avgDailyExpense
+            )
+
+            statCard(
+                icon: "chart.pie",
+                title: "最大支出",
+                value: topExpenseCategory
+            )
+        }
+    }
+
+    private func statCard(icon: String, title: String, value: String) -> some View {
+        VStack(spacing: NumiSpacing.s2) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(NumiColor.accentDeep)
+
+            Text(value)
+                .font(NumiFont.bodyStrong)
+                .foregroundStyle(NumiColor.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+            Text(title)
+                .font(NumiFont.caption)
+                .foregroundStyle(NumiColor.textTertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, NumiSpacing.s3)
+        .background(NumiColor.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+    }
+
+    private var recordDays: Int {
+        let calendar = Calendar.current
+        let uniqueDays = Set(transactions.map { calendar.startOfDay(for: $0.occurredAt) })
+        return uniqueDays.count
+    }
+
+    private var avgDailyExpense: String {
+        let expenses = transactions.filter { $0.type == .expense }
+        guard !expenses.isEmpty else { return "¥0" }
+        let total = expenses.reduce(Int64(0)) { $0 + $1.amount.minorUnits }
+        let days = max(recordDays, 1)
+        let avg = total / Int64(days)
+        return Money(minorUnits: avg, currencyCode: "CNY").formatted()
+    }
+
+    private var topExpenseCategory: String {
+        let expenses = transactions.filter { $0.type == .expense }
+        guard !expenses.isEmpty else { return "-" }
+        var categoryTotals: [UUID: Int64] = [:]
+        for tx in expenses {
+            guard let catID = tx.categoryID else { continue }
+            categoryTotals[catID, default: 0] += tx.amount.minorUnits
+        }
+        guard let topID = categoryTotals.max(by: { $0.value < $1.value })?.key else { return "-" }
+        return categories.first { $0.id == topID }?.name ?? "-"
     }
 
     @ViewBuilder
