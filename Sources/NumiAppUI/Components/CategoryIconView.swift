@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import NumiCore
 
 /// Renders a category icon from either the Thiings asset catalog or SF Symbols.
@@ -25,11 +26,17 @@ public struct CategoryIconView: View {
                 Image(systemName: iconName)
                     .font(.system(size: size * 0.5, weight: .medium))
                     .frame(width: size, height: size)
-            } else {
-                Image(iconName, bundle: .module)
+            } else if let uiImage = loadIconImage() {
+                Image(uiImage: uiImage)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: size * iconScale, height: size * iconScale)
+                    .frame(width: size, height: size)
+            } else {
+                // 回退：显示系统图标
+                Image(systemName: "questionmark.circle")
+                    .font(.system(size: size * 0.4, weight: .medium))
+                    .foregroundStyle(.secondary)
                     .frame(width: size, height: size)
             }
         }
@@ -37,6 +44,16 @@ public struct CategoryIconView: View {
 
     private var isSystemIcon: Bool {
         iconName.contains(".")
+    }
+
+    private func loadIconImage() -> UIImage? {
+        // 优先从 bundle 的 Icons 目录加载（SPM .copy 资源）
+        if let url = Bundle.module.url(forResource: iconName, withExtension: "png", subdirectory: "Icons"),
+           let data = try? Data(contentsOf: url) {
+            return UIImage(data: data)
+        }
+        // 回退到 asset catalog
+        return UIImage(named: iconName, in: Bundle.module, compatibleWith: nil)
     }
 }
 

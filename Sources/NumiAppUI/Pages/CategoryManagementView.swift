@@ -186,19 +186,84 @@ private struct AddCategorySheet: View {
 
     @State private var name = ""
     @State private var selectedIcon = "money"
+    @State private var selectedCategory = "全部"
 
-    private let allIcons: [String] = [
-        "ab-bench", "acai-bowl", "accountant", "airplane", "apartment-building",
-        "armchair", "articulated-bus", "atm-cash-machine", "award-ceremony", "baby",
-        "bag-of-groceries", "barber", "bingo-ball", "black-car", "book", "briefcase",
-        "button-down-shirt", "calligraphy-practice-book", "cash", "cash-register", "cat",
-        "cell-phone-cleaning-kit", "charity-ball", "checkbook", "cinema-clapperboard",
-        "coin-jar", "coin-purse", "coins", "computer-technician", "desk",
-        "desktop-computer", "digital-alarm-clock", "digital-billboard", "digital-certificate",
-        "farmhouse", "flea-market", "game-controller", "gift-box", "golden-heart",
-        "health-insurance-card", "insurance", "lipstick", "medicine-capsule", "money",
-        "stock-trading-candlestick", "trophy", "unboxing-gift"
+    /// 英文分类 key → 中文显示名
+    private static let categoryDisplayName: [String: String] = [
+        "全部": "全部",
+        "food-drink": "美食饮品",
+        "animals": "动物",
+        "vehicles-transport": "交通出行",
+        "entertainment-leisure": "娱乐休闲",
+        "everyday-life": "日常生活",
+        "fashion-style": "时尚穿搭",
+        "health-wellness": "健康医疗",
+        "technology-media": "科技数码",
+        "sports": "运动健身",
+        "hobbies": "兴趣爱好",
+        "nature-outdoors": "自然户外",
+        "places-structures": "建筑地标",
+        "professions": "职业",
+        "work-industry": "办公文教",
+        "space-science": "天文科学",
+        "fantasy-imagination": "奇幻想象",
+        "countries": "国家地区",
+        "flags": "旗帜",
+        "interface-symbols": "界面符号",
+        "historical-figures": "历史人物",
+        "history-culture": "历史文化",
+        "events": "活动事件",
+        "其他": "其他"
     ]
+
+    private static let iconCategories: [String: [String]] = {
+        var mapping: [String: [String]] = ["全部": []]
+
+        // SPM .copy() 将文件直接放到 bundle 根目录
+        if let url = Bundle.module.url(forResource: "manifest", withExtension: "json"),
+           let data = try? Data(contentsOf: url),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: [String]] {
+            for (category, icons) in json {
+                mapping[category] = icons.sorted()
+                mapping["全部", default: []].append(contentsOf: icons)
+            }
+        }
+
+        // 补充未在 manifest 中的图标
+        if let iconsURL = Bundle.module.url(forResource: "Icons", withExtension: nil),
+           let files = try? FileManager.default.contentsOfDirectory(atPath: iconsURL.path) {
+            let allInManifest = Set(mapping["全部"] ?? [])
+            for file in files where file.hasSuffix(".png") {
+                let slug = String(file.dropLast(4))
+                if !allInManifest.contains(slug) {
+                    mapping["其他", default: []].append(slug)
+                    mapping["全部", default: []].append(slug)
+                }
+            }
+        }
+
+        mapping["全部"] = (mapping["全部"] ?? []).sorted()
+        mapping["其他"] = (mapping["其他"] ?? []).sorted()
+        return mapping
+    }()
+
+    private var categoryNames: [String] {
+        Self.iconCategories.keys.sorted { a, b in
+            if a == "全部" { return true }
+            if b == "全部" { return false }
+            if a == "其他" { return false }
+            if b == "其他" { return true }
+            return a < b
+        }
+    }
+
+    private func displayName(for key: String) -> String {
+        Self.categoryDisplayName[key] ?? key
+    }
+
+    private var filteredIcons: [String] {
+        Self.iconCategories[selectedCategory] ?? []
+    }
 
     var body: some View {
         ScrollView {
@@ -235,25 +300,47 @@ private struct AddCategorySheet: View {
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textSecondary)
 
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: NumiSpacing.s3) {
-                        ForEach(allIcons, id: \.self) { icon in
-                            Button {
-                                selectedIcon = icon
-                            } label: {
-                                CategoryIconView(iconName: icon, size: 44)
-                                    .background(selectedIcon == icon ? NumiColor.iconBackground : NumiColor.surfaceCard)
-                                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
-                                    .overlay {
-                                        if selectedIcon == icon {
-                                            RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous)
-                                                .strokeBorder(NumiColor.accentDeep, lineWidth: 2)
-                                        }
-                                    }
+                    // 分类 Tab - 大圆角胶囊 segment
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 0) {
+                            ForEach(categoryNames, id: \.self) { cat in
+                                let isSelected = selectedCategory == cat
+                                Button {
+                                    selectedCategory = cat
+                                } label: {
+                                    Text(displayName(for: cat))
+                                        .font(NumiFont.body)
+                                        .foregroundStyle(isSelected ? .white : NumiColor.textSecondary)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            Group {
+                                                if isSelected {
+                                                    Capsule().fill(NumiColor.accentDeep)
+                                                }
+                                            }
+                                        )
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
+                        }
+                        .padding(4)
+                        .background(NumiColor.surfaceCard)
+                        .clipShape(Capsule())
+                        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+                    }
+
+                    // 图标网格
+                    let icons = filteredIcons
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: NumiSpacing.s4) {
+                        ForEach(icons, id: \.self) { icon in
+                            IconCell(iconName: icon, isSelected: selectedIcon == icon) {
+                                selectedIcon = icon
+                            }
                         }
                     }
                     .padding(NumiSpacing.s3)
+                    .animation(nil, value: selectedCategory)
                     .background(NumiColor.surfaceCard)
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
                     .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
@@ -277,5 +364,28 @@ private struct AddCategorySheet: View {
                     .foregroundStyle(name.isEmpty ? NumiColor.textTertiary : NumiColor.accentDeep)
             }
         }
+    }
+}
+
+// MARK: - Icon Cell
+
+private struct IconCell: View {
+    let iconName: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            CategoryIconView(iconName: iconName, size: 64)
+                .background(isSelected ? NumiColor.iconBackground : NumiColor.surfaceCard)
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+                .overlay {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous)
+                            .strokeBorder(NumiColor.accentDeep, lineWidth: 2)
+                    }
+                }
+        }
+        .buttonStyle(.plain)
     }
 }

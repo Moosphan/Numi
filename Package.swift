@@ -29,7 +29,9 @@ let package = Package(
             dependencies: ["NumiCore"],
             path: "Sources/NumiAppUI",
             resources: [
-                .process("Assets/ThiingsIcons.xcassets")
+                .process("Assets/ThiingsIcons.xcassets"),
+                .copy("Assets/ThiingsIcons/Icons"),
+                .copy("Assets/ThiingsIcons/manifest.json")
             ]
         ),
         .testTarget(
