@@ -76,12 +76,32 @@ public struct BookkeepingSnapshot: Codable, Equatable, Sendable {
     public var categories: [Category]
     public var accounts: [Account]
     public var transactions: [Transaction]
+    public var budgetSettings: [BudgetSetting]
+    public var subscriptions: [Subscription]
+    public var installmentPlans: [InstallmentPlan]
+    public var installmentPeriods: [InstallmentPeriod]
+    public let exportedAt: Date
 
-    public init(ledgers: [Ledger], categories: [Category], accounts: [Account], transactions: [Transaction]) {
+    public init(
+        ledgers: [Ledger] = [],
+        categories: [Category] = [],
+        accounts: [Account] = [],
+        transactions: [Transaction] = [],
+        budgetSettings: [BudgetSetting] = [],
+        subscriptions: [Subscription] = [],
+        installmentPlans: [InstallmentPlan] = [],
+        installmentPeriods: [InstallmentPeriod] = [],
+        exportedAt: Date = Date()
+    ) {
         self.ledgers = ledgers
         self.categories = categories
         self.accounts = accounts
         self.transactions = transactions
+        self.budgetSettings = budgetSettings
+        self.subscriptions = subscriptions
+        self.installmentPlans = installmentPlans
+        self.installmentPeriods = installmentPeriods
+        self.exportedAt = exportedAt
     }
 }
 

@@ -457,6 +457,118 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         objectWillChange.send()
     }
 
+    // MARK: - Snapshot
+
+    public func exportSnapshot() -> BookkeepingSnapshot {
+        BookkeepingSnapshot(
+            ledgers: ledgers,
+            categories: categories,
+            accounts: accounts,
+            transactions: allTransactions,
+            budgetSettings: budgetSettings,
+            subscriptions: subscriptions,
+            installmentPlans: installmentPlans,
+            installmentPeriods: installmentPeriods
+        )
+    }
+
+    public func importSnapshot(_ snapshot: BookkeepingSnapshot) throws {
+        // 清空现有数据
+        try resetAllData()
+
+        // 导入账本
+        for ledger in snapshot.ledgers {
+            let entity = LedgerEntity(id: ledger.id, name: ledger.name, currencyCode: ledger.currencyCode)
+            context.insert(entity)
+        }
+
+        // 导入分类
+        for cat in snapshot.categories {
+            let entity = CategoryEntity(
+                id: cat.id, kind: cat.kind, name: cat.name,
+                icon: cat.icon, isHidden: cat.isHidden, sortOrder: cat.sortOrder
+            )
+            context.insert(entity)
+        }
+
+        // 导入账户
+        for acc in snapshot.accounts {
+            let entity = AccountEntity(
+                id: acc.id, name: acc.name, type: acc.type,
+                balance: acc.balance, isIncludedInAssets: acc.isIncludedInAssets,
+                isHidden: acc.isHidden
+            )
+            context.insert(entity)
+        }
+
+        // 导入交易
+        for tx in snapshot.transactions {
+            let entity = TransactionEntity(
+                id: tx.id, type: tx.type, amount: tx.amount,
+                occurredAt: tx.occurredAt, categoryID: tx.categoryID,
+                accountID: tx.accountID, targetAccountID: tx.targetAccountID,
+                note: tx.note, isSoftDeleted: false
+            )
+            context.insert(entity)
+        }
+
+        // 导入预算
+        for budget in snapshot.budgetSettings {
+            let entity = BudgetSettingEntity(
+                id: budget.id, period: budget.period,
+                amount: budget.amount, isEnabled: budget.isEnabled
+            )
+            context.insert(entity)
+        }
+
+        // 导入订阅
+        for sub in snapshot.subscriptions {
+            let entity = SubscriptionEntity(
+                id: sub.id, name: sub.name,
+                amountMinorUnits: sub.amount.minorUnits,
+                currencyCode: sub.amount.currencyCode,
+                cycleRawValue: sub.cycle.rawValue,
+                categoryID: sub.categoryID,
+                accountID: sub.accountID,
+                nextBillingDate: sub.nextBillingDate,
+                isEnabled: sub.isEnabled,
+                note: sub.note
+            )
+            context.insert(entity)
+        }
+
+        // 导入分期计划
+        for plan in snapshot.installmentPlans {
+            let entity = InstallmentPlanEntity(
+                id: plan.id, name: plan.name,
+                totalAmountMinorUnits: plan.totalAmount.minorUnits,
+                currencyCode: plan.totalAmount.currencyCode,
+                feePerPeriodMinorUnits: plan.feePerPeriod.minorUnits,
+                periodCount: plan.periodCount,
+                firstPaymentDate: plan.firstPaymentDate,
+                accountID: plan.accountID,
+                categoryID: plan.categoryID,
+                note: plan.note
+            )
+            context.insert(entity)
+        }
+
+        // 导入分期期次
+        for period in snapshot.installmentPeriods {
+            let entity = InstallmentPeriodEntity(
+                id: period.id, planID: period.planID,
+                periodIndex: period.periodIndex, dueDate: period.dueDate,
+                isRecorded: period.isRecorded, isPaid: period.isPaid,
+                transactionID: period.transactionID
+            )
+            context.insert(entity)
+        }
+
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
     public func resetAllData() throws {
         try delete(fetchTransactionEntities(includeDeleted: true))
         try delete(fetchBudgetSettingEntities())

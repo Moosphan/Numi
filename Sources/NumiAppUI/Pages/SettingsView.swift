@@ -6,6 +6,8 @@ public struct SettingsView: View {
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
     private let transactions: [NumiCore.Transaction]
+    private let exportSnapshot: (() -> BookkeepingSnapshot)?
+    private let importSnapshot: ((BookkeepingSnapshot) throws -> Void)?
     private let onCategoryVisibilityChange: (NumiCore.Category, Bool) -> Void
     private let onAccountVisibilityChange: (Account, Bool) -> Void
     private let onAccountCreate: (AccountDraft) -> Void
@@ -53,6 +55,8 @@ public struct SettingsView: View {
         categories: [NumiCore.Category] = [],
         accounts: [Account] = [],
         transactions: [NumiCore.Transaction] = [],
+        exportSnapshot: (() -> BookkeepingSnapshot)? = nil,
+        importSnapshot: ((BookkeepingSnapshot) throws -> Void)? = nil,
         onCategoryVisibilityChange: @escaping (NumiCore.Category, Bool) -> Void = { _, _ in },
         onAccountVisibilityChange: @escaping (Account, Bool) -> Void = { _, _ in },
         onAccountCreate: @escaping (AccountDraft) -> Void = { _ in },
@@ -64,6 +68,8 @@ public struct SettingsView: View {
         self.categories = categories
         self.accounts = accounts
         self.transactions = transactions
+        self.exportSnapshot = exportSnapshot
+        self.importSnapshot = importSnapshot
         self.onCategoryVisibilityChange = onCategoryVisibilityChange
         self.onAccountVisibilityChange = onAccountVisibilityChange
         self.onAccountCreate = onAccountCreate
@@ -129,8 +135,23 @@ public struct SettingsView: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.sync")
 
-                    settingsRow("导入与导出", icon: "square.and.arrow.up")
-                    settingsRow("本地备份", icon: "lock.doc")
+                    if let export = exportSnapshot, let importFn = importSnapshot {
+                        NavigationLink {
+                            DataManagementView(exportSnapshot: export, importSnapshot: importFn)
+                        } label: {
+                            settingsRow("导入与导出", icon: "square.and.arrow.up")
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("settings.importExport")
+
+                        NavigationLink {
+                            BackupView(exportSnapshot: export, importSnapshot: importFn)
+                        } label: {
+                            settingsRow("本地备份", icon: "lock.doc")
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("settings.backup")
+                    }
                 }
 
                 settingsSection(
@@ -236,32 +257,14 @@ public struct SettingsView: View {
 
     private var statsRow: some View {
         HStack(spacing: NumiSpacing.s2) {
-            statCard(
-                icon: "calendar",
-                title: "记账天数",
-                value: "\(recordDays)"
-            )
-
-            statCard(
-                icon: "chart.line.uptrend.xyaxis",
-                title: "日均支出",
-                value: avgDailyExpense
-            )
-
-            statCard(
-                icon: "chart.pie",
-                title: "最大支出",
-                value: topExpenseCategory
-            )
+            statCard(title: "记账天数", value: "\(recordDays)")
+            statCard(title: "日均支出", value: avgDailyExpense)
+            statCard(title: "最大支出", value: topExpenseCategory)
         }
     }
 
-    private func statCard(icon: String, title: String, value: String) -> some View {
-        VStack(spacing: NumiSpacing.s2) {
-            Image(systemName: icon)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(NumiColor.accentDeep)
-
+    private func statCard(title: String, value: String) -> some View {
+        VStack(spacing: NumiSpacing.s1) {
             Text(value)
                 .font(NumiFont.bodyStrong)
                 .foregroundStyle(NumiColor.textPrimary)

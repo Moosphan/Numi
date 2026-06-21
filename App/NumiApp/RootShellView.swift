@@ -451,6 +451,8 @@ struct RootShellView: View {
                     categories: store.categories,
                     accounts: store.accounts,
                     transactions: store.visibleTransactions,
+                    exportSnapshot: { store.exportSnapshot() },
+                    importSnapshot: { snapshot in try store.importSnapshot(snapshot) },
                     onCategoryVisibilityChange: { category, isHidden in
                         do {
                             try store.updateCategoryVisibility(id: category.id, isHidden: isHidden)
