@@ -144,7 +144,7 @@ public struct DataManagementView: View {
             Image(systemName: icon)
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 36, height: 36)
-                .background(NumiColor.accentPrimary.opacity(0.15))
+                .background(NumiColor.iconBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
@@ -281,7 +281,7 @@ public struct BackupView: View {
                 Image(systemName: "lock.doc")
                     .font(.system(size: 17, weight: .semibold))
                     .frame(width: 36, height: 36)
-                    .background(NumiColor.accentPrimary.opacity(0.15))
+                    .background(NumiColor.iconBackground)
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     .foregroundStyle(NumiColor.accentPrimary)
 
@@ -324,16 +324,20 @@ public struct BackupView: View {
             Button {
                 createBackup()
             } label: {
+                let isEnabled = !backupPassword.isEmpty
                 HStack {
                     Spacer()
                     Text("创建备份")
                         .font(NumiFont.bodyStrong)
-                        .foregroundStyle(backupPassword.isEmpty ? NumiColor.textTertiary : .white)
+                        .foregroundStyle(isEnabled ? .white : NumiColor.textTertiary)
                     Spacer()
                 }
                 .padding(.vertical, 14)
-                .background(backupPassword.isEmpty ? NumiColor.controlFill : NumiColor.accentDeep)
-                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+                .background(
+                    RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous)
+                        .fill(isEnabled ? NumiColor.accentDeep : Color(.systemGray5))
+                )
+                .animation(.easeInOut(duration: 0.2), value: isEnabled)
             }
             .buttonStyle(.plain)
             .disabled(backupPassword.isEmpty)
@@ -355,7 +359,7 @@ public struct BackupView: View {
                     Image(systemName: "square.and.arrow.down")
                         .font(.system(size: 17, weight: .semibold))
                         .frame(width: 36, height: 36)
-                        .background(NumiColor.accentPrimary.opacity(0.15))
+                        .background(NumiColor.iconBackground)
                         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                         .foregroundStyle(NumiColor.accentPrimary)
 

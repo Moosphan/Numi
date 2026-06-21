@@ -255,7 +255,7 @@ public struct PlansView: View {
                 PlanSymbolBadge(
                     iconName: "repeat",
                     tint: sub.isEnabled ? NumiColor.accentDeep : NumiColor.textTertiary,
-                    background: sub.isEnabled ? NumiColor.accentPrimary.opacity(0.15) : NumiColor.surfaceCardSubtle,
+                    background: sub.isEnabled ? NumiColor.iconBackground : NumiColor.surfaceCardSubtle,
                     size: 36
                 )
 
@@ -368,7 +368,7 @@ public struct PlansView: View {
                     PlanSymbolBadge(
                         iconName: "creditcard",
                         tint: NumiColor.accentDeep,
-                        background: NumiColor.accentPrimary.opacity(0.15),
+                        background: NumiColor.iconBackground,
                         size: 36
                     )
 
@@ -1164,7 +1164,7 @@ private struct SubscriptionDetailView: View {
                         PlanSymbolBadge(
                             iconName: "repeat",
                             tint: subscription.isEnabled ? NumiColor.accentDeep : NumiColor.textTertiary,
-                            background: subscription.isEnabled ? NumiColor.accentPrimary.opacity(0.15) : NumiColor.surfaceCardSubtle,
+                            background: subscription.isEnabled ? NumiColor.iconBackground : NumiColor.surfaceCardSubtle,
                             size: 48
                         )
 
@@ -1300,7 +1300,7 @@ private struct InstallmentDetailView: View {
                         PlanSymbolBadge(
                             iconName: "creditcard",
                             tint: NumiColor.accentDeep,
-                            background: NumiColor.accentPrimary.opacity(0.15),
+                            background: NumiColor.iconBackground,
                             size: 48
                         )
 

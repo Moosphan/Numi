@@ -241,7 +241,7 @@ private struct AddCategorySheet: View {
                                 selectedIcon = icon
                             } label: {
                                 CategoryIconView(iconName: icon, size: 44)
-                                    .background(selectedIcon == icon ? NumiColor.accentPrimary.opacity(0.15) : NumiColor.surfaceCard)
+                                    .background(selectedIcon == icon ? NumiColor.iconBackground : NumiColor.surfaceCard)
                                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                                     .overlay {
                                         if selectedIcon == icon {

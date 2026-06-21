@@ -170,7 +170,7 @@ public struct SyncSettingsView: View {
                 Image(systemName: "icloud")
                     .font(.system(size: 17, weight: .semibold))
                     .frame(width: 36, height: 36)
-                    .background(NumiColor.accentPrimary.opacity(0.15))
+                    .background(NumiColor.iconBackground)
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     .foregroundStyle(NumiColor.accentPrimary)
 
@@ -204,7 +204,7 @@ public struct SyncSettingsView: View {
                     Image(systemName: "antenna.radiowaves.left.and.right")
                         .font(.system(size: 17, weight: .semibold))
                         .frame(width: 36, height: 36)
-                        .background(NumiColor.accentPrimary.opacity(0.15))
+                        .background(NumiColor.iconBackground)
                         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                         .foregroundStyle(NumiColor.accentPrimary)
 
@@ -242,7 +242,7 @@ public struct SyncSettingsView: View {
             Image(systemName: syncService.networkType.icon)
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 36, height: 36)
-                .background(NumiColor.accentPrimary.opacity(0.15))
+                .background(NumiColor.iconBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
@@ -275,7 +275,7 @@ public struct SyncSettingsView: View {
             Image(systemName: syncService.isiCloudAvailable ? "checkmark.icloud" : "icloud.slash")
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 36, height: 36)
-                .background(NumiColor.accentPrimary.opacity(0.15))
+                .background(NumiColor.iconBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
@@ -308,7 +308,7 @@ public struct SyncSettingsView: View {
             Image(systemName: statusIcon)
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 36, height: 36)
-                .background(NumiColor.accentPrimary.opacity(0.15))
+                .background(NumiColor.iconBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
@@ -347,7 +347,7 @@ public struct SyncSettingsView: View {
             HStack(spacing: NumiSpacing.s3) {
                 ZStack {
                     RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous)
-                        .fill(NumiColor.accentPrimary.opacity(0.15))
+                        .fill(NumiColor.iconBackground)
                         .frame(width: 36, height: 36)
 
                     Image(systemName: "arrow.triangle.2.circlepath")
@@ -435,7 +435,7 @@ public struct SyncSettingsView: View {
     private var statusIconBackground: Color {
         switch syncService.syncStatus {
         case .idle: return NumiColor.surfaceCardSubtle
-        case .syncing: return NumiColor.accentPrimary.opacity(0.15)
+        case .syncing: return NumiColor.iconBackground
         case .success: return NumiColor.positiveBackground
         case .failure: return NumiColor.negativeBackground
         }

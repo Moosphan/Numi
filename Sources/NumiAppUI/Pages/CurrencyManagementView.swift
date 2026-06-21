@@ -94,7 +94,7 @@ public struct CurrencyManagementView: View {
                     Text(currency.symbol)
                         .font(.system(size: 17, weight: .semibold))
                         .frame(width: 36, height: 36)
-                        .background(NumiColor.accentPrimary.opacity(0.15))
+                        .background(NumiColor.iconBackground)
                         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                         .foregroundStyle(NumiColor.accentPrimary)
 
@@ -130,7 +130,7 @@ public struct CurrencyManagementView: View {
                 Image(systemName: "arrow.triangle.2.circlepath")
                     .font(.system(size: 17, weight: .semibold))
                     .frame(width: 36, height: 36)
-                    .background(NumiColor.accentPrimary.opacity(0.15))
+                    .background(NumiColor.iconBackground)
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     .foregroundStyle(NumiColor.accentPrimary)
 
@@ -172,7 +172,7 @@ public struct CurrencyManagementView: View {
                 HStack(spacing: NumiSpacing.s3) {
                     ZStack {
                         RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous)
-                            .fill(NumiColor.accentPrimary.opacity(0.15))
+                            .fill(NumiColor.iconBackground)
                             .frame(width: 36, height: 36)
 
                         Image(systemName: "arrow.clockwise")
@@ -295,7 +295,7 @@ public struct CurrencyManagementView: View {
                                     .foregroundStyle(NumiColor.accentDeep)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 3)
-                                    .background(NumiColor.accentPrimary.opacity(0.15))
+                                    .background(NumiColor.iconBackground)
                                     .clipShape(Capsule())
                             }
                         }

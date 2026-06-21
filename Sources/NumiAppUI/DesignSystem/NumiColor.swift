@@ -1,178 +1,154 @@
 import SwiftUI
 import NumiCore
 
+// MARK: - NumiColor
+
 public enum NumiColor {
-    public static var surfacePage: Color { palette.surfacePage }
-    public static var surfaceCard: Color { palette.surfaceCard }
-    public static var surfaceCardSubtle: Color { palette.surfaceCardSubtle }
-    public static var surfaceFloatingSolid: Color { palette.surfaceFloatingSolid }
-    public static var textPrimary: Color { palette.textPrimary }
-    public static var textSecondary: Color { palette.textSecondary }
-    public static var textTertiary: Color { palette.textTertiary }
-    public static var accentPrimary: Color { palette.accentPrimary }
-    public static var accentDeep: Color { palette.accentDeep }
-    public static var expenseBackground: Color { palette.expenseBackground }
-    public static var expenseText: Color { palette.expenseText }
-    public static var incomeBackground: Color { palette.incomeBackground }
-    public static var incomeText: Color { palette.incomeText }
-    public static var negativeBackground: Color { palette.negativeBackground }
-    public static var negativeText: Color { palette.negativeText }
-    public static var positiveBackground: Color { palette.positiveBackground }
-    public static var positiveText: Color { palette.positiveText }
-    public static var toolbarIcon: Color { palette.toolbarIcon }
-    public static var controlFill: Color { palette.controlFill }
-    public static var controlFillStrong: Color { palette.controlFillStrong }
-    public static var separator: Color { palette.separator }
+    public static var surfacePage: Color { hexColor(palette.background) }
+    public static var surfaceCard: Color { derivedCard }
+    public static var surfaceCardSubtle: Color { derivedCardSubtle }
+    public static var surfaceFloatingSolid: Color { derivedFloatingSolid }
+    public static var textPrimary: Color { hexColor(palette.textPrimary) }
+    public static var textSecondary: Color { derivedTextSecondary }
+    public static var textTertiary: Color { derivedTextTertiary }
+    public static var accentPrimary: Color { hexColor(palette.primary) }
+    public static var accentDeep: Color { hexColor(palette.accent) }
+    public static var expenseBackground: Color { derivedExpenseBackground }
+    public static var expenseText: Color { derivedExpenseText }
+    public static var incomeBackground: Color { derivedIncomeBackground }
+    public static var incomeText: Color { derivedIncomeText }
+    public static var negativeBackground: Color { derivedNegativeBackground }
+    public static var negativeText: Color { derivedNegativeText }
+    public static var positiveBackground: Color { derivedPositiveBackground }
+    public static var positiveText: Color { derivedPositiveText }
+    public static var toolbarIcon: Color { derivedToolbarIcon }
+    public static var controlFill: Color { derivedControlFill }
+    public static var controlFillStrong: Color { derivedControlFillStrong }
+    public static var iconBackground: Color { derivedIconBackground }
+    public static var separator: Color { textPrimary.opacity(0.08) }
 
-    private static var palette: NumiThemePalette {
-        NumiThemePalette(theme: NumiThemeController.shared.theme)
-    }
-}
+    // MARK: - Palette Access
 
-private struct NumiThemePalette {
-    let theme: NumiTheme
-
-    var surfacePage: Color {
-        color(theme.backgroundHex)
+    private static var palette: ThemePalette {
+        NumiThemeController.shared.currentPalette
     }
 
-    var surfaceCard: Color {
-        mix(base: surfacePage, overlay: .white, amount: theme.id == NumiTheme.brandWarm.id ? 0.80 : 0.85)
+    private static var isDark: Bool {
+        NumiThemeController.shared.colorScheme == .dark
     }
 
-    var surfaceCardSubtle: Color {
-        mix(base: surfacePage, overlay: accentPrimary, amount: theme.id == NumiTheme.brandWarm.id ? 0.1 : 0.08)
+    // MARK: - Derived Colors
+
+    private static var derivedCard: Color {
+        if isDark {
+            return mix(base: hexColor(palette.background), overlay: .white, amount: 0.08)
+        }
+        return mix(base: hexColor(palette.background), overlay: .white, amount: 0.85)
     }
 
-    var surfaceFloatingSolid: Color {
-        mix(base: surfacePage, overlay: .white, amount: theme.id == NumiTheme.brandWarm.id ? 0.18 : 0.14)
+    private static var derivedCardSubtle: Color {
+        mix(base: hexColor(palette.background), overlay: hexColor(palette.primary), amount: isDark ? 0.15 : 0.1)
     }
 
-    var textPrimary: Color {
-        color(theme.textPrimaryHex)
+    private static var derivedFloatingSolid: Color {
+        if isDark {
+            return mix(base: hexColor(palette.background), overlay: .white, amount: 0.06)
+        }
+        return mix(base: hexColor(palette.background), overlay: .white, amount: 0.14)
     }
 
-    var textSecondary: Color {
-        mix(base: textPrimary, overlay: surfacePage, amount: 0.28)
+    private static var derivedTextSecondary: Color {
+        mix(base: textPrimary, overlay: hexColor(palette.background), amount: 0.28)
     }
 
-    var textTertiary: Color {
-        mix(base: textPrimary, overlay: surfacePage, amount: 0.48)
+    private static var derivedTextTertiary: Color {
+        mix(base: textPrimary, overlay: hexColor(palette.background), amount: 0.48)
     }
 
-    var accentPrimary: Color {
-        color(theme.primaryHex)
+    private static var derivedExpenseBackground: Color {
+        mix(base: hexColor(palette.background), overlay: derivedExpenseText, amount: isDark ? 0.18 : 0.11)
     }
 
-    var accentDeep: Color {
-        color(theme.accentHex)
+    private static var derivedExpenseText: Color {
+        mix(base: hexColor(palette.warning), overlay: textPrimary, amount: 0.22)
     }
 
-    var expenseBackground: Color {
-        mix(base: surfacePage, overlay: warningText, amount: 0.11)
+    private static var derivedIncomeBackground: Color {
+        mix(base: hexColor(palette.background), overlay: derivedIncomeText, amount: isDark ? 0.18 : 0.12)
     }
 
-    var expenseText: Color {
-        warningText
+    private static var derivedIncomeText: Color {
+        hexColor(palette.positive)
     }
 
-    var incomeBackground: Color {
-        positiveText.opacity(0.18)
+    private static var derivedNegativeBackground: Color {
+        mix(base: hexColor(palette.background), overlay: derivedNegativeText, amount: isDark ? 0.18 : 0.12)
     }
 
-    var incomeText: Color {
-        positiveText
+    private static var derivedNegativeText: Color {
+        mix(base: hexColor(palette.warning), overlay: textPrimary, amount: 0.34)
     }
 
-    var negativeBackground: Color {
-        mix(base: surfacePage, overlay: negativeText, amount: 0.12)
+    private static var derivedPositiveBackground: Color {
+        mix(base: hexColor(palette.background), overlay: derivedPositiveText, amount: isDark ? 0.18 : 0.15)
     }
 
-    var negativeText: Color {
-        mix(base: color(theme.warningHex), overlay: textPrimary, amount: 0.34)
+    private static var derivedPositiveText: Color {
+        mix(base: hexColor(palette.positive), overlay: textPrimary, amount: 0.26)
     }
 
-    var positiveBackground: Color {
-        mix(base: surfacePage, overlay: positiveText, amount: 0.15)
+    private static var derivedToolbarIcon: Color {
+        mix(base: textPrimary, overlay: hexColor(palette.accent), amount: 0.18)
     }
 
-    var positiveText: Color {
-        mix(base: color(theme.positiveHex), overlay: textPrimary, amount: 0.26)
+    private static var derivedControlFill: Color {
+        mix(base: surfaceCard, overlay: hexColor(palette.primary), amount: isDark ? 0.15 : 0.12)
     }
 
-    var warningText: Color {
-        mix(base: color(theme.warningHex), overlay: textPrimary, amount: 0.22)
+    private static var derivedControlFillStrong: Color {
+        if isDark {
+            return mix(base: hexColor(palette.primary), overlay: .black, amount: 0.12)
+        }
+        return mix(base: hexColor(palette.primary), overlay: .white, amount: 0.08)
     }
 
-    var toolbarIcon: Color {
-        mix(base: textPrimary, overlay: accentDeep, amount: 0.18)
+    private static var derivedIconBackground: Color {
+        if isDark {
+            return mix(base: hexColor(palette.background), overlay: hexColor(palette.primary), amount: 0.18)
+        }
+        return mix(base: hexColor(palette.background), overlay: hexColor(palette.primary), amount: 0.12)
     }
 
-    var controlFill: Color {
-        mix(base: surfaceCard, overlay: accentPrimary, amount: theme.id == NumiTheme.brandWarm.id ? 0.18 : 0.12)
-    }
+    // MARK: - Helpers
 
-    var controlFillStrong: Color {
-        mix(base: accentPrimary, overlay: .white, amount: theme.id == NumiTheme.brandWarm.id ? 0.04 : 0.08)
-    }
-
-    var separator: Color {
-        textPrimary.opacity(0.08)
-    }
-
-    private func color(_ hex: String) -> Color {
+    private static func hexColor(_ hex: String) -> Color {
         let cleaned = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         guard cleaned.count == 6, let value = Int(cleaned, radix: 16) else {
             return .clear
         }
-
         let red = Double((value >> 16) & 0xFF) / 255.0
         let green = Double((value >> 8) & 0xFF) / 255.0
         let blue = Double(value & 0xFF) / 255.0
         return Color(red: red, green: green, blue: blue)
     }
 
-    private func mix(base: Color, overlay: Color, amount: Double) -> Color {
-        base.mix(with: overlay, amount: amount)
-    }
-}
-
-private extension Color {
-    func mix(with other: Color, amount: Double) -> Color {
+    private static func mix(base: Color, overlay: Color, amount: Double) -> Color {
         #if canImport(UIKit)
-        let lhs = UIColor(self)
-        let rhs = UIColor(other)
-        var lhsRed: CGFloat = 0
-        var lhsGreen: CGFloat = 0
-        var lhsBlue: CGFloat = 0
-        var lhsAlpha: CGFloat = 0
-        var rhsRed: CGFloat = 0
-        var rhsGreen: CGFloat = 0
-        var rhsBlue: CGFloat = 0
-        var rhsAlpha: CGFloat = 0
-        lhs.getRed(&lhsRed, green: &lhsGreen, blue: &lhsBlue, alpha: &lhsAlpha)
-        rhs.getRed(&rhsRed, green: &rhsGreen, blue: &rhsBlue, alpha: &rhsAlpha)
-        let weight = max(0, min(1, amount))
+        let lhs = UIColor(base)
+        let rhs = UIColor(overlay)
+        var lr: CGFloat = 0, lg: CGFloat = 0, lb: CGFloat = 0, la: CGFloat = 0
+        var rr: CGFloat = 0, rg: CGFloat = 0, rb: CGFloat = 0, ra: CGFloat = 0
+        lhs.getRed(&lr, green: &lg, blue: &lb, alpha: &la)
+        rhs.getRed(&rr, green: &rg, blue: &rb, alpha: &ra)
+        let w = max(0, min(1, amount))
         return Color(
-            red: lhsRed + (rhsRed - lhsRed) * weight,
-            green: lhsGreen + (rhsGreen - lhsGreen) * weight,
-            blue: lhsBlue + (rhsBlue - lhsBlue) * weight,
-            opacity: lhsAlpha + (rhsAlpha - lhsAlpha) * weight
-        )
-        #elseif canImport(AppKit)
-        let lhs = NSColor(self)
-        let rhs = NSColor(other)
-        let lhsRGB = lhs.usingColorSpace(.deviceRGB) ?? .clear
-        let rhsRGB = rhs.usingColorSpace(.deviceRGB) ?? .clear
-        let weight = max(0, min(1, amount))
-        return Color(
-            red: lhsRGB.redComponent + (rhsRGB.redComponent - lhsRGB.redComponent) * weight,
-            green: lhsRGB.greenComponent + (rhsRGB.greenComponent - lhsRGB.greenComponent) * weight,
-            blue: lhsRGB.blueComponent + (rhsRGB.blueComponent - lhsRGB.blueComponent) * weight,
-            opacity: lhsRGB.alphaComponent + (rhsRGB.alphaComponent - lhsRGB.alphaComponent) * weight
+            red: lr + (rr - lr) * w,
+            green: lg + (rg - lg) * w,
+            blue: lb + (rb - lb) * w,
+            opacity: la + (ra - la) * w
         )
         #else
-        return self
+        return base
         #endif
     }
 }

@@ -195,7 +195,7 @@ public struct SettingsView: View {
                             Image(systemName: "brain")
                                 .font(.system(size: 17, weight: .semibold))
                                 .frame(width: 36, height: 36)
-                                .background(NumiColor.accentPrimary.opacity(0.15))
+                                .background(NumiColor.iconBackground)
                                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                                 .foregroundStyle(NumiColor.accentPrimary)
 
@@ -264,22 +264,22 @@ public struct SettingsView: View {
     }
 
     private func statCard(title: String, value: String) -> some View {
-        VStack(spacing: NumiSpacing.s1) {
+        VStack(spacing: NumiSpacing.s2) {
             Text(value)
-                .font(NumiFont.bodyStrong)
+                .font(NumiFont.title)
                 .foregroundStyle(NumiColor.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
             Text(title)
-                .font(NumiFont.caption)
+                .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, NumiSpacing.s3)
+        .padding(.vertical, NumiSpacing.s4)
         .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 
     private var recordDays: Int {
@@ -337,7 +337,7 @@ public struct SettingsView: View {
             Image(systemName: "faceid")
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 36, height: 36)
-                .background(NumiColor.accentPrimary.opacity(0.15))
+                .background(NumiColor.iconBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
@@ -375,7 +375,7 @@ public struct SettingsView: View {
                 Image(systemName: "lock.shield")
                     .font(.system(size: 17, weight: .semibold))
                     .frame(width: 36, height: 36)
-                    .background(NumiColor.accentPrimary.opacity(0.15))
+                    .background(NumiColor.iconBackground)
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     .foregroundStyle(NumiColor.accentPrimary)
 
@@ -423,7 +423,7 @@ public struct SettingsView: View {
                 Image(systemName: "key")
                     .font(.system(size: 17, weight: .semibold))
                     .frame(width: 36, height: 36)
-                    .background(NumiColor.accentPrimary.opacity(0.15))
+                    .background(NumiColor.iconBackground)
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     .foregroundStyle(NumiColor.accentPrimary)
 
@@ -458,7 +458,7 @@ public struct SettingsView: View {
             Image(systemName: "eye.slash")
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 36, height: 36)
-                .background(NumiColor.accentPrimary.opacity(0.15))
+                .background(NumiColor.iconBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
@@ -556,7 +556,7 @@ public struct SettingsView: View {
             Image(systemName: icon)
                 .font(.system(size: 17, weight: .semibold))
                 .frame(width: 36, height: 36)
-                .background(NumiColor.accentPrimary.opacity(0.15))
+                .background(NumiColor.iconBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 

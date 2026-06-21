@@ -45,10 +45,7 @@ public struct NumiSummaryTile: View {
         .padding(.vertical, 12)
         .background(backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous)
-                .strokeBorder(.white.opacity(0.35), lineWidth: 0.8)
-        }
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 
     private var backgroundColor: Color {

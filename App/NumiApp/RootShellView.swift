@@ -7,7 +7,7 @@ import NumiAppUI
 import NumiAppUI
 
 struct RootShellView: View {
-    @AppStorage("app.theme.id") private var themeID = NumiTheme.defaultTheme.id
+    @AppStorage("app.theme.id") private var themeID = NumiTheme.default.id
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"

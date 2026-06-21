@@ -253,16 +253,6 @@ public struct TransactionsHomeView: View {
                             topTrailingRadius: isFirst ? NumiRadius.xl : 0,
                             style: .continuous
                         ))
-                        .overlay {
-                            UnevenRoundedRectangle(
-                                topLeadingRadius: isFirst ? NumiRadius.xl : 0,
-                                bottomLeadingRadius: isLast ? NumiRadius.xl : 0,
-                                bottomTrailingRadius: isLast ? NumiRadius.xl : 0,
-                                topTrailingRadius: isFirst ? NumiRadius.xl : 0,
-                                style: .continuous
-                            )
-                            .strokeBorder(.white.opacity(0.44), lineWidth: 0.9)
-                        }
                         .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
                         .contextMenu {
                             Button {
@@ -288,8 +278,19 @@ public struct TransactionsHomeView: View {
                         }
 
                         if !isLast {
-                            Divider()
-                                .padding(.leading, 62)
+                            ZStack(alignment: .bottomTrailing) {
+                                // 底层：卡片背景色铺满整行
+                                NumiColor.surfaceCard
+                                    .frame(height: 1)
+
+                                // 上层：分割线，从左侧60pt开始
+                                NumiColor.separator
+                                    .frame(height: 0.5)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.leading, 60)
+                                    .padding(.trailing, NumiSpacing.s4)
+                            }
+                            .frame(height: 1)
                         }
                     }
                 }
