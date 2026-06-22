@@ -350,6 +350,7 @@ public struct SettingsView: View {
             Toggle("", isOn: $isLockEnabled)
                 .labelsHidden()
                 .tint(NumiColor.accentDeep)
+                .accessibilityIdentifier("toggle.privacyLock")
                 .onChange(of: isLockEnabled) { _, newValue in
                     if newValue {
                         showLockMethodSheet = true
@@ -399,6 +400,7 @@ public struct SettingsView: View {
             .background(NumiColor.surfaceCard)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("settings.lockMethod")
     }
 
     private var lockMethodDisplayName: String {
@@ -471,6 +473,7 @@ public struct SettingsView: View {
             Toggle("", isOn: $isAutoBlurEnabled)
                 .labelsHidden()
                 .tint(NumiColor.accentDeep)
+                .accessibilityIdentifier("toggle.autoBlur")
         }
         .padding(.horizontal, NumiSpacing.s4)
         .padding(.vertical, 12)

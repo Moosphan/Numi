@@ -198,8 +198,18 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
     private let container: ModelContainer
     private let context: ModelContext
 
-    public init(inMemory: Bool = false) throws {
-        let configuration = ModelConfiguration(isStoredInMemoryOnly: inMemory)
+    public init(inMemory: Bool = false, enableCloudSync: Bool = false) throws {
+        let configuration: ModelConfiguration
+        if inMemory {
+            configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+        } else if enableCloudSync {
+            configuration = ModelConfiguration(
+                "NumiCloud",
+                cloudKitDatabase: .private("iCloud.com.local.Numi")
+            )
+        } else {
+            configuration = ModelConfiguration(isStoredInMemoryOnly: false)
+        }
         self.container = try ModelContainer(
             for: LedgerEntity.self,
             CategoryEntity.self,

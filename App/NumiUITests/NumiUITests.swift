@@ -409,6 +409,35 @@ final class NumiUITests: XCTestCase {
         XCTAssertFalse(app.navigationBars["时间范围"].exists)
     }
 
+    func testPasscodeSheetUsesCustomBottomSheetChromeAndShowsFullKeypad() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        app.buttons["tab.我的"].tap()
+        XCTAssertTrue(app.staticTexts["settings.section.security"].waitForExistence(timeout: 5))
+
+        let privacyLockSwitch = app.switches["toggle.privacyLock"]
+        XCTAssertTrue(privacyLockSwitch.waitForExistence(timeout: 5))
+        if (privacyLockSwitch.value as? String) == "0" {
+            privacyLockSwitch.tap()
+        } else {
+            let lockMethodRow = app.buttons["settings.lockMethod"]
+            XCTAssertTrue(lockMethodRow.waitForExistence(timeout: 5))
+            lockMethodRow.tap()
+        }
+
+        let passcodeOption = app.buttons["sheet.optionSheet.option.passcode"]
+        XCTAssertTrue(passcodeOption.waitForExistence(timeout: 5))
+        passcodeOption.tap()
+
+        XCTAssertTrue(app.descendants(matching: .any)["sheet.passcode"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["sheet.passcode.close"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["sheet.passcode.title"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.navigationBars["设置密码"].exists)
+        XCTAssertTrue(app.buttons["sheet.passcode.key.0"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["sheet.passcode.key.9"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["sheet.passcode.delete"].waitForExistence(timeout: 5))
+    }
+
     func testSettingsUsesCardSectionsWithReadableHeaders() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 

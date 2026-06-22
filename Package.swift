@@ -43,6 +43,11 @@ let package = Package(
             name: "NumiPersistenceTests",
             dependencies: ["NumiCore", "NumiPersistence"],
             path: "Tests/NumiPersistenceTests"
+        ),
+        .testTarget(
+            name: "NumiAppUITests",
+            dependencies: ["NumiAppUI"],
+            path: "Tests/NumiAppUITests"
         )
     ]
 )

@@ -1,5 +1,6 @@
 import SwiftUI
 import Network
+import Combine
 import NumiCore
 
 // MARK: - Sync Status
@@ -40,10 +41,12 @@ public class iCloudSyncService: ObservableObject {
     @Published public private(set) var isiCloudAvailable = false
     @Published public private(set) var syncStatus: SyncStatus = .idle
     @Published public private(set) var lastSyncDate: Date?
+    @Published public private(set) var syncProgress: Double = 0
 
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "com.numi.network-monitor")
     private let defaults = UserDefaults.standard
+    private var eventObservation: AnyCancellable?
 
     private init() {
         isSyncEnabled = defaults.bool(forKey: "app.sync.icloudEnabled")
@@ -51,6 +54,7 @@ public class iCloudSyncService: ObservableObject {
         lastSyncDate = defaults.object(forKey: "app.sync.lastSyncDate") as? Date
         startNetworkMonitor()
         checkiCloudAvailability()
+        observeSyncEvents()
     }
 
     // MARK: - Public API
@@ -68,6 +72,9 @@ public class iCloudSyncService: ObservableObject {
         defaults.set(isCellularSyncEnabled, forKey: "app.sync.cellularEnabled")
     }
 
+    /// 外部注入的同步闭包，由 RootShellView 提供
+    public var onPerformSync: (() async -> Bool)?
+
     public func performSync() async {
         guard isSyncEnabled else { return }
         guard isNetworkAvailable else {
@@ -79,15 +86,34 @@ public class iCloudSyncService: ObservableObject {
             return
         }
 
+        if networkType == .cellular && !isCellularSyncEnabled {
+            syncStatus = .failure("蜂窝网络同步已关闭")
+            return
+        }
+
         syncStatus = .syncing
+        syncProgress = 0
 
-        // 模拟同步过程（实际需接入 CloudKit）
-        try? await Task.sleep(nanoseconds: 1_500_000_000)
-
-        let now = Date()
-        lastSyncDate = now
-        defaults.set(now, forKey: "app.sync.lastSyncDate")
-        syncStatus = .success(now)
+        if let onPerformSync {
+            let success = await onPerformSync()
+            if success {
+                let now = Date()
+                lastSyncDate = now
+                defaults.set(now, forKey: "app.sync.lastSyncDate")
+                syncStatus = .success(now)
+                syncProgress = 1.0
+            } else {
+                syncStatus = .failure("同步失败")
+            }
+        } else {
+            // 模拟同步
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            let now = Date()
+            lastSyncDate = now
+            defaults.set(now, forKey: "app.sync.lastSyncDate")
+            syncStatus = .success(now)
+            syncProgress = 1.0
+        }
     }
 
     // MARK: - Private
@@ -119,8 +145,31 @@ public class iCloudSyncService: ObservableObject {
         }
     }
 
+    /// 监听 CloudKit 同步事件
+    private func observeSyncEvents() {
+        // NSPersistentCloudKitContainer 发送同步事件通知
+        eventObservation = NotificationCenter.default
+            .publisher(for: NSNotification.Name("NSPersistentCloudKitContainer.eventChangedNotification"))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notification in
+                guard let self else { return }
+                // 从通知中提取同步进度
+                if let event = notification.userInfo?["event"] as? NSObject {
+                    let typeName = String(describing: type(of: event))
+                    if typeName.contains("Setup") {
+                        self.syncProgress = 0.1
+                    } else if typeName.contains("Import") {
+                        self.syncProgress = 0.5
+                    } else if typeName.contains("Export") {
+                        self.syncProgress = 0.8
+                    }
+                }
+            }
+    }
+
     deinit {
         monitor.cancel()
+        eventObservation?.cancel()
     }
 }
 
@@ -232,7 +281,7 @@ public struct SyncSettingsView: View {
         }
         .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 
     // MARK: - Network Status Card
@@ -265,7 +314,7 @@ public struct SyncSettingsView: View {
         .padding(.vertical, 14)
         .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 
     // MARK: - iCloud Status Card
@@ -298,7 +347,7 @@ public struct SyncSettingsView: View {
         .padding(.vertical, 14)
         .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 
     // MARK: - Sync Status Card
@@ -333,7 +382,7 @@ public struct SyncSettingsView: View {
         .padding(.vertical, 14)
         .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
     }
 
     // MARK: - Manual Sync Button
@@ -401,7 +450,7 @@ public struct SyncSettingsView: View {
             Text("同步说明")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
-            Text("• 启用后数据自动同步到 iCloud\n• 所有数据通过 CloudKit 端到端加密\n• 需要登录同一 Apple ID 的设备才能同步\n• 默认仅在 Wi-Fi 下同步，可开启蜂窝同步")
+            Text("• 启用后数据通过 CloudKit 自动同步到 iCloud\n• 同一 Apple ID 的设备间自动同步\n• 默认仅在 Wi-Fi 下同步，可开启蜂窝同步\n• 同步过程不影响正常使用")
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
         }
@@ -420,24 +469,6 @@ public struct SyncSettingsView: View {
         case .syncing: return "arrow.triangle.2.circlepath"
         case .success: return "checkmark.circle"
         case .failure: return "exclamationmark.circle"
-        }
-    }
-
-    private var statusIconColor: Color {
-        switch syncService.syncStatus {
-        case .idle: return NumiColor.toolbarIcon
-        case .syncing: return NumiColor.accentDeep
-        case .success: return NumiColor.positiveText
-        case .failure: return NumiColor.negativeText
-        }
-    }
-
-    private var statusIconBackground: Color {
-        switch syncService.syncStatus {
-        case .idle: return NumiColor.surfaceCardSubtle
-        case .syncing: return NumiColor.iconBackground
-        case .success: return NumiColor.positiveBackground
-        case .failure: return NumiColor.negativeBackground
         }
     }
 

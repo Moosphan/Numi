@@ -670,6 +670,7 @@ private struct AddRecordEntryContent: View {
     private var datePickerSheet: some View {
         NumiBottomSheet(
             title: "选择日期",
+            contentMode: .fit,
             accessibilityPrefix: "sheet.datePicker",
             dismissAccessibilitySuffix: "cancel",
             confirmAccessibilitySuffix: "confirm",

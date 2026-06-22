@@ -41,13 +41,17 @@ public struct NumiPasscodeSheet: View {
     public var body: some View {
         NumiBottomSheet(
             title: stepTitle,
+            contentMode: .fit,
+            grabberTopPadding: 5,
+            grabberBottomPadding: 0,
+            headerBottomPadding: 4,
             accessibilityPrefix: "sheet.passcode",
             dismissTitle: "取消",
             onDismiss: {
                 isPresented = false
             }
         ) {
-            VStack(spacing: NumiSpacing.s4) {
+            VStack(spacing: NumiSpacing.s2) {
                 // Header
                 VStack(spacing: NumiSpacing.s2) {
                     Image(systemName: "lock.fill")
@@ -59,7 +63,7 @@ public struct NumiPasscodeSheet: View {
                         .foregroundStyle(NumiColor.textTertiary)
                         .multilineTextAlignment(.center)
                 }
-                .padding(.top, NumiSpacing.s2)
+                .padding(.top, 0)
 
                 // Passcode dots
                 HStack(spacing: 16) {
@@ -111,11 +115,13 @@ public struct NumiPasscodeSheet: View {
                         }
                         .buttonStyle(.plain)
                         .disabled(currentInput.isEmpty)
+                        .accessibilityIdentifier("sheet.passcode.delete")
                     }
                 }
                 .padding(.bottom, NumiSpacing.s4)
             }
             .padding(.horizontal, NumiSpacing.s4)
+            .padding(.top, 0)
         }
         .onAppear {
             if mode == .verify {
@@ -178,6 +184,7 @@ public struct NumiPasscodeSheet: View {
         }
         .buttonStyle(.plain)
         .disabled(isInputFull)
+        .accessibilityIdentifier("sheet.passcode.key.\(number)")
     }
 
     private var isInputFull: Bool {

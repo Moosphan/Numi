@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "5CBC1D410E627554DAF40F65"
+               BlueprintIdentifier = "F2228D3B18BDB2D523E947FC"
                BuildableName = "Numi.app"
                BlueprintName = "Numi"
                ReferencedContainer = "container:Numi.xcodeproj">
@@ -30,7 +30,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "5CBC1D410E627554DAF40F65"
+            BlueprintIdentifier = "F2228D3B18BDB2D523E947FC"
             BuildableName = "Numi.app"
             BlueprintName = "Numi"
             ReferencedContainer = "container:Numi.xcodeproj">
@@ -41,7 +41,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0EA90FB8C4F88B677E4FC92D"
+               BlueprintIdentifier = "8B72581F2D652F2664B5D5B8"
                BuildableName = "NumiUITests.xctest"
                BlueprintName = "NumiUITests"
                ReferencedContainer = "container:Numi.xcodeproj">
@@ -63,7 +63,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "5CBC1D410E627554DAF40F65"
+            BlueprintIdentifier = "F2228D3B18BDB2D523E947FC"
             BuildableName = "Numi.app"
             BlueprintName = "Numi"
             ReferencedContainer = "container:Numi.xcodeproj">
@@ -80,7 +80,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "5CBC1D410E627554DAF40F65"
+            BlueprintIdentifier = "F2228D3B18BDB2D523E947FC"
             BuildableName = "Numi.app"
             BlueprintName = "Numi"
             ReferencedContainer = "container:Numi.xcodeproj">

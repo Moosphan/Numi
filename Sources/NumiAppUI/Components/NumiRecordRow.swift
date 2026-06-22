@@ -29,7 +29,7 @@ public struct NumiRecordRow: View {
 
     public var body: some View {
         HStack(spacing: NumiSpacing.s3) {
-            CategoryIconView(iconName: iconName, size: style == .grouped ? 48 : 36)
+            CategoryIconView(iconName: iconName, size: style == .grouped ? NumiGroupedListMetrics.groupedIconFrame : 36)
                 .background(NumiColor.surfaceCardSubtle)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
 
@@ -54,7 +54,7 @@ public struct NumiRecordRow: View {
                 .minimumScaleFactor(0.78)
                 .accessibilityIdentifier("record.amount.\(categoryName)")
         }
-        .padding(.horizontal, style == .grouped ? 16 : 14)
+        .padding(.horizontal, style == .grouped ? NumiGroupedListMetrics.rowHorizontalPadding : 14)
         .padding(.vertical, style == .grouped ? 12 : 14)
         .frame(minHeight: style == .grouped ? 80 : nil)
         .background(rowBackground)
@@ -65,9 +65,13 @@ public struct NumiRecordRow: View {
 
     @ViewBuilder
     private var rowBackground: some View {
-        if style == .card {
-            NumiColor.surfaceCard
-                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+        if style.usesOwnBackground {
+            if style == .card {
+                NumiColor.surfaceCard
+                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+            } else {
+                NumiColor.surfaceCard
+            }
         } else {
             Color.clear
         }
@@ -118,5 +122,14 @@ public struct NumiRecordRow: View {
         formatter.locale = Locale(identifier: "zh_CN")
         formatter.dateFormat = "HH:mm"
         return formatter
+    }
+}
+
+extension NumiRecordRow.Style {
+    var usesOwnBackground: Bool {
+        switch self {
+        case .card, .grouped:
+            return true
+        }
     }
 }

@@ -218,7 +218,7 @@ public struct TransactionsHomeView: View {
                     summaryGrid
                         .padding(.horizontal, NumiSpacing.s5)
                         .padding(.top, NumiSpacing.s3)
-                        .padding(.bottom, NumiSpacing.s2)
+                        .padding(.bottom, NumiSpacing.s4)
 
                     recordsList
                 }
@@ -231,9 +231,8 @@ public struct TransactionsHomeView: View {
     private var recordsList: some View {
         ForEach(sections) { section in
             Section {
-                VStack(spacing: 0) {
+                NumiGroupedCard {
                     ForEach(Array(section.rows.enumerated()), id: \.element.id) { index, row in
-                        let isFirst = index == 0
                         let isLast = index == section.rows.count - 1
 
                         PressableRow(onSelect: { onSelect(row.transaction) }) {
@@ -245,15 +244,6 @@ public struct TransactionsHomeView: View {
                                 style: .grouped
                             )
                         }
-                        .background(NumiColor.surfaceCard)
-                        .clipShape(UnevenRoundedRectangle(
-                            topLeadingRadius: isFirst ? NumiRadius.xl : 0,
-                            bottomLeadingRadius: isLast ? NumiRadius.xl : 0,
-                            bottomTrailingRadius: isLast ? NumiRadius.xl : 0,
-                            topTrailingRadius: isFirst ? NumiRadius.xl : 0,
-                            style: .continuous
-                        ))
-                        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
                         .contextMenu {
                             Button {
                                 onEdit(row.transaction)
@@ -278,19 +268,7 @@ public struct TransactionsHomeView: View {
                         }
 
                         if !isLast {
-                            ZStack(alignment: .bottomTrailing) {
-                                // 底层：卡片背景色铺满整行
-                                NumiColor.surfaceCard
-                                    .frame(height: 1)
-
-                                // 上层：分割线，从左侧60pt开始
-                                NumiColor.separator
-                                    .frame(height: 0.5)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.leading, 60)
-                                    .padding(.trailing, NumiSpacing.s4)
-                            }
-                            .frame(height: 1)
+                            NumiInsetDivider()
                         }
                     }
                 }
@@ -430,6 +408,7 @@ public struct TransactionsHomeView: View {
     private var homePeriodPickerSheet: some View {
         NumiBottomSheet(
             title: "时间范围",
+            contentMode: .scroll,
             accessibilityPrefix: "sheet.homePeriodPicker",
             dismissTitle: "关闭",
             onDismiss: {
@@ -475,7 +454,6 @@ public struct TransactionsHomeView: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("sheet.homePeriodPicker")
-        .accessibilityIdentifier("sheet.homePeriodPicker.content")
     }
 
     private func periodTitle(for period: HomePeriod) -> String {

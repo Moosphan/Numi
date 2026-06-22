@@ -57,6 +57,19 @@ struct RootShellView: View {
             try store.seedDefaultsIfNeeded()
             try Self.seedDemoDataIfNeeded(store: store)
             _store = StateObject(wrappedValue: store)
+
+            // 注入 CloudKit 同步闭包
+            iCloudSyncService.shared.onPerformSync = {
+                do {
+                    let cloudStore = try SwiftDataBookkeepingStore(enableCloudSync: true)
+                    _ = cloudStore.categories
+                    _ = cloudStore.accounts
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                    return true
+                } catch {
+                    return false
+                }
+            }
         } catch {
             initializationError = error.localizedDescription
             _store = StateObject(wrappedValue: Self.makeFallbackStore())
@@ -1104,7 +1117,8 @@ struct RootShellView: View {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             return try SwiftDataBookkeepingStore(storeURL: directory.appendingPathComponent("Numi.store"))
         }
-        return try SwiftDataBookkeepingStore()
+        let cloudSync = UserDefaults.standard.bool(forKey: "app.sync.icloudEnabled")
+        return try SwiftDataBookkeepingStore(enableCloudSync: cloudSync)
     }
 
     private static func makeFallbackStore() -> SwiftDataBookkeepingStore {

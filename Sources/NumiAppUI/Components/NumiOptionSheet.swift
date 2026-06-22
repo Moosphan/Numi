@@ -51,6 +51,7 @@ public struct NumiOptionSheet: View {
     public var body: some View {
         NumiBottomSheet(
             title: title,
+            contentMode: .scroll,
             accessibilityPrefix: "sheet.optionSheet",
             dismissTitle: "取消",
             onDismiss: onDismiss
@@ -96,6 +97,10 @@ public struct NumiOptionSheet: View {
                         )
                         .contentShape(Rectangle())
                     }
+                    .accessibilityIdentifier("sheet.optionSheet.option.\(option.id)")
+                    .accessibilityLabel(option.title)
+                    .accessibilityHint(option.subtitle ?? "")
+                    .accessibilityValue(option.id == selectedID ? "selected" : "")
                     .buttonStyle(.plain)
                     .disabled(option.isDisabled)
                 }
