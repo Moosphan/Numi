@@ -1,5 +1,8 @@
 import SwiftUI
 import NumiCore
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct NumiAmountKeypad: View {
     enum KeyStyle: String {
@@ -85,7 +88,7 @@ public struct NumiAmountKeypad: View {
     private func keyBackground(_ key: String) -> Color {
         switch keyStyle(for: key) {
         case .neutral:
-            return NumiColor.surfaceCard
+            return neutralKeyBackground
         case .accent:
             return NumiColor.controlFillStrong.opacity(0.72)
         case .dateAccent:
@@ -118,6 +121,14 @@ public struct NumiAmountKeypad: View {
             return .neutral
         }
         return .neutral
+    }
+
+    private var neutralKeyBackground: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: .systemGray6)
+        #else
+        return Color.gray.opacity(0.12)
+        #endif
     }
 
     private func handle(_ key: String) {

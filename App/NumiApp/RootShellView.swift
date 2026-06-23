@@ -341,6 +341,7 @@ struct RootShellView: View {
                     }
                 }
             )
+            .numiBottomAccessoryNavigationDepth()
             .accessibilityHidden(isTransactionSearchPresented)
         }
     }
@@ -368,6 +369,7 @@ struct RootShellView: View {
                     selectedCategoryType = type
                 }
             )
+            .numiBottomAccessoryNavigationDepth()
             .navigationDestination(isPresented: Binding(
                 get: { selectedCategoryRow != nil },
                 set: { if !$0 { selectedCategoryRow = nil } }
@@ -447,6 +449,7 @@ struct RootShellView: View {
                     }
                 }
             )
+            .numiBottomAccessoryNavigationDepth()
         }
     }
 
@@ -523,6 +526,7 @@ struct RootShellView: View {
                     }
                 }
             )
+            .numiBottomAccessoryNavigationDepth()
         }
     }
 

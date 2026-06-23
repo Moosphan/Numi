@@ -385,7 +385,6 @@ public struct CategoryTransactionsDetailView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.insightsCategoryDetail")
         .background(NumiColor.surfacePage)
-        .numiBottomAccessoryVisibility(true)
         .navigationTitle(categoryName)
         .modifier(LargeTitleNavigationChrome())
     }

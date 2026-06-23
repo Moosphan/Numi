@@ -134,6 +134,28 @@ final class NumiUITests: XCTestCase {
         assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
     }
 
+    func testThirdLevelPageAlsoKeepsBottomBarHidden() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        assertBottomBarVisible(in: app)
+        let baselineAddButtonFrame = app.buttons["button.addRecord"].frame
+
+        tabButton("我的", in: app).tap()
+        let accountsEntry = app.buttons["账户管理"]
+        XCTAssertTrue(accountsEntry.waitForExistence(timeout: 5))
+        accountsEntry.tap()
+
+        XCTAssertTrue(app.navigationBars["账户管理"].waitForExistence(timeout: 5))
+        assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+
+        let accountDetailEntry = app.buttons["account.银行卡"]
+        XCTAssertTrue(accountDetailEntry.waitForExistence(timeout: 5))
+        accountDetailEntry.tap()
+
+        XCTAssertTrue(app.navigationBars["账户详情"].waitForExistence(timeout: 5))
+        assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+    }
+
     func testSettingsSecuritySectionKeepsComfortableGapAboveBottomBar() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 

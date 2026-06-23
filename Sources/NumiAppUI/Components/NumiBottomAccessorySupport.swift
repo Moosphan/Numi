@@ -56,6 +56,103 @@ public extension View {
     }
 }
 
+private struct NumiBottomAccessoryNavigationDepthModifier: ViewModifier {
+    @EnvironmentObject private var controller: NumiBottomAccessoryController
+    @State private var depth = 0
+
+    init() {}
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                NumiNavigationDepthObserver { newDepth in
+                    depth = newDepth
+                }
+            )
+            .onAppear {
+                controller.setHidden(depth > 0, source: .navigation)
+            }
+            .onChange(of: depth) { _, newValue in
+                controller.setHidden(newValue > 0, source: .navigation)
+            }
+    }
+}
+
+public extension View {
+    func numiBottomAccessoryNavigationDepth() -> some View {
+        modifier(NumiBottomAccessoryNavigationDepthModifier())
+    }
+}
+
+private struct NumiNavigationDepthObserver: UIViewControllerRepresentable {
+    let onDepthChange: (Int) -> Void
+
+    func makeUIViewController(context: Context) -> ObserverViewController {
+        let controller = ObserverViewController()
+        controller.onDepthChange = onDepthChange
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: ObserverViewController, context: Context) {
+        uiViewController.onDepthChange = onDepthChange
+        uiViewController.attachIfNeeded()
+    }
+
+    final class ObserverViewController: UIViewController {
+        var onDepthChange: ((Int) -> Void)?
+        private weak var observedNavigationController: UINavigationController?
+        private weak var previousDelegate: UINavigationControllerDelegate?
+
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            attachIfNeeded()
+            reportDepth()
+        }
+
+        func attachIfNeeded() {
+            guard let navigationController else { return }
+            guard observedNavigationController !== navigationController else { return }
+
+            if let observedNavigationController,
+               observedNavigationController.delegate === self {
+                observedNavigationController.delegate = previousDelegate
+            }
+
+            observedNavigationController = navigationController
+            previousDelegate = navigationController.delegate
+            navigationController.delegate = self
+            reportDepth()
+        }
+
+        private func reportDepth() {
+            let depth = max((navigationController?.viewControllers.count ?? 1) - 1, 0)
+            onDepthChange?(depth)
+        }
+
+        deinit {
+            if let observedNavigationController,
+               observedNavigationController.delegate === self {
+                observedNavigationController.delegate = previousDelegate
+            }
+        }
+    }
+}
+
+extension NumiNavigationDepthObserver.ObserverViewController: UINavigationControllerDelegate {
+    func navigationController(
+        _ navigationController: UINavigationController,
+        didShow viewController: UIViewController,
+        animated: Bool
+    ) {
+        reportDepth()
+        previousDelegate?.navigationController?(
+            navigationController,
+            didShow: viewController,
+            animated: animated
+        )
+    }
+}
+
 public struct NumiBottomAccessoryTrackingScrollView<Content: View>: View {
     @EnvironmentObject private var controller: NumiBottomAccessoryController
 

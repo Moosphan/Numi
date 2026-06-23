@@ -40,7 +40,6 @@ public struct DataManagementView: View {
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("scroll.dataManagement")
             .background(NumiColor.surfacePage)
-            .numiBottomAccessoryVisibility(true)
             .navigationTitle("导入与导出")
             .modifier(LargeTitleNavigationChrome())
 
@@ -254,7 +253,6 @@ public struct BackupView: View {
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("scroll.backupManagement")
             .background(NumiColor.surfacePage)
-            .numiBottomAccessoryVisibility(true)
             .navigationTitle("本地备份")
             .modifier(LargeTitleNavigationChrome())
 

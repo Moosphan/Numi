@@ -24,7 +24,6 @@ public struct ThemeSelectionView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.themeSelection")
         .background(NumiColor.surfacePage)
-        .numiBottomAccessoryVisibility(true)
         .navigationTitle("主题")
         .modifier(LargeTitleNavigationChrome())
     }

@@ -209,7 +209,6 @@ public struct SyncSettingsView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.syncSettings")
         .background(NumiColor.surfacePage)
-        .numiBottomAccessoryVisibility(true)
         .navigationTitle("iCloud 云同步")
         .modifier(LargeTitleNavigationChrome())
     }

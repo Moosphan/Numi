@@ -38,7 +38,6 @@ public struct CurrencyManagementView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.currencyManagement")
         .background(NumiColor.surfacePage)
-        .numiBottomAccessoryVisibility(true)
         .onTapGesture {
             isSearchFocused = false
         }

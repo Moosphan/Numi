@@ -1221,7 +1221,6 @@ private struct SubscriptionDetailView: View {
         }
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.subscriptionDetail")
-        .numiBottomAccessoryVisibility(true)
         .background(NumiColor.surfacePage)
         .navigationTitle("订阅详情")
         .confirmationDialog("删除「\(subscription.name)」？", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
@@ -1417,7 +1416,6 @@ private struct InstallmentDetailView: View {
         }
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.installmentDetail")
-        .numiBottomAccessoryVisibility(true)
         .background(NumiColor.surfacePage)
         .navigationTitle("分期详情")
         .modifier(LargeTitleNavigationChrome())

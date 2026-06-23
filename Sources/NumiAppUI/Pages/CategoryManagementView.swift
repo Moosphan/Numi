@@ -64,7 +64,6 @@ public struct CategoryManagementView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.categoryManagement")
         .background(NumiColor.surfacePage)
-        .numiBottomAccessoryVisibility(true)
         .navigationTitle("分类管理")
         .modifier(LargeTitleNavigationChrome())
         .tint(NumiColor.accentDeep)

@@ -91,7 +91,6 @@ public struct AccountManagementView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.accountManagement")
         .background(NumiColor.surfacePage)
-        .numiBottomAccessoryVisibility(true)
         .navigationTitle("账户管理")
         .modifier(LargeTitleNavigationChrome())
         .tint(NumiColor.accentDeep)
@@ -709,7 +708,6 @@ struct AccountDetailView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.accountDetail")
         .background(NumiColor.surfacePage)
-        .numiBottomAccessoryVisibility(true)
         .navigationTitle("账户详情")
         .modifier(LargeTitleNavigationChrome())
     }
