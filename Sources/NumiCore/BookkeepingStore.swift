@@ -159,6 +159,7 @@ public final class InMemoryBookkeepingStore {
         categoryID: UUID?,
         accountID: UUID,
         targetAccountID: UUID? = nil,
+        ledgerID: UUID,
         note: String,
         occurredAt: Date = Date()
     ) throws -> Transaction {
@@ -169,11 +170,16 @@ public final class InMemoryBookkeepingStore {
             categoryID: categoryID,
             accountID: accountID,
             targetAccountID: targetAccountID,
+            ledgerID: ledgerID,
             note: note
         )
         transactions.append(transaction)
         try applyBalanceEffect(of: transaction)
         return transaction
+    }
+
+    public func transactions(for ledgerID: UUID) -> [Transaction] {
+        visibleTransactions.filter { $0.ledgerID == ledgerID }
     }
 
     public func softDeleteTransaction(id: UUID) throws {

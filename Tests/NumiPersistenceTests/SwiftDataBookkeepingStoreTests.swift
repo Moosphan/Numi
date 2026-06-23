@@ -51,6 +51,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
             amount: Money(decimalString: "88", currencyCode: "CNY"),
             categoryID: foodID,
             accountID: accountID,
+            ledgerID: store.ledgers.first!.id,
             note: "旧数据"
         )
 
@@ -117,6 +118,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
             amount: Money(decimalString: "32.50", currencyCode: "CNY"),
             categoryID: foodID,
             accountID: accountID,
+            ledgerID: store.ledgers.first!.id,
             note: "午餐"
         )
 
@@ -138,6 +140,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
                 amount: Money(decimalString: "12", currencyCode: "CNY"),
                 categoryID: foodID,
                 accountID: accountID,
+                ledgerID: store.ledgers.first!.id,
                 note: "早餐"
             )
         }
@@ -161,6 +164,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
             amount: Money(decimalString: "45", currencyCode: "CNY"),
             categoryID: foodID,
             accountID: accountID,
+            ledgerID: store.ledgers.first!.id,
             note: "晚餐"
         )
 
@@ -187,6 +191,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
             amount: Money(decimalString: "20", currencyCode: "CNY"),
             categoryID: foodID,
             accountID: accountID,
+            ledgerID: store.ledgers.first!.id,
             note: "午餐"
         )
 
@@ -224,6 +229,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
             amount: Money(decimalString: "20", currencyCode: "CNY"),
             categoryID: foodID,
             accountID: cashID,
+            ledgerID: store.ledgers.first!.id,
             note: "午餐"
         )
 
@@ -254,6 +260,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
             categoryID: nil,
             accountID: cash.id,
             targetAccountID: card.id,
+            ledgerID: store.ledgers.first!.id,
             note: "备用金"
         )
 
@@ -295,6 +302,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
             categoryID: nil,
             accountID: cash.id,
             targetAccountID: card.id,
+            ledgerID: store.ledgers.first!.id,
             note: "备用金"
         )
 
@@ -439,12 +447,14 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
             let weekly = try store.upsertBudgetSetting(
                 period: .week,
                 amount: Money(decimalString: "500", currencyCode: "CNY"),
-                isEnabled: true
+                isEnabled: true,
+                ledgerID: store.ledgers.first!.id
             )
             let monthly = try store.upsertBudgetSetting(
                 period: .month,
                 amount: Money(decimalString: "3000", currencyCode: "CNY"),
-                isEnabled: true
+                isEnabled: true,
+                ledgerID: store.ledgers.first!.id
             )
 
             XCTAssertEqual(weekly.amount.formatted(), "¥500.00")

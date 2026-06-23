@@ -529,6 +529,25 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["record.餐饮"].waitForExistence(timeout: 5))
     }
 
+    func testEditRecordUsesInlineKeyboardStyleControls() {
+        let app = launchApp()
+
+        addExpense(in: app, categoryName: "餐饮", amountDigits: ["8", "9"], note: "超市")
+        let savedRecord = app.descendants(matching: .any)["record.餐饮"]
+        XCTAssertTrue(savedRecord.waitForExistence(timeout: 5))
+
+        savedRecord.tap()
+        XCTAssertTrue(app.staticTexts["账单详情"].waitForExistence(timeout: 5))
+        app.buttons["action.editRecord"].tap()
+
+        XCTAssertTrue(app.navigationBars["编辑账单"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["picker.recordCurrency"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["picker.editRecordAccount"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["keypad.openDatePicker"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textFields["input.editRecordNote"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["picker.editRecordDate"].exists)
+    }
+
     func testHomePeriodPickerShowsWeekMonthQuarterYearOptions() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 

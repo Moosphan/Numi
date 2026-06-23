@@ -49,6 +49,7 @@ final class TransactionServiceTests: XCTestCase {
             amount: money,
             categoryID: category.id,
             accountID: account.id,
+            ledgerID: store.ledgers.first!.id,
             note: "午饭"
         )
 
@@ -75,6 +76,7 @@ final class TransactionServiceTests: XCTestCase {
             amount: money,
             categoryID: category.id,
             accountID: account.id,
+            ledgerID: store.ledgers.first!.id,
             note: "6月工资"
         )
 
@@ -99,6 +101,7 @@ final class TransactionServiceTests: XCTestCase {
             amount: money,
             categoryID: nil,
             accountID: account.id,
+            ledgerID: store.ledgers.first!.id,
             note: "test"
         )
 
@@ -124,6 +127,7 @@ final class TransactionServiceTests: XCTestCase {
             amount: money,
             categoryID: nil,
             accountID: account.id,
+            ledgerID: store.ledgers.first!.id,
             note: "test"
         )
 
@@ -148,6 +152,7 @@ final class TransactionServiceTests: XCTestCase {
             amount: money,
             categoryID: nil,
             accountID: account.id,
+            ledgerID: store.ledgers.first!.id,
             note: "test"
         )
 
@@ -172,6 +177,7 @@ final class TransactionServiceTests: XCTestCase {
             amount: money,
             categoryID: nil,
             accountID: account.id,
+            ledgerID: store.ledgers.first!.id,
             note: "test"
         )
 
@@ -198,6 +204,7 @@ final class TransactionServiceTests: XCTestCase {
             amount: money,
             categoryID: nil,
             accountID: account.id,
+            ledgerID: store.ledgers.first!.id,
             note: "test"
         )
 

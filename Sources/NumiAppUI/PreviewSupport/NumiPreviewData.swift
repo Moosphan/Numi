@@ -6,6 +6,7 @@ public enum NumiPreviewData {
         let store = InMemoryBookkeepingStore()
         try? store.seedDefaultsIfNeeded()
         let accountID = store.accounts.first?.id
+        let ledgerID = store.ledgers.first?.id ?? UUID()
         let foodID = store.categories.first { $0.name == "餐饮" }?.id
         let transportID = store.categories.first { $0.name == "交通" }?.id
         if let accountID {
@@ -14,6 +15,7 @@ public enum NumiPreviewData {
                 amount: Money(decimalString: "32.50", currencyCode: "CNY"),
                 categoryID: foodID,
                 accountID: accountID,
+                ledgerID: ledgerID,
                 note: "午餐 星巴克"
             )
             _ = try? store.createTransaction(
@@ -21,6 +23,7 @@ public enum NumiPreviewData {
                 amount: Money(decimalString: "16.80", currencyCode: "CNY"),
                 categoryID: transportID,
                 accountID: accountID,
+                ledgerID: ledgerID,
                 note: "地铁"
             )
             _ = try? store.createTransaction(
@@ -28,6 +31,7 @@ public enum NumiPreviewData {
                 amount: Money(decimalString: "5000", currencyCode: "CNY"),
                 categoryID: store.categories.first { $0.name == "工资" }?.id,
                 accountID: accountID,
+                ledgerID: ledgerID,
                 note: "工资"
             )
         }

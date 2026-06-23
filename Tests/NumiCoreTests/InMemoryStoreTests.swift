@@ -25,6 +25,7 @@ final class InMemoryStoreTests: XCTestCase {
             amount: Money(decimalString: "32.50", currencyCode: "CNY"),
             categoryID: foodID,
             accountID: accountID,
+            ledgerID: store.ledgers.first!.id,
             note: "午餐"
         )
 
@@ -42,6 +43,7 @@ final class InMemoryStoreTests: XCTestCase {
             amount: Money(decimalString: "100", currencyCode: "CNY"),
             categoryID: nil,
             accountID: accountID,
+            ledgerID: store.ledgers.first!.id,
             note: "红包"
         )
 

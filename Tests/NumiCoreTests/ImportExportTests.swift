@@ -11,6 +11,7 @@ final class ImportExportTests: XCTestCase {
             amount: Money(decimalString: "19.90", currencyCode: "CNY"),
             categoryID: nil,
             accountID: accountID,
+            ledgerID: store.ledgers.first!.id,
             note: "咖啡"
         )
 

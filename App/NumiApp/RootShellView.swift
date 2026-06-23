@@ -11,6 +11,7 @@ struct RootShellView: View {
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
+    @AppStorage("app.currentLedgerID") private var currentLedgerIDString: String = ""
     @StateObject private var rateService = ExchangeRateService.shared
 
     enum Tab: String, CaseIterable {
@@ -54,6 +55,7 @@ struct RootShellView: View {
     @State private var bottomAccessoryMeasuredHeight: CGFloat = 0
     @State private var bottomAccessoryHiddenProgress: CGFloat = 0
     @StateObject private var bottomAccessoryController = NumiBottomAccessoryController()
+    @State private var isManagingLedgers = false
 
     init() {
         do {
@@ -206,7 +208,8 @@ struct RootShellView: View {
                 accounts: store.accounts,
                 currencyOptions: currencyOptions
             ) { type, money, category, account, targetAccount, occurredAt, note in
-                guard let accountID = account?.id ?? store.accounts.first?.id else { return }
+                guard let accountID = account?.id ?? store.accounts.first?.id,
+                      let ledgerID = currentLedger?.id else { return }
                 let targetAccountID = type == .transfer ? targetAccount?.id : nil
                 _ = try? store.createTransaction(
                     type: type,
@@ -214,6 +217,7 @@ struct RootShellView: View {
                     categoryID: type == .transfer ? nil : category?.id,
                     accountID: accountID,
                     targetAccountID: targetAccountID,
+                    ledgerID: ledgerID,
                     note: note,
                     occurredAt: occurredAt
                 )
@@ -279,6 +283,45 @@ struct RootShellView: View {
                 }
             }
         }
+        .sheet(isPresented: $isManagingLedgers) {
+            NavigationStack {
+                LedgerManagementView(
+                    ledgers: store.ledgers,
+                    transactionCounts: ledgerTransactionCounts,
+                    currentLedgerID: currentLedger?.id ?? UUID(),
+                    onCreate: { draft in
+                        do {
+                            _ = try store.createLedger(name: draft.name, currencyCode: draft.currencyCode)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onUpdate: { ledger, draft in
+                        do {
+                            _ = try store.updateLedger(id: ledger.id, name: draft.name, currencyCode: draft.currencyCode)
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onDelete: { ledger in
+                        do {
+                            try store.deleteLedger(id: ledger.id)
+                            // 如果删除的是当前账本，切换到默认账本
+                            if ledger.id == currentLedger?.id {
+                                currentLedgerIDString = store.ledgers.first?.id.uuidString ?? ""
+                            }
+                        } catch {
+                            initializationError = error.localizedDescription
+                        }
+                    },
+                    onSelect: { ledger in
+                        currentLedgerIDString = ledger.id.uuidString
+                    }
+                )
+            }
+            .presentationDetents([.medium, .large])
+            .presentationCornerRadius(28)
+        }
     }
 
     @ViewBuilder
@@ -304,9 +347,16 @@ struct RootShellView: View {
                 selectedPeriod: selectedHomePeriod,
                 isNextPeriodEnabled: canMoveHomePeriodForward,
                 sections: data.sections,
+                currentLedger: currentLedger,
+                ledgers: store.ledgers,
                 onPreviousPeriod: moveHomePeriodBackward,
                 onNextPeriod: moveHomePeriodForward,
                 onSelectPeriod: { period in
+                    homeAnchorDate = HomePeriodSelectionBehavior.anchorDate(
+                        currentPeriod: selectedHomePeriod,
+                        selectedPeriod: period,
+                        currentAnchorDate: homeAnchorDate
+                    )
                     selectedHomePeriod = period
                 },
                 onSearch: {
@@ -340,6 +390,9 @@ struct RootShellView: View {
                     } catch {
                         initializationError = error.localizedDescription
                     }
+                },
+                onSelectLedger: { ledger in
+                    currentLedgerIDString = ledger.id.uuidString
                 }
             )
             .numiBottomAccessoryNavigationDepth()
@@ -401,7 +454,8 @@ struct RootShellView: View {
                 accounts: store.accounts,
                 onSaveBudget: { period, amount, isEnabled in
                     do {
-                        try store.upsertBudgetSetting(period: period, amount: amount, isEnabled: isEnabled)
+                        guard let ledgerID = currentLedger?.id else { return }
+                        try store.upsertBudgetSetting(period: period, amount: amount, isEnabled: isEnabled, ledgerID: ledgerID)
                     } catch {
                         initializationError = error.localizedDescription
                     }
@@ -460,8 +514,14 @@ struct RootShellView: View {
                 categories: store.categories,
                 accounts: store.accounts,
                 transactions: store.visibleTransactions,
+                ledgers: store.ledgers,
+                currentLedgerID: currentLedger?.id,
+                ledgerTransactionCounts: ledgerTransactionCounts,
                 exportSnapshot: { store.exportSnapshot() },
                 importSnapshot: { snapshot in try store.importSnapshot(snapshot) },
+                onManageLedgers: {
+                    isManagingLedgers = true
+                },
                 onCategoryVisibilityChange: { category, isHidden in
                     do {
                         try store.updateCategoryVisibility(id: category.id, isHidden: isHidden)
@@ -607,7 +667,11 @@ struct RootShellView: View {
 
     private var insightsFilteredTransactions: [NumiCore.Transaction] {
         let interval = insightsDateInterval
-        return store.visibleTransactions.filter { interval.contains($0.occurredAt) }
+        let ledgerID = currentLedger?.id
+        return store.visibleTransactions.filter { tx in
+            interval.contains(tx.occurredAt)
+                && (ledgerID == nil || tx.ledgerID == ledgerID)
+        }
     }
 
     private var insightsDateInterval: DateInterval {
@@ -775,7 +839,8 @@ struct RootShellView: View {
     }
 
     private func budgetCards(today: Date = Date(), calendar: Calendar = Calendar.current) -> [BudgetCardModel] {
-        let settings = store.budgetSettings
+        let ledgerID = currentLedger?.id
+        let settings = store.budgetSettings.filter { ledgerID == nil || $0.ledgerID == ledgerID }
         return [BudgetPeriod.week, .month].map { period in
             let setting = settings.first { $0.period == period }
             let amount = setting?.amount ?? defaultBudgetAmount(for: period)
@@ -818,11 +883,13 @@ struct RootShellView: View {
     }
 
     private func spentAmount(from start: Date, to end: Date) -> Money {
-        store.visibleTransactions
+        let ledgerID = currentLedger?.id
+        return store.visibleTransactions
             .filter { transaction in
                 transaction.type == .expense
                     && transaction.occurredAt >= start
                     && transaction.occurredAt <= end
+                    && (ledgerID == nil || transaction.ledgerID == ledgerID)
             }
             .reduce(Money.zero(currencyCode: "CNY")) { partial, transaction in
                 (try? partial.adding(transaction.amount)) ?? partial
@@ -831,8 +898,10 @@ struct RootShellView: View {
 
     private var filteredHomeTransactions: [NumiCore.Transaction] {
         let interval = homeDateInterval
+        let ledgerID = currentLedger?.id
         return store.visibleTransactions.filter { transaction in
             interval.contains(transaction.occurredAt)
+                && (ledgerID == nil || transaction.ledgerID == ledgerID)
         }
     }
 
@@ -1020,6 +1089,29 @@ struct RootShellView: View {
         }
     }
 
+    private var currentLedger: Ledger? {
+        let ledgers = store.ledgers
+        if let id = UUID(uuidString: currentLedgerIDString),
+           let match = ledgers.first(where: { $0.id == id }) {
+            return match
+        }
+        // 回退到默认账本（第一个）
+        let fallback = ledgers.first
+        if let fallback {
+            currentLedgerIDString = fallback.id.uuidString
+        }
+        return fallback
+    }
+
+    private var ledgerTransactionCounts: [UUID: Int] {
+        let allTxs = store.visibleTransactions
+        var counts: [UUID: Int] = [:]
+        for tx in allTxs {
+            counts[tx.ledgerID, default: 0] += 1
+        }
+        return counts
+    }
+
     // MARK: - URL Scheme 处理
 
     /// numi://record?text=午饭35块
@@ -1078,11 +1170,16 @@ struct RootShellView: View {
             }
 
             let money = try Money(decimalString: "\(parsed.amount)", currencyCode: "CNY")
+            guard let ledgerID = currentLedger?.id else {
+                showToast("请先创建账本")
+                return
+            }
             _ = try store.createTransaction(
                 type: parsed.type,
                 amount: money,
                 categoryID: category.id,
                 accountID: account.id,
+                ledgerID: ledgerID,
                 note: parsed.note
             )
 
@@ -1118,7 +1215,34 @@ struct RootShellView: View {
             return try SwiftDataBookkeepingStore(storeURL: directory.appendingPathComponent("Numi.store"))
         }
         let cloudSync = UserDefaults.standard.bool(forKey: "app.sync.icloudEnabled")
+        #if DEBUG
+        if !cloudSync {
+            let fileManager = FileManager.default
+            let directory = try appStoreDirectoryURL(fileManager: fileManager)
+            let storeURL = directory.appendingPathComponent("Numi.store")
+
+            do {
+                return try SwiftDataBookkeepingStore(storeURL: storeURL)
+            } catch {
+                try? fileManager.removeItem(at: directory)
+                try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+                return try SwiftDataBookkeepingStore(storeURL: storeURL)
+            }
+        }
+        #endif
         return try SwiftDataBookkeepingStore(enableCloudSync: cloudSync)
+    }
+
+    static func appStoreDirectoryURL(fileManager: FileManager) throws -> URL {
+        let baseDirectory = try fileManager.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )
+        let directory = baseDirectory.appendingPathComponent("Numi", isDirectory: true)
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
     }
 
     private static func makeFallbackStore() -> SwiftDataBookkeepingStore {

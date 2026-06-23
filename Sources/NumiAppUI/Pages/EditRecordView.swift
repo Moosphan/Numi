@@ -12,6 +12,9 @@ public struct EditRecordView: View {
     @State private var inputState: MoneyInputState
     @State private var note: String
     @State private var selectedCurrencyCode: String
+    @State private var isDatePickerPresented = false
+    @State private var pendingDate: Date
+    @FocusState private var isNoteFocused: Bool
 
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
@@ -36,6 +39,7 @@ public struct EditRecordView: View {
         _inputState = State(initialValue: MoneyInputState(money: transaction.amount))
         _note = State(initialValue: transaction.note)
         _selectedCurrencyCode = State(initialValue: transaction.amount.currencyCode)
+        _pendingDate = State(initialValue: transaction.occurredAt)
     }
 
     public var body: some View {
@@ -44,7 +48,6 @@ public struct EditRecordView: View {
                 VStack(spacing: NumiSpacing.s5) {
                     typeCard
                     amountCard
-                    detailsCard
                 }
                 .padding(NumiSpacing.s5)
                 .padding(.bottom, 24)
@@ -64,6 +67,17 @@ public struct EditRecordView: View {
                     .disabled(!canSave)
                     .accessibilityIdentifier("action.submitRecord")
                 }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Button("收起") {
+                        isNoteFocused = false
+                    }
+                    Spacer()
+                    Button("保存") {
+                        saveAndDismiss()
+                    }
+                    .disabled(!canSave)
+                    .accessibilityIdentifier("action.keyboardSubmitRecord")
+                }
             }
             .onAppear {
                 ensureSelectedCategory()
@@ -75,6 +89,11 @@ public struct EditRecordView: View {
             }
             .onChange(of: selectedCurrencyCode) { _, newValue in
                 inputState.updateCurrencyCode(newValue)
+            }
+            .sheet(isPresented: $isDatePickerPresented) {
+                datePickerSheet
+                    .presentationDetents([.height(430)])
+                    .presentationCornerRadius(28)
             }
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -158,90 +177,125 @@ public struct EditRecordView: View {
     }
 
     private var amountCard: some View {
-        VStack(spacing: NumiSpacing.s4) {
-            HStack {
-                Text("金额")
-                    .font(NumiFont.bodySmall)
-                    .foregroundStyle(NumiColor.textTertiary)
-                Spacer()
-                Text(inputState.displayText)
-                    .font(NumiFont.amountLarge)
-                    .foregroundStyle(NumiColor.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.58)
-                    .accessibilityIdentifier("edit.amountDisplay")
-            }
-
-            NumiAmountKeypad(state: $inputState)
+        VStack(spacing: NumiSpacing.s2) {
+            amountHeader
+            inlineMetaBar
+            NumiAmountKeypad(
+                state: $inputState,
+                dateShortcutTitle: currentDateShortcutTitle,
+                dateAccessorySystemImage: "calendar.badge.clock",
+                onDateShortcut: presentDatePicker
+            )
         }
-        .padding(NumiSpacing.s4)
+        .padding(.horizontal, NumiSpacing.s4)
+        .padding(.top, NumiSpacing.s2)
+        .padding(.bottom, NumiSpacing.s3)
         .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
     }
 
-    private var detailsCard: some View {
-        VStack(spacing: NumiSpacing.s3) {
-            if selectedType == .transfer {
-                NumiAccountPickerRow(
-                    title: "转出",
-                    accounts: accounts,
-                    selectedAccountID: $selectedAccountID,
-                    accessibilityIdentifier: "picker.transferSourceAccount"
-                )
-                NumiAccountPickerRow(
-                    title: "转入",
-                    accounts: accounts,
-                    selectedAccountID: $selectedTargetAccountID,
-                    excludedAccountID: selectedAccountID,
-                    accessibilityIdentifier: "picker.transferTargetAccount"
-                )
-            } else {
-                NumiAccountPickerRow(
-                    accounts: accounts,
-                    selectedAccountID: $selectedAccountID,
-                    accessibilityIdentifier: "picker.editRecordAccount"
-                )
-            }
-
-            NumiCurrencyPickerRow(
-                options: currencyOptions,
-                selectedCode: $selectedCurrencyCode,
-                accessibilityIdentifier: "picker.recordCurrency"
-            )
-
-            NumiDatePickerRow(
-                selectedDate: $selectedDate,
-                accessibilityIdentifier: "picker.editRecordDate"
-            )
-
-            HStack(spacing: NumiSpacing.s2) {
-                Image(systemName: "note.text")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(NumiColor.textTertiary)
-                TextField("备注", text: $note)
-                    .autocorrectionDisabled()
-                    .submitLabel(.done)
-                    .accessibilityIdentifier("input.editRecordNote")
-                if !note.isEmpty {
+    private var amountHeader: some View {
+        HStack(alignment: .firstTextBaseline, spacing: NumiSpacing.s3) {
+            Text("金额")
+                .font(NumiFont.bodySmall)
+                .foregroundStyle(NumiColor.textTertiary)
+            Spacer(minLength: NumiSpacing.s2)
+            Menu {
+                ForEach(currencyOptions) { option in
                     Button {
-                        note = ""
+                        selectedCurrencyCode = option.code
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(NumiColor.textTertiary)
+                        Label(
+                            "\(option.symbol) \(option.code)",
+                            systemImage: selectedCurrencyCode == option.code ? "checkmark.circle.fill" : "circle"
+                        )
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("action.clearEditRecordNote")
+                    .accessibilityIdentifier("currency.\(option.code)")
+                }
+            } label: {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(selectedCurrencySymbol)
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundStyle(NumiColor.textSecondary)
+                    Text(inputState.displayText)
+                        .font(NumiFont.amountLarge)
+                        .foregroundStyle(NumiColor.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.58)
+                        .accessibilityIdentifier("edit.amountDisplay")
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(NumiColor.textTertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("picker.recordCurrency")
+        }
+    }
+
+    private var inlineMetaBar: some View {
+        VStack(spacing: NumiSpacing.s2) {
+            if selectedType == .transfer {
+                HStack(spacing: NumiSpacing.s2) {
+                    inlineAccountMenu(
+                        title: "转出",
+                        selectedName: selectedAccount?.name ?? "未选择",
+                        accessibilityIdentifier: "picker.transferSourceAccount",
+                        accounts: visibleAccounts,
+                        selectedID: $selectedAccountID
+                    )
+                    inlineAccountMenu(
+                        title: "转入",
+                        selectedName: selectedTargetAccount?.name ?? "未选择",
+                        accessibilityIdentifier: "picker.transferTargetAccount",
+                        accounts: targetAccounts,
+                        selectedID: $selectedTargetAccountID
+                    )
+                }
+                inlineNoteField
+            } else {
+                HStack(spacing: NumiSpacing.s2) {
+                    inlineAccountMenu(
+                        title: "账户",
+                        selectedName: selectedAccount?.name ?? "未选择",
+                        accessibilityIdentifier: "picker.editRecordAccount",
+                        accounts: visibleAccounts,
+                        selectedID: $selectedAccountID
+                    )
+                    inlineNoteField
                 }
             }
-            .padding(.horizontal, NumiSpacing.s4)
-            .frame(minHeight: 52)
-            .background(NumiColor.surfaceCardSubtle)
-            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
         }
-        .padding(NumiSpacing.s4)
-        .background(NumiColor.surfaceCard)
-        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+    }
+
+    private var inlineNoteField: some View {
+        HStack(spacing: NumiSpacing.s2) {
+            Image(systemName: "note.text")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(NumiColor.textTertiary)
+            TextField("备注", text: $note)
+                .autocorrectionDisabled()
+                .submitLabel(.done)
+                .focused($isNoteFocused)
+                .accessibilityIdentifier("input.editRecordNote")
+            if !note.isEmpty {
+                Button {
+                    note = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(NumiColor.textTertiary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("action.clearEditRecordNote")
+            }
+        }
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .background(NumiColor.surfaceCardSubtle)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
     }
 
     private var visibleCategories: [NumiCore.Category] {
@@ -281,6 +335,14 @@ public struct EditRecordView: View {
         ]
     }
 
+    private var selectedCurrencySymbol: String {
+        currencyOptions.first { $0.code == selectedCurrencyCode }?.symbol ?? selectedCurrencyCode
+    }
+
+    private var currentDateShortcutTitle: String {
+        NumiDatePickerRow.displayText(for: selectedDate, includesTime: false)
+    }
+
     private var canSave: Bool {
         guard (try? inputState.money()) != nil else { return false }
         if selectedType == .transfer {
@@ -313,6 +375,7 @@ public struct EditRecordView: View {
     }
 
     private func save() {
+        isNoteFocused = false
         guard canSave, let money = try? inputState.money() else { return }
         onSave(
             selectedType,
@@ -323,5 +386,102 @@ public struct EditRecordView: View {
             selectedDate,
             note.trimmingCharacters(in: .whitespacesAndNewlines)
         )
+    }
+
+    private func saveAndDismiss() {
+        save()
+        if canSave {
+            dismiss()
+        }
+    }
+
+    private var datePickerSheet: some View {
+        NumiBottomSheet(
+            title: "选择日期",
+            contentMode: .fit,
+            accessibilityPrefix: "sheet.datePicker",
+            dismissAccessibilitySuffix: "cancel",
+            confirmAccessibilitySuffix: "confirm",
+            dismissTitle: "取消",
+            confirmTitle: "完成",
+            onDismiss: {
+                isDatePickerPresented = false
+            },
+            onConfirm: {
+                selectedDate = mergedDate(pendingDate, keepingTimeFrom: selectedDate)
+                isDatePickerPresented = false
+            }
+        ) {
+            DatePicker(
+                "日期",
+                selection: $pendingDate,
+                displayedComponents: [.date]
+            )
+            .datePickerStyle(.graphical)
+            .labelsHidden()
+            .padding(.horizontal, NumiSpacing.s3)
+            .padding(.top, 2)
+            .padding(.bottom, NumiSpacing.s3)
+        }
+    }
+
+    private func presentDatePicker() {
+        isNoteFocused = false
+        pendingDate = selectedDate
+        isDatePickerPresented = true
+    }
+
+    private func mergedDate(_ newDate: Date, keepingTimeFrom originalDate: Date) -> Date {
+        let newDay = Calendar.current.dateComponents([.year, .month, .day], from: newDate)
+        let originalTime = Calendar.current.dateComponents([.hour, .minute, .second], from: originalDate)
+        var merged = DateComponents()
+        merged.year = newDay.year
+        merged.month = newDay.month
+        merged.day = newDay.day
+        merged.hour = originalTime.hour
+        merged.minute = originalTime.minute
+        merged.second = originalTime.second
+        return Calendar.current.date(from: merged) ?? newDate
+    }
+
+    private func inlineAccountMenu(
+        title: String,
+        selectedName: String,
+        accessibilityIdentifier: String,
+        accounts: [Account],
+        selectedID: Binding<UUID?>
+    ) -> some View {
+        Menu {
+            ForEach(accounts) { account in
+                Button {
+                    selectedID.wrappedValue = account.id
+                } label: {
+                    Label(account.name, systemImage: "circle")
+                }
+                .accessibilityIdentifier("account.\(account.name)")
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Text(title)
+                    .font(NumiFont.bodySmall)
+                    .foregroundStyle(NumiColor.textSecondary)
+                Spacer(minLength: 8)
+                Text(selectedName)
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.textPrimary)
+                    .lineLimit(1)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(NumiColor.textTertiary)
+            }
+            .padding(.horizontal, 12)
+            .frame(maxWidth: .infinity, minHeight: 42)
+            .background(NumiColor.surfaceCardSubtle)
+            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(accessibilityIdentifier)
+        .accessibilityValue("style.neutral")
     }
 }

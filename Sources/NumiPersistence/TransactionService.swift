@@ -16,7 +16,7 @@ public final class TransactionService: @unchecked Sendable {
             .appendingPathComponent("Numi.store")
         let config = ModelConfiguration(url: url)
         self.container = try! ModelContainer(
-            for: TransactionEntity.self, CategoryEntity.self, AccountEntity.self,
+            for: LedgerEntity.self, TransactionEntity.self, CategoryEntity.self, AccountEntity.self,
             configurations: config
         )
         self.context = ModelContext(container)
@@ -38,9 +38,13 @@ public final class TransactionService: @unchecked Sendable {
     public func createTransaction(from parsed: ParsedTransaction) throws {
         let category = resolveCategory(parsed.categoryName)
         let account = resolveAccount(parsed.accountName) ?? defaultAccount()
+        let ledger = defaultLedger()
 
         guard let account else {
             throw TransactionServiceError.noAccount
+        }
+        guard let ledger else {
+            throw TransactionServiceError.noLedger
         }
 
         let money = try Money(
@@ -55,6 +59,7 @@ public final class TransactionService: @unchecked Sendable {
             categoryID: category?.id,
             accountID: account.id,
             targetAccountID: nil,
+            ledgerID: ledger.id,
             note: parsed.note,
             isSoftDeleted: false
         )
@@ -106,16 +111,23 @@ public final class TransactionService: @unchecked Sendable {
         )
         return try? context.fetch(desc).first
     }
+
+    private func defaultLedger() -> LedgerEntity? {
+        let desc = FetchDescriptor<LedgerEntity>(sortBy: [SortDescriptor(\.name)])
+        return try? context.fetch(desc).first
+    }
 }
 
 // MARK: - Errors
 
 public enum TransactionServiceError: Error, LocalizedError {
     case noAccount
+    case noLedger
 
     public var errorDescription: String? {
         switch self {
         case .noAccount: return "没有可用账户"
+        case .noLedger: return "没有可用账本"
         }
     }
 }

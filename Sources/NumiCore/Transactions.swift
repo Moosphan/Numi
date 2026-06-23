@@ -14,6 +14,7 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
     public let categoryID: UUID?
     public let accountID: UUID?
     public let targetAccountID: UUID?
+    public let ledgerID: UUID
     public let note: String
 
     public init(
@@ -24,6 +25,7 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
         categoryID: UUID? = nil,
         accountID: UUID? = nil,
         targetAccountID: UUID? = nil,
+        ledgerID: UUID = UUID(),
         note: String = ""
     ) {
         self.id = id
@@ -33,6 +35,7 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
         self.categoryID = categoryID
         self.accountID = accountID
         self.targetAccountID = targetAccountID
+        self.ledgerID = ledgerID
         self.note = note
     }
 
@@ -41,9 +44,10 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
         amount: Money,
         categoryID: UUID? = nil,
         accountID: UUID? = nil,
-        targetAccountID: UUID? = nil
+        targetAccountID: UUID? = nil,
+        ledgerID: UUID = UUID()
     ) -> Transaction {
-        Transaction(type: type, amount: amount, categoryID: categoryID, accountID: accountID, targetAccountID: targetAccountID)
+        Transaction(type: type, amount: amount, categoryID: categoryID, accountID: accountID, targetAccountID: targetAccountID, ledgerID: ledgerID)
     }
 }
 

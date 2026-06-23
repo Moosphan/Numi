@@ -591,9 +591,9 @@ private struct AddRecordEntryContent: View {
         }
         .padding(.horizontal, 12)
         .frame(maxWidth: .infinity, minHeight: 44)
-        .background(NumiColor.surfaceCard)
+        .background(NumiColor.surfaceCardSubtle)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
-        .shadow(color: .black.opacity(0.035), radius: 6, x: 0, y: 2)
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
     }
 
     private var selectedCategory: NumiCore.Category? {
@@ -738,9 +738,9 @@ private struct AddRecordEntryContent: View {
             }
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity, minHeight: 42)
-            .background(NumiColor.surfaceCard)
+            .background(NumiColor.surfaceCardSubtle)
             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
-            .shadow(color: .black.opacity(0.035), radius: 6, x: 0, y: 2)
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(accessibilityIdentifier)

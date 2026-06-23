@@ -53,6 +53,8 @@ public struct TransactionsHomeView: View {
     private let selectedPeriod: HomePeriod
     private let isNextPeriodEnabled: Bool
     private let sections: [TransactionHomeSection]
+    private let currentLedger: Ledger?
+    private let ledgers: [Ledger]
     private let onPreviousPeriod: () -> Void
     private let onNextPeriod: () -> Void
     private let onSelectPeriod: (HomePeriod) -> Void
@@ -63,9 +65,11 @@ public struct TransactionsHomeView: View {
     private let onSearch: () -> Void
     private let onEdit: (NumiCore.Transaction) -> Void
     private let onShare: (NumiCore.Transaction) -> Void
+    private let onSelectLedger: (Ledger) -> Void
     @State private var pendingDelete: NumiCore.Transaction?
     @State private var showsUndo = false
     @State private var showsPeriodPicker = false
+    @State private var showsLedgerPicker = false
 
     public init(
         summary: TransactionSummary,
@@ -73,6 +77,8 @@ public struct TransactionsHomeView: View {
         selectedPeriod: HomePeriod,
         isNextPeriodEnabled: Bool,
         sections: [TransactionHomeSection],
+        currentLedger: Ledger? = nil,
+        ledgers: [Ledger] = [],
         onPreviousPeriod: @escaping () -> Void = {},
         onNextPeriod: @escaping () -> Void = {},
         onSelectPeriod: @escaping (HomePeriod) -> Void = { _ in },
@@ -82,13 +88,16 @@ public struct TransactionsHomeView: View {
         onEdit: @escaping (NumiCore.Transaction) -> Void = { _ in },
         onShare: @escaping (NumiCore.Transaction) -> Void = { _ in },
         onDelete: @escaping (NumiCore.Transaction) -> Void = { _ in },
-        onUndoDelete: @escaping () -> Void = {}
+        onUndoDelete: @escaping () -> Void = {},
+        onSelectLedger: @escaping (Ledger) -> Void = { _ in }
     ) {
         self.summary = summary
         self.periodTitle = periodTitle
         self.selectedPeriod = selectedPeriod
         self.isNextPeriodEnabled = isNextPeriodEnabled
         self.sections = sections
+        self.currentLedger = currentLedger
+        self.ledgers = ledgers
         self.onPreviousPeriod = onPreviousPeriod
         self.onNextPeriod = onNextPeriod
         self.onSelectPeriod = onSelectPeriod
@@ -99,6 +108,7 @@ public struct TransactionsHomeView: View {
         self.onShare = onShare
         self.onDelete = onDelete
         self.onUndoDelete = onUndoDelete
+        self.onSelectLedger = onSelectLedger
     }
 
     public var body: some View {
@@ -138,6 +148,11 @@ public struct TransactionsHomeView: View {
         .sheet(isPresented: $showsPeriodPicker) {
             homePeriodPickerSheet
                 .presentationDetents([.height(320)])
+                .presentationCornerRadius(28)
+        }
+        .sheet(isPresented: $showsLedgerPicker) {
+            ledgerPickerSheet
+                .presentationDetents([.medium])
                 .presentationCornerRadius(28)
         }
     }
@@ -202,6 +217,7 @@ public struct TransactionsHomeView: View {
             GeometryReader { proxy in
                 NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.transactionsHome") {
                     VStack(spacing: NumiSpacing.s5) {
+                        ledgerSwitcherChip
                         summaryGrid
                         homeEmptyState
                             .frame(minHeight: max(proxy.size.height - 220, 360))
@@ -214,9 +230,13 @@ public struct TransactionsHomeView: View {
         } else {
             NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.transactionsHome") {
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    summaryGrid
+                    ledgerSwitcherChip
                         .padding(.horizontal, NumiSpacing.s5)
                         .padding(.top, NumiSpacing.s3)
+                        .padding(.bottom, NumiSpacing.s2)
+
+                    summaryGrid
+                        .padding(.horizontal, NumiSpacing.s5)
                         .padding(.bottom, NumiSpacing.s4)
 
                     recordsList
@@ -401,6 +421,94 @@ public struct TransactionsHomeView: View {
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1 : 0.32)
         .accessibilityIdentifier(identifier)
+    }
+
+    // MARK: - Ledger Switcher
+
+    @ViewBuilder
+    private var ledgerSwitcherChip: some View {
+        if let ledger = currentLedger, ledgers.count > 1 {
+            Button {
+                showsLedgerPicker = true
+            } label: {
+                HStack(spacing: NumiSpacing.s1) {
+                    Image(systemName: "book.fill")
+                        .font(.system(size: 12, weight: .medium))
+                    Text(ledger.name)
+                        .font(.system(size: 13, weight: .medium))
+                        .lineLimit(1)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .foregroundStyle(NumiColor.accentDeep)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(NumiColor.accentPrimary.opacity(0.12))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityIdentifier("button.ledgerSwitcher")
+        }
+    }
+
+    private var ledgerPickerSheet: some View {
+        NumiBottomSheet(
+            title: "切换账本",
+            contentMode: .scroll,
+            accessibilityPrefix: "sheet.ledgerPicker",
+            dismissTitle: "关闭",
+            onDismiss: {
+                showsLedgerPicker = false
+            }
+        ) {
+            VStack(spacing: NumiSpacing.s2) {
+                ForEach(ledgers) { ledger in
+                    Button {
+                        onSelectLedger(ledger)
+                        showsLedgerPicker = false
+                    } label: {
+                        HStack(spacing: NumiSpacing.s3) {
+                            ZStack {
+                                Circle()
+                                    .fill(ledger.id == currentLedger?.id ? NumiColor.accentPrimary.opacity(0.15) : NumiColor.surfaceCardSubtle)
+                                    .frame(width: 36, height: 36)
+                                Image(systemName: ledger.id == currentLedger?.id ? "book.fill" : "book")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(ledger.id == currentLedger?.id ? NumiColor.accentDeep : NumiColor.textTertiary)
+                            }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(ledger.name)
+                                    .font(NumiFont.bodyStrong)
+                                    .foregroundStyle(NumiColor.textPrimary)
+                                Text(ledger.currencyCode)
+                                    .font(NumiFont.footnote)
+                                    .foregroundStyle(NumiColor.textTertiary)
+                            }
+                            Spacer()
+                            if ledger.id == currentLedger?.id {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundStyle(NumiColor.accentDeep)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 60, alignment: .leading)
+                        .padding(.horizontal, NumiSpacing.s4)
+                        .background(
+                            RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous)
+                                .fill(ledger.id == currentLedger?.id ? NumiColor.surfaceCardSubtle : NumiColor.surfaceCard)
+                        )
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("ledger.option.\(ledger.id.uuidString)")
+                }
+            }
+            .padding(.horizontal, NumiSpacing.s4)
+            .padding(.bottom, NumiSpacing.s4)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("sheet.ledgerPicker")
     }
 
     private var homePeriodPickerSheet: some View {

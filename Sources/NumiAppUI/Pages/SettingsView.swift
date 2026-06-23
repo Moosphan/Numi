@@ -6,8 +6,12 @@ public struct SettingsView: View {
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
     private let transactions: [NumiCore.Transaction]
+    private let ledgers: [Ledger]
+    private let currentLedgerID: UUID?
+    private let ledgerTransactionCounts: [UUID: Int]
     private let exportSnapshot: (() -> BookkeepingSnapshot)?
     private let importSnapshot: ((BookkeepingSnapshot) throws -> Void)?
+    private let onManageLedgers: () -> Void
     private let onCategoryVisibilityChange: (NumiCore.Category, Bool) -> Void
     private let onAccountVisibilityChange: (Account, Bool) -> Void
     private let onAccountCreate: (AccountDraft) -> Void
@@ -55,8 +59,12 @@ public struct SettingsView: View {
         categories: [NumiCore.Category] = [],
         accounts: [Account] = [],
         transactions: [NumiCore.Transaction] = [],
+        ledgers: [Ledger] = [],
+        currentLedgerID: UUID? = nil,
+        ledgerTransactionCounts: [UUID: Int] = [:],
         exportSnapshot: (() -> BookkeepingSnapshot)? = nil,
         importSnapshot: ((BookkeepingSnapshot) throws -> Void)? = nil,
+        onManageLedgers: @escaping () -> Void = {},
         onCategoryVisibilityChange: @escaping (NumiCore.Category, Bool) -> Void = { _, _ in },
         onAccountVisibilityChange: @escaping (Account, Bool) -> Void = { _, _ in },
         onAccountCreate: @escaping (AccountDraft) -> Void = { _ in },
@@ -68,8 +76,12 @@ public struct SettingsView: View {
         self.categories = categories
         self.accounts = accounts
         self.transactions = transactions
+        self.ledgers = ledgers
+        self.currentLedgerID = currentLedgerID
+        self.ledgerTransactionCounts = ledgerTransactionCounts
         self.exportSnapshot = exportSnapshot
         self.importSnapshot = importSnapshot
+        self.onManageLedgers = onManageLedgers
         self.onCategoryVisibilityChange = onCategoryVisibilityChange
         self.onAccountVisibilityChange = onAccountVisibilityChange
         self.onAccountCreate = onAccountCreate
@@ -90,6 +102,14 @@ public struct SettingsView: View {
                     accessibilityID: "settings.section.data",
                     cardAccessibilityID: "settings.card.data"
                 ) {
+                    Button {
+                        onManageLedgers()
+                    } label: {
+                        settingsRow("账本管理", icon: "book")
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings.ledgers")
+
                     NavigationLink {
                         CategoryManagementView(
                             categories: categories,

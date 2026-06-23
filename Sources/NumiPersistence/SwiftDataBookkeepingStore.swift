@@ -72,6 +72,7 @@ final class TransactionEntity {
     var categoryID: UUID?
     var accountID: UUID?
     var targetAccountID: UUID?
+    var ledgerID: UUID
     var note: String
     var isSoftDeleted: Bool
 
@@ -83,6 +84,7 @@ final class TransactionEntity {
         categoryID: UUID?,
         accountID: UUID?,
         targetAccountID: UUID?,
+        ledgerID: UUID,
         note: String,
         isSoftDeleted: Bool
     ) {
@@ -94,6 +96,7 @@ final class TransactionEntity {
         self.categoryID = categoryID
         self.accountID = accountID
         self.targetAccountID = targetAccountID
+        self.ledgerID = ledgerID
         self.note = note
         self.isSoftDeleted = isSoftDeleted
     }
@@ -106,13 +109,15 @@ final class BudgetSettingEntity {
     var amountMinorUnits: Int64
     var currencyCode: String
     var isEnabled: Bool
+    var ledgerID: UUID
 
-    init(id: UUID, period: BudgetPeriod, amount: Money, isEnabled: Bool) {
+    init(id: UUID, period: BudgetPeriod, amount: Money, isEnabled: Bool, ledgerID: UUID) {
         self.id = id
         self.periodRawValue = period.rawValue
         self.amountMinorUnits = amount.minorUnits
         self.currencyCode = amount.currencyCode
         self.isEnabled = isEnabled
+        self.ledgerID = ledgerID
     }
 }
 
@@ -268,9 +273,14 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         guard fetchLedgerEntities().isEmpty,
               fetchCategoryEntities().isEmpty,
               fetchAccountEntities().isEmpty
-        else { return }
+        else {
+            // 已有数据，执行账本迁移
+            try migrateTransactionsToLedgerIfNeeded()
+            return
+        }
 
-        context.insert(LedgerEntity(id: UUID(), name: "默认账本", currencyCode: currencyCode))
+        let defaultLedger = LedgerEntity(id: UUID(), name: "默认账本", currencyCode: currencyCode)
+        context.insert(defaultLedger)
         for (index, item) in Self.defaultExpenseCategories.enumerated() {
             context.insert(CategoryEntity(id: UUID(), kind: .expense, name: item.name, icon: item.icon, isHidden: false, sortOrder: index))
         }
@@ -294,6 +304,34 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             isHidden: false
         ))
         try save()
+    }
+
+    /// 将旧数据中 ledgerID 不匹配任何已有账本的交易和预算迁移到默认账本
+    private func migrateTransactionsToLedgerIfNeeded() throws {
+        let existingLedgerIDs = Set(fetchLedgerEntities().map(\.id))
+        guard let defaultLedgerID = existingLedgerIDs.first else { return }
+
+        var needsSave = false
+
+        // 迁移交易
+        let allTxs = fetchTransactionEntities(includeDeleted: true)
+        for tx in allTxs where !existingLedgerIDs.contains(tx.ledgerID) {
+            tx.ledgerID = defaultLedgerID
+            needsSave = true
+        }
+
+        // 迁移预算
+        let allBudgets = fetchBudgetSettingEntities()
+        for budget in allBudgets where !existingLedgerIDs.contains(budget.ledgerID) {
+            budget.ledgerID = defaultLedgerID
+            needsSave = true
+        }
+
+        if needsSave {
+            try save()
+            changeRevision += 1
+            objectWillChange.send()
+        }
     }
 
     @discardableResult
@@ -467,6 +505,65 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         objectWillChange.send()
     }
 
+    // MARK: - Ledgers
+
+    @discardableResult
+    public func createLedger(name: String, currencyCode: String) throws -> Ledger {
+        let entity = LedgerEntity(id: UUID(), name: name, currencyCode: currencyCode)
+        context.insert(entity)
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+        return entity.domainModel
+    }
+
+    @discardableResult
+    public func updateLedger(id: UUID, name: String, currencyCode: String) throws -> Ledger {
+        guard let entity = fetchLedgerEntity(id: id) else {
+            throw SwiftDataBookkeepingStoreError.ledgerNotFound
+        }
+        entity.name = name
+        entity.currencyCode = currencyCode
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+        return entity.domainModel
+    }
+
+    public func deleteLedger(id: UUID) throws {
+        guard let entity = fetchLedgerEntity(id: id) else { return }
+        // 级联删除关联交易
+        let transactions = fetchTransactionEntities(includeDeleted: true).filter { $0.ledgerID == id }
+        for tx in transactions {
+            context.delete(tx)
+        }
+        // 删除关联预算设置
+        let budgets = fetchBudgetSettingEntities().filter { $0.ledgerID == id }
+        for budget in budgets {
+            context.delete(budget)
+        }
+        context.delete(entity)
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
+    public func transactions(for ledgerID: UUID) -> [Transaction] {
+        fetchTransactionEntities(includeDeleted: false)
+            .filter { $0.ledgerID == ledgerID }
+            .map(\.domainModel)
+    }
+
+    public func visibleTransactions(for ledgerID: UUID) -> [Transaction] {
+        fetchTransactionEntities(includeDeleted: false)
+            .filter { $0.ledgerID == ledgerID }
+            .map(\.domainModel)
+    }
+
+    public func defaultLedger() -> Ledger? {
+        ledgers.first
+    }
+
     // MARK: - Snapshot
 
     public func exportSnapshot() -> BookkeepingSnapshot {
@@ -517,6 +614,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
                 id: tx.id, type: tx.type, amount: tx.amount,
                 occurredAt: tx.occurredAt, categoryID: tx.categoryID,
                 accountID: tx.accountID, targetAccountID: tx.targetAccountID,
+                ledgerID: tx.ledgerID,
                 note: tx.note, isSoftDeleted: false
             )
             context.insert(entity)
@@ -526,7 +624,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         for budget in snapshot.budgetSettings {
             let entity = BudgetSettingEntity(
                 id: budget.id, period: budget.period,
-                amount: budget.amount, isEnabled: budget.isEnabled
+                amount: budget.amount, isEnabled: budget.isEnabled,
+                ledgerID: budget.ledgerID
             )
             context.insert(entity)
         }
@@ -618,6 +717,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         categoryID: UUID?,
         accountID: UUID,
         targetAccountID: UUID? = nil,
+        ledgerID: UUID,
         note: String,
         occurredAt: Date = Date()
     ) throws -> Transaction {
@@ -629,6 +729,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             categoryID: categoryID,
             accountID: accountID,
             targetAccountID: targetAccountID,
+            ledgerID: ledgerID,
             note: note,
             isSoftDeleted: false
         )
@@ -663,6 +764,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             categoryID: categoryID,
             accountID: accountID,
             targetAccountID: targetAccountID,
+            ledgerID: transaction.ledgerID,
             note: note
         )
 
@@ -754,13 +856,14 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
     public func upsertBudgetSetting(
         period: BudgetPeriod,
         amount: Money,
-        isEnabled: Bool
+        isEnabled: Bool,
+        ledgerID: UUID
     ) throws -> BudgetSetting {
         let setting: BudgetSettingEntity
-        if let existing = fetchBudgetSettingEntity(period: period) {
+        if let existing = fetchBudgetSettingEntities().first(where: { $0.periodRawValue == period.rawValue && $0.ledgerID == ledgerID }) {
             setting = existing
         } else {
-            setting = BudgetSettingEntity(id: UUID(), period: period, amount: amount, isEnabled: isEnabled)
+            setting = BudgetSettingEntity(id: UUID(), period: period, amount: amount, isEnabled: isEnabled, ledgerID: ledgerID)
             context.insert(setting)
         }
 
@@ -820,6 +923,11 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         return (try? context.fetch(descriptor)) ?? []
     }
 
+    private func fetchLedgerEntity(id: UUID) -> LedgerEntity? {
+        let descriptor = FetchDescriptor<LedgerEntity>(predicate: #Predicate { $0.id == id })
+        return try? context.fetch(descriptor).first
+    }
+
     private func fetchCategoryEntities() -> [CategoryEntity] {
         let descriptor = FetchDescriptor<CategoryEntity>(sortBy: [
             SortDescriptor(\.kindRawValue),
@@ -849,12 +957,6 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
     private func fetchBudgetSettingEntities() -> [BudgetSettingEntity] {
         let descriptor = FetchDescriptor<BudgetSettingEntity>(sortBy: [SortDescriptor(\.periodRawValue)])
         return (try? context.fetch(descriptor)) ?? []
-    }
-
-    private func fetchBudgetSettingEntity(period: BudgetPeriod) -> BudgetSettingEntity? {
-        let rawValue = period.rawValue
-        let descriptor = FetchDescriptor<BudgetSettingEntity>(predicate: #Predicate { $0.periodRawValue == rawValue })
-        return try? context.fetch(descriptor).first
     }
 
     private func fetchTransactionEntity(id: UUID) -> TransactionEntity? {
@@ -937,6 +1039,7 @@ public enum SwiftDataBookkeepingStoreError: Error, Equatable {
     case accountNotFound
     case categoryNotFound
     case transactionNotFound
+    case ledgerNotFound
 }
 
 private enum BalanceAdjustment {
@@ -1031,6 +1134,7 @@ private extension TransactionEntity {
             categoryID: categoryID,
             accountID: accountID,
             targetAccountID: targetAccountID,
+            ledgerID: ledgerID,
             note: note
         )
     }
@@ -1042,7 +1146,8 @@ private extension BudgetSettingEntity {
             id: id,
             period: BudgetPeriod(rawValue: periodRawValue) ?? .month,
             amount: Money(minorUnits: amountMinorUnits, currencyCode: currencyCode),
-            isEnabled: isEnabled
+            isEnabled: isEnabled,
+            ledgerID: ledgerID
         )
     }
 }

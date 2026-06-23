@@ -24,17 +24,20 @@ public struct BudgetSetting: Codable, Equatable, Identifiable, Sendable {
     public var period: BudgetPeriod
     public var amount: Money
     public var isEnabled: Bool
+    public var ledgerID: UUID
 
     public init(
         id: UUID = UUID(),
         period: BudgetPeriod,
         amount: Money,
-        isEnabled: Bool = true
+        isEnabled: Bool = true,
+        ledgerID: UUID = UUID()
     ) {
         self.id = id
         self.period = period
         self.amount = amount
         self.isEnabled = isEnabled
+        self.ledgerID = ledgerID
     }
 }
 
