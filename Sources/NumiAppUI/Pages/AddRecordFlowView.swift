@@ -438,7 +438,7 @@ private struct AddRecordEntryContent: View {
         }
         .padding(.horizontal, NumiSpacing.s4)
         .padding(.vertical, NumiSpacing.s2)
-        .background(NumiColor.surfaceCardSubtle)
+        .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
     }
 
@@ -633,7 +633,7 @@ private struct AddRecordEntryContent: View {
     }
 
     private var currentDateShortcutTitle: String {
-        NumiDatePickerRow.displayText(for: selectedDate)
+        NumiDatePickerRow.displayText(for: selectedDate, includesTime: false)
     }
 
     private var canSubmit: Bool {

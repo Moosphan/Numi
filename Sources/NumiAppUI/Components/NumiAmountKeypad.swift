@@ -73,12 +73,17 @@ public struct NumiAmountKeypad: View {
             Image(systemName: key)
                 .font(.system(size: 20, weight: .semibold))
         } else if key == dateShortcutTitle {
-            HStack(spacing: 4) {
+            HStack(spacing: 3) {
                 Text(key)
-                    .font(NumiFont.bodyStrong)
-                Image(systemName: dateAccessorySystemImage)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(dateLabelFont(for: key))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.68)
+                if showsDateAccessoryIcon(for: key) {
+                    Image(systemName: dateAccessorySystemImage)
+                        .font(.system(size: 12, weight: .semibold))
+                }
             }
+            .frame(maxWidth: .infinity)
         } else {
             Text(key)
                 .font(NumiFont.bodyStrong)
@@ -129,6 +134,17 @@ public struct NumiAmountKeypad: View {
         #else
         return Color.gray.opacity(0.12)
         #endif
+    }
+
+    private func showsDateAccessoryIcon(for key: String) -> Bool {
+        ["今天", "昨天", "前天"].contains(key)
+    }
+
+    private func dateLabelFont(for key: String) -> Font {
+        if showsDateAccessoryIcon(for: key) {
+            return NumiFont.bodyStrong
+        }
+        return .system(size: 15, weight: .semibold)
     }
 
     private func handle(_ key: String) {

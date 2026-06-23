@@ -217,6 +217,7 @@ struct RootShellView: View {
                     note: note,
                     occurredAt: occurredAt
                 )
+                alignHomeAnchorDate(to: occurredAt)
             }
             .accessibilityIdentifier("sheet.addRecord")
             .presentationDetents([.large])
@@ -926,6 +927,10 @@ struct RootShellView: View {
         let start = calendar.startOfDay(for: date)
         let end = calendar.date(byAdding: .day, value: 1, to: start) ?? start
         return DateInterval(start: start, end: end)
+    }
+
+    private func alignHomeAnchorDate(to occurredAt: Date) {
+        homeAnchorDate = dateInterval(for: selectedHomePeriod, anchorDate: occurredAt).start
     }
 
     private func summary(for transactions: [NumiCore.Transaction]) -> TransactionSummary {

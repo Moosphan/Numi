@@ -672,6 +672,15 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["昨天"].waitForExistence(timeout: 5))
     }
 
+    func testAddingExpenseWithPreviousDateShowsUpOnHomeImmediately() {
+        let app = launchApp()
+
+        addExpense(in: app, categoryName: "餐饮", amountDigits: ["1", "2"], dateShortcut: "昨天")
+
+        XCTAssertTrue(app.descendants(matching: .any)["record.餐饮"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["home.sectionDate.yesterday"].waitForExistence(timeout: 5))
+    }
+
     func testHiddenExpenseCategoryIsRemovedFromAddRecordGrid() {
         let app = launchApp()
 

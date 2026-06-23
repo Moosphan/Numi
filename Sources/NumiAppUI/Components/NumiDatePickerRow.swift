@@ -76,6 +76,14 @@ public struct NumiDatePickerRow: View {
     }
 
     public static func displayText(for date: Date, calendar: Calendar = .current) -> String {
+        displayText(for: date, calendar: calendar, includesTime: true)
+    }
+
+    public static func displayText(
+        for date: Date,
+        calendar: Calendar = .current,
+        includesTime: Bool
+    ) -> String {
         if calendar.isDateInToday(date) {
             return "今天"
         }
@@ -89,8 +97,7 @@ public struct NumiDatePickerRow: View {
 
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
+        formatter.dateFormat = includesTime ? "M月d日 HH:mm" : "M月d日"
         return formatter.string(from: date)
     }
 
