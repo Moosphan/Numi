@@ -469,6 +469,7 @@ private struct AddRecordEntryContent: View {
                 .opacity(isNoteFocused ? 0.001 : 1)
                 .allowsHitTesting(!isNoteFocused)
                 .accessibilityIdentifier("action.saveAndAddAnother")
+                .accessibilityValue("style.dateAccent")
 
                 Button {
                     save()
@@ -486,6 +487,7 @@ private struct AddRecordEntryContent: View {
                 .opacity(isNoteFocused ? 0.001 : 1)
                 .allowsHitTesting(!isNoteFocused)
                 .accessibilityIdentifier("action.submitRecord")
+                .accessibilityValue("style.accent")
             }
         }
         .padding(.horizontal, NumiSpacing.s4)
@@ -589,8 +591,9 @@ private struct AddRecordEntryContent: View {
         }
         .padding(.horizontal, 12)
         .frame(maxWidth: .infinity, minHeight: 44)
-        .background(NumiColor.surfaceCardSubtle)
+        .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+        .shadow(color: .black.opacity(0.035), radius: 6, x: 0, y: 2)
     }
 
     private var selectedCategory: NumiCore.Category? {
@@ -735,10 +738,12 @@ private struct AddRecordEntryContent: View {
             }
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity, minHeight: 42)
-            .background(NumiColor.surfaceCardSubtle)
+            .background(NumiColor.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+            .shadow(color: .black.opacity(0.035), radius: 6, x: 0, y: 2)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(accessibilityIdentifier)
+        .accessibilityValue("style.neutral")
     }
 }

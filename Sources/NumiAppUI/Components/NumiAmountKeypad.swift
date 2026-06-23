@@ -2,6 +2,12 @@ import SwiftUI
 import NumiCore
 
 public struct NumiAmountKeypad: View {
+    enum KeyStyle: String {
+        case neutral
+        case accent
+        case dateAccent
+    }
+
     @Binding private var state: MoneyInputState
     private let dateShortcutTitle: String
     private let dateAccessorySystemImage: String
@@ -42,9 +48,16 @@ public struct NumiAmountKeypad: View {
                                 .frame(maxWidth: .infinity, minHeight: 52)
                                 .background(keyBackground(key))
                                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                                .shadow(
+                                    color: keyShadowColor(key),
+                                    radius: keyShadowRadius(key),
+                                    x: 0,
+                                    y: keyShadowYOffset(key)
+                                )
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("keypad.\(accessibilityKeyName(key))")
+                        .accessibilityValue("style.\(keyStyle(for: key).rawValue)")
                     }
                 }
             }
@@ -70,16 +83,41 @@ public struct NumiAmountKeypad: View {
     }
 
     private func keyBackground(_ key: String) -> Color {
-        if key == dateShortcutTitle {
+        switch keyStyle(for: key) {
+        case .neutral:
+            return NumiColor.surfaceCard
+        case .accent:
+            return NumiColor.controlFillStrong.opacity(0.72)
+        case .dateAccent:
             return NumiColor.controlFill
+        }
+    }
+
+    private func keyShadowColor(_ key: String) -> Color {
+        switch keyStyle(for: key) {
+        case .neutral:
+            return .black.opacity(0.035)
+        case .accent, .dateAccent:
+            return .clear
+        }
+    }
+
+    private func keyShadowRadius(_ key: String) -> CGFloat {
+        keyStyle(for: key) == .neutral ? 6 : 0
+    }
+
+    private func keyShadowYOffset(_ key: String) -> CGFloat {
+        keyStyle(for: key) == .neutral ? 2 : 0
+    }
+
+    func keyStyle(for key: String) -> KeyStyle {
+        if key == dateShortcutTitle {
+            return .dateAccent
         }
         if ["+", "-", "="].contains(key) {
-            return NumiColor.controlFillStrong.opacity(0.72)
+            return .neutral
         }
-        if key == "delete.left" {
-            return NumiColor.controlFill
-        }
-        return NumiColor.controlFill
+        return .neutral
     }
 
     private func handle(_ key: String) {

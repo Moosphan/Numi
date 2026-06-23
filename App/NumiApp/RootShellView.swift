@@ -50,6 +50,10 @@ struct RootShellView: View {
     @State private var insightsAnchorDate = Date()
     @State private var selectedCategoryRow: InsightsDistributionRow?
     @State private var selectedCategoryType: String = "expense"
+    @State private var isBottomAccessoryHiddenByPage = false
+    @State private var bottomAccessoryMeasuredHeight: CGFloat = 0
+    @State private var bottomAccessoryHiddenProgress: CGFloat = 0
+    @StateObject private var bottomAccessoryController = NumiBottomAccessoryController()
 
     init() {
         do {
@@ -98,49 +102,19 @@ struct RootShellView: View {
                 currentPage
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-
-            if !isAddingRecord && !isTransactionSearchPresented {
-                VStack(spacing: 0) {
-                    Spacer()
-                    ZStack(alignment: .leading) {
-                        // Sliding indicator
-                        Capsule()
-                            .fill(NumiColor.accentPrimary.opacity(0.14))
-                            .frame(
-                                width: NumiChromeMetrics.tabBarSelectionWidth,
-                                height: NumiChromeMetrics.tabBarSelectionHeight
-                            )
-                            .offset(x: indicatorOffset)
-                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: selectedTab)
-
-                        HStack(spacing: 0) {
-                            ForEach(Tab.allCases, id: \.self) { tab in
-                                Button {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        selectedTab = tab
-                                    }
-                                } label: {
-                                    VStack(spacing: NumiChromeMetrics.tabBarLabelSpacing) {
-                                        Image(systemName: tab.systemImage)
-                                            .font(.system(size: NumiChromeMetrics.tabBarSymbolSize, weight: .medium))
-                                        Text(tab.rawValue)
-                                            .font(.system(size: 11, weight: selectedTab == tab ? .medium : .regular))
-                                    }
-                                    .foregroundStyle(selectedTab == tab ? NumiColor.textPrimary : NumiColor.textTertiary)
-                                    .frame(maxWidth: .infinity, minHeight: NumiChromeMetrics.tabBarItemMinHeight)
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityIdentifier("tab.\(tab.rawValue)")
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.top, NumiChromeMetrics.tabBarTopPadding)
-                    .padding(.bottom, NumiChromeMetrics.tabBarBottomPadding)
-                    .background(.ultraThinMaterial)
-                }
-                .ignoresSafeArea(.keyboard, edges: .bottom)
-            }
+        }
+        .environmentObject(bottomAccessoryController)
+        .onReceive(bottomAccessoryController.$isHidden) { isHidden in
+            isBottomAccessoryHiddenByPage = isHidden
+        }
+        .onAppear {
+            bottomAccessoryHiddenProgress = bottomAccessoryShouldBeHidden ? 1 : 0
+        }
+        .onChange(of: isBottomAccessoryHiddenByPage) { _, _ in
+            animateBottomAccessoryVisibility()
+        }
+        .onChange(of: showsBottomActionAccessory) { _, _ in
+            animateBottomAccessoryVisibility()
         }
         .overlay {
             if isBlurred || isLocked {
@@ -156,6 +130,18 @@ struct RootShellView: View {
         .onReceive(NotificationCenter.default.publisher(for: .init("NumiIncomingURL"))) { notification in
             if let url = notification.object as? URL {
                 handleIncomingURL(url)
+            }
+        }
+        .overlay {
+            GeometryReader { proxy in
+                bottomNavigationBar
+                    .padding(.bottom, NumiSpacing.s2)
+                    .offset(
+                        y: bottomAccessoryHiddenProgress *
+                            bottomAccessoryHiddenDistance(bottomSafeAreaInset: proxy.safeAreaInsets.bottom)
+                    )
+                    .allowsHitTesting(!bottomAccessoryShouldBeHidden && bottomAccessoryHiddenProgress < 0.5)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             }
         }
         .overlay(alignment: .bottom) {
@@ -298,240 +284,245 @@ struct RootShellView: View {
     private var currentPage: some View {
         switch selectedTab {
         case .transactions:
-            let data = summaryAndSections()
-            NavigationStack {
-                TransactionsHomeView(
-                    summary: data.summary,
-                    periodTitle: homePeriodTitle,
-                    selectedPeriod: selectedHomePeriod,
-                    isNextPeriodEnabled: canMoveHomePeriodForward,
-                    sections: data.sections,
-                    onPreviousPeriod: moveHomePeriodBackward,
-                    onNextPeriod: moveHomePeriodForward,
-                    onSelectPeriod: { period in
-                        selectedHomePeriod = period
-                    },
-                    onSearch: {
-                        isTransactionSearchPresented = true
-                    },
-                    onSelect: { transaction in
-                        selectedTransactionID = transaction.id
-                    },
-                    onPrimaryAction: {
-                        isAddingRecord = true
-                    },
-                    onEdit: { transaction in
-                        editingTransactionID = transaction.id
-                    },
-                    onShare: { transaction in
-                        shareSheetPayload = ShareSheetPayload(text: shareText(for: transaction))
-                    },
-                    onDelete: { transaction in
-                        do {
-                            try store.softDeleteTransaction(id: transaction.id)
-                            lastDeletedTransactionID = transaction.id
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onUndoDelete: {
-                        guard let transactionID = lastDeletedTransactionID else { return }
-                        do {
-                            try store.restoreTransaction(id: transactionID)
-                            lastDeletedTransactionID = nil
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    }
-                )
-                .accessibilityHidden(isTransactionSearchPresented)
-                .overlay(alignment: .bottomTrailing) {
-                    if !isTransactionSearchPresented {
-                        NumiFloatingActionButton {
-                            isAddingRecord = true
-                        }
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 92)
-                        .accessibilityIdentifier("button.addRecord")
-                    }
-                }
-            }
+            transactionsRoot
         case .insights:
-            let summary = insightsSummary()
-            let distribution = insightsDistribution()
-            let income = insightsIncomeDistribution()
-            let periodTitle = insightsPeriodTitle
+            insightsRoot
+        case .plans:
+            plansRoot
+        case .settings:
+            settingsRoot
+        }
+    }
 
-            NavigationStack {
-                InsightsView(
-                    summary: summary,
-                    distribution: distribution,
-                    incomeDistribution: income,
-                    periodTitle: periodTitle,
-                    onPreviousPeriod: { moveInsightsPeriod(-1) },
-                    onNextPeriod: { moveInsightsPeriod(1) },
-                    onTimeDimensionChange: { dim in
-                        insightsDimension = dim
-                        insightsAnchorDate = Date()
-                    },
-                    onSelectCategory: { row, type in
-                        selectedCategoryRow = row
-                        selectedCategoryType = type
+    private var transactionsRoot: some View {
+        let data = summaryAndSections()
+        return NavigationStack {
+            TransactionsHomeView(
+                summary: data.summary,
+                periodTitle: homePeriodTitle,
+                selectedPeriod: selectedHomePeriod,
+                isNextPeriodEnabled: canMoveHomePeriodForward,
+                sections: data.sections,
+                onPreviousPeriod: moveHomePeriodBackward,
+                onNextPeriod: moveHomePeriodForward,
+                onSelectPeriod: { period in
+                    selectedHomePeriod = period
+                },
+                onSearch: {
+                    isTransactionSearchPresented = true
+                },
+                onSelect: { transaction in
+                    selectedTransactionID = transaction.id
+                },
+                onPrimaryAction: {
+                    isAddingRecord = true
+                },
+                onEdit: { transaction in
+                    editingTransactionID = transaction.id
+                },
+                onShare: { transaction in
+                    shareSheetPayload = ShareSheetPayload(text: shareText(for: transaction))
+                },
+                onDelete: { transaction in
+                    do {
+                        try store.softDeleteTransaction(id: transaction.id)
+                        lastDeletedTransactionID = transaction.id
+                    } catch {
+                        initializationError = error.localizedDescription
                     }
-                )
-                .navigationDestination(isPresented: Binding(
-                    get: { selectedCategoryRow != nil },
-                    set: { if !$0 { selectedCategoryRow = nil } }
-                )) {
-                    if let row = selectedCategoryRow {
-                        let accentColor = selectedCategoryType == "expense" ? NumiColor.expenseText : NumiColor.incomeText
-                        CategoryTransactionsDetailView(
-                            categoryName: row.categoryName,
-                            iconName: row.iconName,
-                            transactions: categoryTransactions(for: row.categoryID),
-                            categories: store.categories,
-                            accentColor: accentColor,
-                            periodTitle: insightsPeriodTitle
-                        )
+                },
+                onUndoDelete: {
+                    guard let transactionID = lastDeletedTransactionID else { return }
+                    do {
+                        try store.restoreTransaction(id: transactionID)
+                        lastDeletedTransactionID = nil
+                    } catch {
+                        initializationError = error.localizedDescription
                     }
                 }
+            )
+            .accessibilityHidden(isTransactionSearchPresented)
+        }
+    }
+
+    private var insightsRoot: some View {
+        let summary = insightsSummary()
+        let distribution = insightsDistribution()
+        let income = insightsIncomeDistribution()
+        let periodTitle = insightsPeriodTitle
+
+        return NavigationStack {
+            InsightsView(
+                summary: summary,
+                distribution: distribution,
+                incomeDistribution: income,
+                periodTitle: periodTitle,
+                onPreviousPeriod: { moveInsightsPeriod(-1) },
+                onNextPeriod: { moveInsightsPeriod(1) },
+                onTimeDimensionChange: { dim in
+                    insightsDimension = dim
+                    insightsAnchorDate = Date()
+                },
+                onSelectCategory: { row, type in
+                    selectedCategoryRow = row
+                    selectedCategoryType = type
+                }
+            )
+            .navigationDestination(isPresented: Binding(
+                get: { selectedCategoryRow != nil },
+                set: { if !$0 { selectedCategoryRow = nil } }
+            )) {
+                if let row = selectedCategoryRow {
+                    let accentColor = selectedCategoryType == "expense" ? NumiColor.expenseText : NumiColor.incomeText
+                    CategoryTransactionsDetailView(
+                        categoryName: row.categoryName,
+                        iconName: row.iconName,
+                        transactions: categoryTransactions(for: row.categoryID),
+                        categories: store.categories,
+                        accentColor: accentColor,
+                        periodTitle: insightsPeriodTitle
+                    )
+                }
             }
-        case .plans:
-            NavigationStack {
-                PlansView(
-                    budgets: budgetCards(),
-                    subscriptions: store.subscriptions,
-                    installmentPlans: store.installmentPlans,
-                    installmentPeriods: store.installmentPeriods,
-                    categories: store.categories,
-                    accounts: store.accounts,
-                    onSaveBudget: { period, amount, isEnabled in
-                        do {
-                            try store.upsertBudgetSetting(period: period, amount: amount, isEnabled: isEnabled)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onAddSubscription: { sub in
-                        do {
-                            try store.createSubscription(sub)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onUpdateSubscription: { sub in
-                        do {
-                            try store.updateSubscription(sub)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onDeleteSubscription: { id in
-                        do {
-                            try store.deleteSubscription(id: id)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onAddInstallmentPlan: { plan in
-                        do {
-                            try store.createInstallmentPlan(plan)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onUpdateInstallmentPlan: { plan in
-                        // 分期更新需要重新生成期次，暂时只支持删除重建
-                        do {
-                            try store.deleteInstallmentPlan(id: plan.id)
-                            try store.createInstallmentPlan(plan)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onDeleteInstallmentPlan: { id in
-                        do {
-                            try store.deleteInstallmentPlan(id: id)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
+        }
+    }
+
+    private var plansRoot: some View {
+        NavigationStack {
+            PlansView(
+                budgets: budgetCards(),
+                subscriptions: store.subscriptions,
+                installmentPlans: store.installmentPlans,
+                installmentPeriods: store.installmentPeriods,
+                categories: store.categories,
+                accounts: store.accounts,
+                onSaveBudget: { period, amount, isEnabled in
+                    do {
+                        try store.upsertBudgetSetting(period: period, amount: amount, isEnabled: isEnabled)
+                    } catch {
+                        initializationError = error.localizedDescription
                     }
-                )
-            }
-        case .settings:
-            NavigationStack {
-                SettingsView(
-                    categories: store.categories,
-                    accounts: store.accounts,
-                    transactions: store.visibleTransactions,
-                    exportSnapshot: { store.exportSnapshot() },
-                    importSnapshot: { snapshot in try store.importSnapshot(snapshot) },
-                    onCategoryVisibilityChange: { category, isHidden in
-                        do {
-                            try store.updateCategoryVisibility(id: category.id, isHidden: isHidden)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onAccountVisibilityChange: { account, isHidden in
-                        do {
-                            try store.updateAccountVisibility(id: account.id, isHidden: isHidden)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onAccountCreate: { draft in
-                        do {
-                            guard let balance = try? Money(decimalString: draft.balanceText, currencyCode: draft.currencyCode) else { return }
-                            try store.createAccount(
-                                name: draft.name,
-                                type: draft.type,
-                                balance: balance,
-                                isIncludedInAssets: draft.isIncludedInAssets,
-                                isHidden: draft.isHidden
-                            )
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onAccountUpdate: { account, draft in
-                        do {
-                            guard let balance = try? Money(decimalString: draft.balanceText, currencyCode: draft.currencyCode) else { return }
-                            try store.updateAccount(
-                                id: account.id,
-                                name: draft.name,
-                                type: draft.type,
-                                balance: balance,
-                                isIncludedInAssets: draft.isIncludedInAssets,
-                                isHidden: draft.isHidden
-                            )
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onCategoryCreate: { kind, name, icon in
-                        do {
-                            try store.createCategory(kind: kind, name: name, icon: icon)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onCategoryDelete: { category in
-                        do {
-                            try store.deleteCategory(id: category.id)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
-                    },
-                    onAccountDelete: { account in
-                        do {
-                            try store.deleteAccount(id: account.id)
-                        } catch {
-                            initializationError = error.localizedDescription
-                        }
+                },
+                onAddSubscription: { sub in
+                    do {
+                        try store.createSubscription(sub)
+                    } catch {
+                        initializationError = error.localizedDescription
                     }
-                )
-            }
+                },
+                onUpdateSubscription: { sub in
+                    do {
+                        try store.updateSubscription(sub)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onDeleteSubscription: { id in
+                    do {
+                        try store.deleteSubscription(id: id)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onAddInstallmentPlan: { plan in
+                    do {
+                        try store.createInstallmentPlan(plan)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onUpdateInstallmentPlan: { plan in
+                    do {
+                        try store.deleteInstallmentPlan(id: plan.id)
+                        try store.createInstallmentPlan(plan)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onDeleteInstallmentPlan: { id in
+                    do {
+                        try store.deleteInstallmentPlan(id: id)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                }
+            )
+        }
+    }
+
+    private var settingsRoot: some View {
+        NavigationStack {
+            SettingsView(
+                categories: store.categories,
+                accounts: store.accounts,
+                transactions: store.visibleTransactions,
+                exportSnapshot: { store.exportSnapshot() },
+                importSnapshot: { snapshot in try store.importSnapshot(snapshot) },
+                onCategoryVisibilityChange: { category, isHidden in
+                    do {
+                        try store.updateCategoryVisibility(id: category.id, isHidden: isHidden)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onAccountVisibilityChange: { account, isHidden in
+                    do {
+                        try store.updateAccountVisibility(id: account.id, isHidden: isHidden)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onAccountCreate: { draft in
+                    do {
+                        guard let balance = try? Money(decimalString: draft.balanceText, currencyCode: draft.currencyCode) else { return }
+                        try store.createAccount(
+                            name: draft.name,
+                            type: draft.type,
+                            balance: balance,
+                            isIncludedInAssets: draft.isIncludedInAssets,
+                            isHidden: draft.isHidden
+                        )
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onAccountUpdate: { account, draft in
+                    do {
+                        guard let balance = try? Money(decimalString: draft.balanceText, currencyCode: draft.currencyCode) else { return }
+                        try store.updateAccount(
+                            id: account.id,
+                            name: draft.name,
+                            type: draft.type,
+                            balance: balance,
+                            isIncludedInAssets: draft.isIncludedInAssets,
+                            isHidden: draft.isHidden
+                        )
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onCategoryCreate: { kind, name, icon in
+                    do {
+                        try store.createCategory(kind: kind, name: name, icon: icon)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onCategoryDelete: { category in
+                    do {
+                        try store.deleteCategory(id: category.id)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
+                onAccountDelete: { account in
+                    do {
+                        try store.deleteAccount(id: account.id)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                }
+            )
         }
     }
 
@@ -1142,16 +1133,67 @@ struct RootShellView: View {
         )
     }
 
-    private var indicatorOffset: CGFloat {
-        let index = CGFloat(Tab.allCases.firstIndex(of: selectedTab) ?? 0)
-        let tabWidth = (UIScreen.main.bounds.width - 28) / CGFloat(Tab.allCases.count)
-        let centerOffset = (tabWidth - NumiChromeMetrics.tabBarSelectionWidth) / 2
-        return index * tabWidth + centerOffset
+    private var showsBottomActionAccessory: Bool {
+        !isAddingRecord && !isTransactionSearchPresented
     }
 
-    private var blurOverlay: some View {
+    private var bottomAccessoryShouldBeHidden: Bool {
+        isBottomAccessoryHiddenByPage || !showsBottomActionAccessory
+    }
+
+    private var bottomNavigationBar: some View {
+        NumiBottomNavigationBar(
+            items: Tab.allCases.map {
+                NumiBottomNavigationBar.Item(
+                    id: $0.rawValue,
+                    title: $0.rawValue,
+                    systemImage: $0.systemImage
+                )
+            },
+            selectedID: selectedTab.rawValue,
+            onSelect: { selectedID in
+                guard let tab = Tab(rawValue: selectedID) else { return }
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    selectedTab = tab
+                }
+            },
+            trailingActionTitle: "新建账单",
+            trailingActionSystemImage: "pencil",
+            trailingAction: {
+                isAddingRecord = true
+            }
+        )
+        .background(.clear)
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear {
+                        bottomAccessoryMeasuredHeight = proxy.size.height
+                    }
+                    .onChange(of: proxy.size.height) { _, newValue in
+                        bottomAccessoryMeasuredHeight = newValue
+                    }
+            }
+        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+    }
+
+    private func bottomAccessoryHiddenDistance(bottomSafeAreaInset: CGFloat) -> CGFloat {
+        let measuredHeight = max(bottomAccessoryMeasuredHeight, NumiChromeMetrics.bottomAccessoryMinimumHeight)
+        return measuredHeight + bottomSafeAreaInset + NumiChromeMetrics.bottomAccessoryHiddenAdditionalTravel
+    }
+
+    private func animateBottomAccessoryVisibility() {
+        withAnimation(.interactiveSpring(response: 0.36, dampingFraction: 0.84, blendDuration: 0.14)) {
+            bottomAccessoryHiddenProgress = bottomAccessoryShouldBeHidden ? 1 : 0
+        }
+    }
+
+}
+
+private extension RootShellView {
+    var blurOverlay: some View {
         ZStack {
-            // Blurred background
             Rectangle()
                 .fill(.ultraThinMaterial)
                 .ignoresSafeArea()
@@ -1182,7 +1224,7 @@ struct RootShellView: View {
         }
     }
 
-    private func authenticateUser(completion: @escaping (Bool) -> Void) {
+    func authenticateUser(completion: @escaping (Bool) -> Void) {
         let context = LAContext()
         var error: NSError?
 

@@ -21,7 +21,10 @@ public struct ThemeSelectionView: View {
             .padding(.top, NumiSpacing.s4)
             .padding(.bottom, 120)
         }
+        .scrollIndicators(.hidden)
+        .accessibilityIdentifier("scroll.themeSelection")
         .background(NumiColor.surfacePage)
+        .numiBottomAccessoryVisibility(true)
         .navigationTitle("主题")
         .modifier(LargeTitleNavigationChrome())
     }

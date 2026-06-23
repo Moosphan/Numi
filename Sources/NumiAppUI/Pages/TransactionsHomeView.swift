@@ -200,7 +200,7 @@ public struct TransactionsHomeView: View {
     private var contentView: some View {
         if sections.isEmpty {
             GeometryReader { proxy in
-                ScrollView {
+                NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.transactionsHome") {
                     VStack(spacing: NumiSpacing.s5) {
                         summaryGrid
                         homeEmptyState
@@ -210,10 +210,9 @@ public struct TransactionsHomeView: View {
                     .padding(.top, NumiSpacing.s3)
                     .padding(.bottom, 120)
                 }
-                .scrollIndicators(.hidden)
             }
         } else {
-            ScrollView {
+            NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.transactionsHome") {
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                     summaryGrid
                         .padding(.horizontal, NumiSpacing.s5)
@@ -224,7 +223,6 @@ public struct TransactionsHomeView: View {
                 }
                 .padding(.bottom, 120)
             }
-            .scrollIndicators(.hidden)
         }
     }
 

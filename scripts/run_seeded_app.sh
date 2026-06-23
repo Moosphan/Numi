@@ -4,6 +4,30 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+CODEX_TMP_ROOT="${CODEX_TMP_ROOT:-$ROOT/.codex-tmp}"
+CODEX_HOME_DIR="${CODEX_HOME_DIR:-$CODEX_TMP_ROOT/home}"
+CODEX_TMP_DIR="${CODEX_TMP_DIR:-$CODEX_TMP_ROOT/tmp}"
+CODEX_SWIFTPM_DIR="${CODEX_SWIFTPM_DIR:-$CODEX_TMP_ROOT/swiftpm}"
+CODEX_CLANG_DIR="${CODEX_CLANG_DIR:-$CODEX_TMP_ROOT/clang}"
+CODEX_DERIVED_DATA_DIR="${CODEX_DERIVED_DATA_DIR:-$CODEX_TMP_ROOT/derived}"
+CODEX_PACKAGES_DIR="${CODEX_PACKAGES_DIR:-$CODEX_TMP_ROOT/packages}"
+
+mkdir -p \
+  "$CODEX_HOME_DIR" \
+  "$CODEX_TMP_DIR" \
+  "$CODEX_SWIFTPM_DIR" \
+  "$CODEX_CLANG_DIR" \
+  "$CODEX_DERIVED_DATA_DIR" \
+  "$CODEX_PACKAGES_DIR"
+
+export HOME="$CODEX_HOME_DIR"
+export CFFIXED_USER_HOME="$CODEX_HOME_DIR"
+export TMPDIR="$CODEX_TMP_DIR/"
+export SWIFTPM_MODULECACHE_OVERRIDE="$CODEX_SWIFTPM_DIR"
+export CLANG_MODULE_CACHE_PATH="$CODEX_CLANG_DIR"
+export IDEPackageSupportDisableManifestSandbox="${IDEPackageSupportDisableManifestSandbox:-1}"
+export XBS_DISABLE_SANDBOXED_BUILDS="${XBS_DISABLE_SANDBOXED_BUILDS:-1}"
+
 PROFILE="${1:-showcase}"
 SIMULATOR_NAME="${SIMULATOR_NAME:-iPhone 15}"
 DEV_STORE_ID="${NUMI_DEV_STORE_ID:-seeded-${PROFILE}}"
@@ -16,9 +40,11 @@ xcodebuild \
   -project Numi.xcodeproj \
   -scheme Numi \
   -destination "platform=iOS Simulator,name=${SIMULATOR_NAME}" \
+  -derivedDataPath "$CODEX_DERIVED_DATA_DIR" \
+  -clonedSourcePackagesDirPath "$CODEX_PACKAGES_DIR" \
   build >/dev/null
 
-APP_PATH="$(find ~/Library/Developer/Xcode/DerivedData -path '*Build/Products/Debug-iphonesimulator/Numi.app' | head -n 1)"
+APP_PATH="$(find "$CODEX_DERIVED_DATA_DIR" -path '*Build/Products/Debug-iphonesimulator/Numi.app' | head -n 1)"
 if [[ -z "${APP_PATH}" ]]; then
   echo "Unable to find built Numi.app" >&2
   exit 1

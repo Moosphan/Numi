@@ -37,7 +37,10 @@ public struct DataManagementView: View {
                 .padding(NumiSpacing.s5)
                 .padding(.bottom, 120)
             }
+            .scrollIndicators(.hidden)
+            .accessibilityIdentifier("scroll.dataManagement")
             .background(NumiColor.surfacePage)
+            .numiBottomAccessoryVisibility(true)
             .navigationTitle("导入与导出")
             .modifier(LargeTitleNavigationChrome())
 
@@ -248,7 +251,10 @@ public struct BackupView: View {
                 .padding(NumiSpacing.s5)
                 .padding(.bottom, 120)
             }
+            .scrollIndicators(.hidden)
+            .accessibilityIdentifier("scroll.backupManagement")
             .background(NumiColor.surfacePage)
+            .numiBottomAccessoryVisibility(true)
             .navigationTitle("本地备份")
             .modifier(LargeTitleNavigationChrome())
 

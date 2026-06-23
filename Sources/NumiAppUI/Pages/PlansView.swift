@@ -80,7 +80,7 @@ public struct PlansView: View {
     }
 
     public var body: some View {
-        ScrollView {
+        NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.plansHome") {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 if let monthlyBudget {
                     BudgetProgressCard(
@@ -1219,6 +1219,9 @@ private struct SubscriptionDetailView: View {
             .padding(NumiSpacing.s5)
             .padding(.bottom, 120)
         }
+        .scrollIndicators(.hidden)
+        .accessibilityIdentifier("scroll.subscriptionDetail")
+        .numiBottomAccessoryVisibility(true)
         .background(NumiColor.surfacePage)
         .navigationTitle("订阅详情")
         .confirmationDialog("删除「\(subscription.name)」？", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
@@ -1412,6 +1415,9 @@ private struct InstallmentDetailView: View {
             .padding(NumiSpacing.s5)
             .padding(.bottom, 120)
         }
+        .scrollIndicators(.hidden)
+        .accessibilityIdentifier("scroll.installmentDetail")
+        .numiBottomAccessoryVisibility(true)
         .background(NumiColor.surfacePage)
         .navigationTitle("分期详情")
         .modifier(LargeTitleNavigationChrome())

@@ -15,7 +15,7 @@ public struct NumiFloatingActionButton: View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.system(size: 20, weight: .semibold))
-            .foregroundStyle(NumiColor.textPrimary)
+                .foregroundStyle(NumiColor.textPrimary)
             .frame(width: 54, height: 54)
             .background(NumiColor.controlFillStrong)
             .clipShape(Circle())

@@ -61,7 +61,10 @@ public struct CategoryManagementView: View {
             .padding(.top, NumiSpacing.s4)
             .padding(.bottom, 120)
         }
+        .scrollIndicators(.hidden)
+        .accessibilityIdentifier("scroll.categoryManagement")
         .background(NumiColor.surfacePage)
+        .numiBottomAccessoryVisibility(true)
         .navigationTitle("分类管理")
         .modifier(LargeTitleNavigationChrome())
         .tint(NumiColor.accentDeep)

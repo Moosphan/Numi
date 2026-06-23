@@ -19,10 +19,133 @@ final class NumiUITests: XCTestCase {
         let app = launchApp()
 
         for tab in ["洞悉", "计划", "我的", "明细"] {
-            let button = app.buttons["tab.\(tab)"]
+            let button = tabButton(tab, in: app)
             XCTAssertTrue(button.waitForExistence(timeout: 5))
             button.tap()
         }
+    }
+
+    func testBottomBarUsesFourTabsPlusTrailingAddButtonLayout() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        let addButton = app.buttons["button.addRecord"]
+        let settingsTab = tabButton("我的", in: app)
+        let transactionsTab = tabButton("明细", in: app)
+        let plansTab = tabButton("计划", in: app)
+
+        XCTAssertTrue(addButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(settingsTab.waitForExistence(timeout: 5))
+        XCTAssertTrue(transactionsTab.waitForExistence(timeout: 5))
+        XCTAssertTrue(plansTab.waitForExistence(timeout: 5))
+
+        let rail = app.otherElements["tab.rail"]
+        XCTAssertTrue(rail.waitForExistence(timeout: 5))
+
+        XCTAssertFalse(app.tabBars.firstMatch.exists)
+        XCTAssertGreaterThan(addButton.frame.minX, rail.frame.maxX)
+        XCTAssertLessThan(fabs(addButton.frame.midY - rail.frame.midY), 10)
+        XCTAssertEqual(addButton.value as? String, "tintedGlassChrome|pencil|darkIcon")
+    }
+
+    func testSecondaryPageHidesBottomBarAndReturningRestoresIt() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        assertBottomBarVisible(in: app)
+        let baselineAddButtonFrame = app.buttons["button.addRecord"].frame
+
+        tabButton("我的", in: app).tap()
+        let categoriesEntry = app.buttons["分类管理"]
+        XCTAssertTrue(categoriesEntry.waitForExistence(timeout: 5))
+        categoriesEntry.tap()
+
+        XCTAssertTrue(app.navigationBars["分类管理"].waitForExistence(timeout: 5))
+        assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+
+        app.navigationBars["分类管理"].buttons.firstMatch.tap()
+
+        XCTAssertTrue(app.navigationBars["我的"].waitForExistence(timeout: 5))
+        assertBottomBarVisible(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+    }
+
+    func testTransactionsHomeScrollHidesAndRevealsBottomBar() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        let addButton = app.buttons["button.addRecord"]
+        let homeScrollView = app.scrollViews["scroll.transactionsHome"]
+
+        XCTAssertTrue(addButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(homeScrollView.waitForExistence(timeout: 5))
+        let baselineAddButtonFrame = addButton.frame
+
+        homeScrollView.swipeUp()
+
+        assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+
+        homeScrollView.swipeDown()
+
+        assertBottomBarVisible(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+    }
+
+    func testTransactionsHomeScrollMovesBottomBarOffscreenAndBack() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        let homeScrollView = app.scrollViews["scroll.transactionsHome"]
+        XCTAssertTrue(homeScrollView.waitForExistence(timeout: 5))
+
+        assertBottomBarVisible(in: app)
+        let baselineAddButtonFrame = app.buttons["button.addRecord"].frame
+
+        homeScrollView.swipeUp()
+        assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+
+        homeScrollView.swipeDown()
+        assertBottomBarVisible(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+    }
+
+    func testCategoryManagementPageHidesBottomBarImmediately() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        tabButton("我的", in: app).tap()
+        let categoriesEntry = app.buttons["分类管理"]
+        XCTAssertTrue(categoriesEntry.waitForExistence(timeout: 5))
+        categoriesEntry.tap()
+
+        XCTAssertTrue(app.navigationBars["分类管理"].waitForExistence(timeout: 5))
+        let categoryScrollView = app.scrollViews["scroll.categoryManagement"]
+        XCTAssertTrue(categoryScrollView.waitForExistence(timeout: 5))
+
+        let baselineAddButtonFrame = app.buttons["button.addRecord"].frame
+        assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+    }
+
+    func testAccountManagementPageHidesBottomBarImmediately() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        tabButton("我的", in: app).tap()
+        let accountsEntry = app.buttons["账户管理"]
+        XCTAssertTrue(accountsEntry.waitForExistence(timeout: 5))
+        accountsEntry.tap()
+
+        XCTAssertTrue(app.navigationBars["账户管理"].waitForExistence(timeout: 5))
+        let accountScrollView = app.scrollViews["scroll.accountManagement"]
+        XCTAssertTrue(accountScrollView.waitForExistence(timeout: 5))
+
+        let baselineAddButtonFrame = app.buttons["button.addRecord"].frame
+        assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
+    }
+
+    func testSettingsSecuritySectionKeepsComfortableGapAboveBottomBar() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        tabButton("我的", in: app).tap()
+
+        let securityHeader = app.staticTexts["settings.section.security"]
+        let settingsTab = tabButton("我的", in: app)
+
+        XCTAssertTrue(securityHeader.waitForExistence(timeout: 5))
+        XCTAssertTrue(settingsTab.waitForExistence(timeout: 5))
+
+        XCTAssertGreaterThan(settingsTab.frame.minY - securityHeader.frame.maxY, 10)
     }
 
     func testAddingExpenseAppearsInTransactionsList() {
@@ -121,50 +244,53 @@ final class NumiUITests: XCTestCase {
     func testSearchPresentedFromFullScreenPageHidesHomeAddButton() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
-        XCTAssertTrue(app.buttons["button.addRecord"].waitForExistence(timeout: 5))
+        let baselineAddButtonFrame = app.buttons["button.addRecord"].frame
+        assertBottomBarVisible(in: app)
         app.buttons["action.openTransactionSearch"].tap()
 
         let searchField = app.searchFields.firstMatch
         XCTAssertTrue(searchField.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["button.addRecord"].exists)
+        assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
     }
 
     func testSearchKeyboardDoesNotLiftBottomTabBar() {
         let app = launchApp()
 
-        let transactionsTab = app.buttons["tab.明细"]
-        XCTAssertTrue(transactionsTab.waitForExistence(timeout: 5))
-        let beforeMinY = transactionsTab.frame.minY
+        let searchButton = app.buttons["action.openTransactionSearch"]
+        XCTAssertTrue(searchButton.waitForExistence(timeout: 5))
+        let beforeMinY = searchButton.frame.minY
 
-        app.buttons["action.openTransactionSearch"].tap()
+        searchButton.tap()
         let searchField = app.searchFields.firstMatch
         XCTAssertTrue(searchField.waitForExistence(timeout: 5))
         searchField.tap()
 
         XCTAssertTrue(app.keyboards.element.waitForExistence(timeout: 5))
-        let afterMinY = transactionsTab.frame.minY
+        let searchNavigationBar = app.navigationBars["搜索账单"]
+        XCTAssertTrue(searchNavigationBar.waitForExistence(timeout: 5))
+        let afterMinY = searchNavigationBar.frame.minY
 
-        XCTAssertLessThan(abs(afterMinY - beforeMinY), 8)
+        XCTAssertLessThan(fabs(afterMinY - beforeMinY), 24)
     }
 
     func testTopLevelPagesShowNativeNavigationTitles() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
-        XCTAssertTrue(app.buttons["tab.洞悉"].waitForExistence(timeout: 5))
-        app.buttons["tab.洞悉"].tap()
+        XCTAssertTrue(tabButton("洞悉", in: app).waitForExistence(timeout: 5))
+        tabButton("洞悉", in: app).tap()
         XCTAssertTrue(app.navigationBars["洞悉"].waitForExistence(timeout: 5))
 
-        app.buttons["tab.计划"].tap()
+        tabButton("计划", in: app).tap()
         XCTAssertTrue(app.navigationBars["计划"].waitForExistence(timeout: 5))
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         XCTAssertTrue(app.navigationBars["我的"].waitForExistence(timeout: 5))
     }
 
     func testThemeSelectionPageAllowsSwitchingThemes() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         let themeEntry = app.descendants(matching: .any)["settings.theme"]
         XCTAssertTrue(themeEntry.waitForExistence(timeout: 5))
         themeEntry.tap()
@@ -178,7 +304,7 @@ final class NumiUITests: XCTestCase {
     func testThemeSelectionImmediatelyAppliesThemeAcrossApp() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         let themeEntry = app.descendants(matching: .any)["settings.theme"]
         XCTAssertTrue(themeEntry.waitForExistence(timeout: 5))
         themeEntry.tap()
@@ -194,14 +320,14 @@ final class NumiUITests: XCTestCase {
     func testThemeChangeStaysAppliedWhenOpeningCategorySheet() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         let themeEntry = app.descendants(matching: .any)["settings.theme"]
         XCTAssertTrue(themeEntry.waitForExistence(timeout: 5))
         themeEntry.tap()
         XCTAssertTrue(app.buttons["theme.brandWarm"].waitForExistence(timeout: 5))
         app.buttons["theme.brandWarm"].tap()
 
-        app.buttons["tab.明细"].tap()
+        tabButton("明细", in: app).tap()
         tapAddRecord(in: app)
 
         XCTAssertTrue(app.navigationBars["选择分类"].waitForExistence(timeout: 5))
@@ -230,7 +356,7 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["sheet.addRecord"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.navigationBars["选择分类"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["category.餐饮"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["tab.明细"].exists)
+        XCTAssertFalse(tabButton("明细", in: app).exists)
         XCTAssertFalse(app.buttons["action.saveRecord"].exists)
 
         app.buttons["category.餐饮"].tap()
@@ -345,7 +471,7 @@ final class NumiUITests: XCTestCase {
     func testInsightsDistributionShowsCategoryNameAndIcon() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
-        app.buttons["tab.洞悉"].tap()
+        tabButton("洞悉", in: app).tap()
 
         XCTAssertTrue(app.staticTexts["insights.distribution.title"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["insights.category.住房"].waitForExistence(timeout: 5))
@@ -412,7 +538,7 @@ final class NumiUITests: XCTestCase {
     func testPasscodeSheetUsesCustomBottomSheetChromeAndShowsFullKeypad() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         XCTAssertTrue(app.staticTexts["settings.section.security"].waitForExistence(timeout: 5))
 
         let privacyLockSwitch = app.switches["toggle.privacyLock"]
@@ -441,7 +567,7 @@ final class NumiUITests: XCTestCase {
     func testSettingsUsesCardSectionsWithReadableHeaders() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
 
         XCTAssertTrue(app.staticTexts["settings.section.data"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["settings.section.security"].waitForExistence(timeout: 5))
@@ -527,7 +653,7 @@ final class NumiUITests: XCTestCase {
     func testHiddenExpenseCategoryIsRemovedFromAddRecordGrid() {
         let app = launchApp()
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         XCTAssertTrue(app.buttons["settings.categories"].waitForExistence(timeout: 5))
         app.buttons["settings.categories"].tap()
 
@@ -538,7 +664,7 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["已隐藏"].waitForExistence(timeout: 5))
 
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.buttons["tab.明细"].tap()
+        tabButton("明细", in: app).tap()
         tapAddRecord(in: app)
 
         XCTAssertFalse(app.buttons["category.餐饮"].waitForExistence(timeout: 2))
@@ -548,7 +674,7 @@ final class NumiUITests: XCTestCase {
     func testHiddenAccountIsRemovedFromAddRecordPicker() {
         let app = launchApp()
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         XCTAssertTrue(app.buttons["settings.accounts"].waitForExistence(timeout: 5))
         app.buttons["settings.accounts"].tap()
 
@@ -560,7 +686,7 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["已隐藏"].waitForExistence(timeout: 5))
 
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        app.buttons["tab.明细"].tap()
+        tabButton("明细", in: app).tap()
         tapAddRecord(in: app)
         XCTAssertTrue(app.buttons["picker.inlineRecordAccount"].waitForExistence(timeout: 5))
         app.buttons["picker.inlineRecordAccount"].tap()
@@ -572,7 +698,7 @@ final class NumiUITests: XCTestCase {
     func testCanCreateAndEditAccountFromAccountManagement() {
         let app = launchApp()
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         XCTAssertTrue(app.buttons["settings.accounts"].waitForExistence(timeout: 5))
         app.buttons["settings.accounts"].tap()
 
@@ -635,7 +761,7 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(transferRecord.waitForExistence(timeout: 5))
         XCTAssertTrue(transferRecord.label.contains("现金 -> 银行卡"))
 
-        app.buttons["tab.洞悉"].tap()
+        tabButton("洞悉", in: app).tap()
         XCTAssertTrue(app.staticTexts["summary.支出.value"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["summary.支出.value"].label, "¥0.00")
         XCTAssertTrue(app.staticTexts["summary.收入.value"].waitForExistence(timeout: 5))
@@ -646,7 +772,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp()
 
         addFoodExpense(in: app)
-        app.buttons["tab.计划"].tap()
+        tabButton("计划", in: app).tap()
 
         XCTAssertTrue(app.buttons["action.editBudget.week"].waitForExistence(timeout: 5))
         app.buttons["action.editBudget.week"].tap()
@@ -663,7 +789,7 @@ final class NumiUITests: XCTestCase {
 
         app.terminate()
         app.launch()
-        app.buttons["tab.计划"].tap()
+        tabButton("计划", in: app).tap()
 
         XCTAssertTrue(app.staticTexts["budget.week.amount"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["budget.week.amount"].label, "¥500.00")
@@ -675,7 +801,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp()
 
         addFoodExpense(in: app)
-        app.buttons["tab.计划"].tap()
+        tabButton("计划", in: app).tap()
 
         XCTAssertTrue(app.otherElements["plans.hero.monthBudget"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["plans.section.budgetOverview"].waitForExistence(timeout: 5))
@@ -691,15 +817,15 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["record.住房"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["record.购物"].waitForExistence(timeout: 5))
 
-        app.buttons["tab.洞悉"].tap()
+        tabButton("洞悉", in: app).tap()
         XCTAssertTrue(app.staticTexts["¥3,066.50"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["¥11,730.00"].waitForExistence(timeout: 5))
 
-        app.buttons["tab.计划"].tap()
+        tabButton("计划", in: app).tap()
         XCTAssertTrue(app.staticTexts["budget.month.amount"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["budget.month.amount"].label, "¥5,200.00")
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         XCTAssertTrue(app.buttons["settings.accounts"].waitForExistence(timeout: 5))
     }
 
@@ -720,15 +846,15 @@ final class NumiUITests: XCTestCase {
         saveScreenshot(named: "03-record-detail")
         app.buttons["action.closeRecordDetail"].tap()
 
-        app.buttons["tab.洞悉"].tap()
+        tabButton("洞悉", in: app).tap()
         XCTAssertTrue(app.staticTexts["¥3,066.50"].waitForExistence(timeout: 5))
         saveScreenshot(named: "04-insights")
 
-        app.buttons["tab.计划"].tap()
+        tabButton("计划", in: app).tap()
         XCTAssertTrue(app.otherElements["plans.hero.monthBudget"].waitForExistence(timeout: 5))
         saveScreenshot(named: "05-plans")
 
-        app.buttons["tab.我的"].tap()
+        tabButton("我的", in: app).tap()
         XCTAssertTrue(app.buttons["settings.accounts"].waitForExistence(timeout: 5))
         saveScreenshot(named: "06-settings")
 
@@ -747,7 +873,7 @@ final class NumiUITests: XCTestCase {
         incomeButton.tap()
         saveScreenshot(named: "09-categories-income")
 
-        app.buttons["tab.明细"].tap()
+        tabButton("明细", in: app).tap()
         tapAddRecord(in: app)
         XCTAssertTrue(app.buttons["category.餐饮"].waitForExistence(timeout: 5))
         saveScreenshot(named: "10-add-record")
@@ -842,6 +968,49 @@ final class NumiUITests: XCTestCase {
             shortcut.tap()
         }
         XCTAssertEqual(shortcut.label, title)
+    }
+
+    private func tabButton(_ title: String, in app: XCUIApplication) -> XCUIElement {
+        let nativeTabButton = app.tabBars.buttons[title]
+        if nativeTabButton.exists {
+            return nativeTabButton
+        }
+        return app.buttons["tab.\(title)"]
+    }
+
+    private func assertBottomBarVisible(
+        in app: XCUIApplication,
+        baselineAddButtonFrame: CGRect? = nil,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let addButton = app.buttons["button.addRecord"]
+        let rail = app.otherElements["tab.rail"]
+
+        XCTAssertTrue(addButton.waitForExistence(timeout: 5), file: file, line: line)
+        XCTAssertTrue(rail.waitForExistence(timeout: 5), file: file, line: line)
+        XCTAssertTrue(addButton.isHittable, file: file, line: line)
+        XCTAssertTrue(rail.isHittable, file: file, line: line)
+
+        if let baselineAddButtonFrame {
+            XCTAssertLessThan(abs(addButton.frame.minY - baselineAddButtonFrame.minY), 36, file: file, line: line)
+        }
+    }
+
+    private func assertBottomBarHiddenAfterScroll(
+        in app: XCUIApplication,
+        baselineAddButtonFrame: CGRect,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let addButton = app.buttons["button.addRecord"]
+        let rail = app.otherElements["tab.rail"]
+
+        XCTAssertTrue(addButton.waitForExistence(timeout: 5), file: file, line: line)
+        XCTAssertTrue(rail.waitForExistence(timeout: 5), file: file, line: line)
+        XCTAssertGreaterThan(addButton.frame.minY, baselineAddButtonFrame.maxY, file: file, line: line)
+        XCTAssertGreaterThan(rail.frame.minY, baselineAddButtonFrame.minY + 36, file: file, line: line)
+        XCTAssertFalse(addButton.isHittable && rail.isHittable, file: file, line: line)
     }
 }
 

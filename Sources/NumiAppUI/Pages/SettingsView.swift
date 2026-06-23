@@ -80,7 +80,7 @@ public struct SettingsView: View {
     }
 
     public var body: some View {
-        ScrollView {
+        NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.settingsHome") {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // 统计小卡片
                 statsRow

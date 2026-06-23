@@ -68,7 +68,7 @@ public struct InsightsView: View {
     }
 
     public var body: some View {
-        ScrollView {
+        NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.insightsHome") {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // Time dimension - capsule style with sliding indicator
                 CapsuleTabPicker(
@@ -382,7 +382,10 @@ public struct CategoryTransactionsDetailView: View {
             .padding(NumiSpacing.s5)
             .padding(.bottom, 120)
         }
+        .scrollIndicators(.hidden)
+        .accessibilityIdentifier("scroll.insightsCategoryDetail")
         .background(NumiColor.surfacePage)
+        .numiBottomAccessoryVisibility(true)
         .navigationTitle(categoryName)
         .modifier(LargeTitleNavigationChrome())
     }
