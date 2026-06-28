@@ -73,8 +73,10 @@ public struct TransactionSearchView: View {
         .navigationTitle("common.search")
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("common.close") {
+                Button {
                     dismiss()
+                } label: {
+                    Text(NumiLocalized.string("common.close"))
                 }
                 .accessibilityIdentifier("action.closeTransactionSearch")
             }
