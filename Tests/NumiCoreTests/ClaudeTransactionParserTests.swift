@@ -38,7 +38,7 @@ final class ClaudeTransactionParserTests: XCTestCase {
 
     func testParseIncome() async throws {
         MockURLProtocol.mockResponse = (makeClaudeJSON("""
-        {"type":"income","amount":8000,"category":"工资","account":"银行卡","date":"2026-06-18","note":"6月工资"}
+        {"type":"income","amount":8000,"category":"工资","account":"银行卡","targetAccount":null,"date":"2026-06-18","note":"6月工资"}
         """), HTTPURLResponse(url: URL(string: "https://test")!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
 
         let result = try await parser.parseTransaction("收到工资8000", categories: ["工资", "餐饮"])
@@ -47,17 +47,20 @@ final class ClaudeTransactionParserTests: XCTestCase {
         XCTAssertEqual(result.amount, 8000)
         XCTAssertEqual(result.categoryName, "工资")
         XCTAssertEqual(result.accountName, "银行卡")
+        XCTAssertNil(result.targetAccountName)
     }
 
     func testParseTransfer() async throws {
         MockURLProtocol.mockResponse = (makeClaudeJSON("""
-        {"type":"transfer","amount":500,"category":"转账","account":null,"date":"2026-06-18","note":"转给老婆"}
+        {"type":"transfer","amount":500,"category":"转账","account":"现金","targetAccount":"银行卡","date":"2026-06-18","note":"转给老婆"}
         """), HTTPURLResponse(url: URL(string: "https://test")!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
 
-        let result = try await parser.parseTransaction("转账500给老婆", categories: ["转账"])
+        let result = try await parser.parseTransaction("转账500给老婆", categories: ["转账"], accounts: ["现金", "银行卡"])
 
         XCTAssertEqual(result.type, .transfer)
         XCTAssertEqual(result.amount, 500)
+        XCTAssertEqual(result.accountName, "现金")
+        XCTAssertEqual(result.targetAccountName, "银行卡")
     }
 
     func testParseWithMarkdownCodeBlock() async throws {

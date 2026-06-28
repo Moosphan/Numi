@@ -46,7 +46,7 @@ public struct NumiPasscodeSheet: View {
             grabberBottomPadding: 0,
             headerBottomPadding: 4,
             accessibilityPrefix: "sheet.passcode",
-            dismissTitle: "取消",
+            dismissTitle: NumiLocalized.string( "common.cancel"),
             onDismiss: {
                 isPresented = false
             }
@@ -146,28 +146,28 @@ public struct NumiPasscodeSheet: View {
     private var stepTitle: String {
         switch mode {
         case .setup:
-            return step == .enter ? "设置密码" : "确认密码"
+            return step == .enter ? NumiLocalized.string( "security.set.password") : NumiLocalized.string( "security.confirm.password")
         case .change:
             if step == .currentPasscode {
-                return "输入当前密码"
+                return NumiLocalized.string( "security.enter.current")
             }
-            return step == .enter ? "设置新密码" : "确认新密码"
+            return step == .enter ? NumiLocalized.string( "security.set.new") : NumiLocalized.string( "security.confirm.new")
         case .verify:
-            return "输入密码"
+            return NumiLocalized.string( "security.enter.password")
         }
     }
 
     private var stepSubtitle: String {
         switch mode {
         case .setup:
-            return step == .enter ? "设置6位数字密码" : "再次输入密码确认"
+            return step == .enter ? NumiLocalized.string( "security.set.6digit") : NumiLocalized.string( "security.confirm.again")
         case .change:
             if step == .currentPasscode {
-                return "验证当前密码"
+                return NumiLocalized.string( "security.verify.current")
             }
-            return step == .enter ? "设置新的6位数字密码" : "再次输入新密码确认"
+            return step == .enter ? NumiLocalized.string( "security.set.new.6digit") : NumiLocalized.string( "security.confirm.new.again")
         case .verify:
-            return "输入密码以解锁应用"
+            return NumiLocalized.string( "security.enter.to.unlock")
         }
     }
 
@@ -249,7 +249,7 @@ public struct NumiPasscodeSheet: View {
                 onVerified()
                 isPresented = false
             } else {
-                error = "密码错误"
+                error = NumiLocalized.string( "security.wrong.password")
                 passcode = ""
             }
         }
@@ -261,7 +261,7 @@ public struct NumiPasscodeSheet: View {
             onVerified()
             isPresented = false
         } else {
-            error = "两次密码不一致"
+            error = NumiLocalized.string( "security.password.mismatch")
             passcode = ""
             confirmPasscode = ""
             step = .enter
@@ -273,7 +273,7 @@ public struct NumiPasscodeSheet: View {
             passcode = ""
             step = .enter
         } else {
-            error = "当前密码错误"
+            error = NumiLocalized.string( "security.current.wrong")
             currentPasscode = ""
         }
     }
@@ -306,7 +306,7 @@ public struct NumiLockScreen: View {
                     .font(.system(size: 48, weight: .medium))
                     .foregroundStyle(NumiColor.textSecondary)
 
-                Text("应用已锁定")
+                Text("security.app.locked")
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -395,7 +395,7 @@ public struct NumiLockScreen: View {
                                 HStack {
                                     Image(systemName: "key.fill")
                                         .font(.system(size: 20, weight: .medium))
-                                    Text("密码解锁")
+                                    Text("security.passcode.unlock")
                                         .font(NumiFont.bodyStrong)
                                 }
                                 .foregroundStyle(NumiColor.textPrimary)
@@ -412,7 +412,7 @@ public struct NumiLockScreen: View {
                                     showPasscodeEntry = true
                                 }
                             } label: {
-                                Text("使用密码")
+                                Text("security.use.passcode")
                                     .font(NumiFont.bodySmall)
                                     .foregroundStyle(NumiColor.textSecondary)
                             }
@@ -437,9 +437,9 @@ public struct NumiLockScreen: View {
         let context = LAContext()
         var error: NSError?
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            return context.biometryType == .faceID ? "Face ID 解锁" : "Touch ID 解锁"
+            return context.biometryType == .faceID ? NumiLocalized.string( "security.faceid.unlock") : NumiLocalized.string( "security.touchid.unlock")
         }
-        return "生物识别解锁"
+        return NumiLocalized.string( "security.biometric.unlock")
     }
 
     private func numberButton(_ number: String) -> some View {
@@ -473,7 +473,7 @@ public struct NumiLockScreen: View {
                 isLocked = false
             }
         } else {
-            error = "密码错误"
+            error = NumiLocalized.string( "security.wrong.password")
             passcode = ""
         }
     }
@@ -483,7 +483,7 @@ public struct NumiLockScreen: View {
         var error: NSError?
 
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            let reason = "验证身份以解锁应用"
+            let reason = NumiLocalized.string( "security.verify.to.unlock")
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
                 DispatchQueue.main.async {
                     if success {

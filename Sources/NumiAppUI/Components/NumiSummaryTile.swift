@@ -13,12 +13,20 @@ public struct NumiSummaryTile: View {
     private let value: String
     private let systemImage: String?
     private let variant: NumiSummaryTileVariant
+    private let accessibilityKey: String
 
-    public init(title: String, value: String, systemImage: String? = nil, variant: NumiSummaryTileVariant) {
+    public init(
+        title: String,
+        value: String,
+        systemImage: String? = nil,
+        variant: NumiSummaryTileVariant,
+        accessibilityKey: String
+    ) {
         self.title = title
         self.value = value
         self.systemImage = systemImage
         self.variant = variant
+        self.accessibilityKey = accessibilityKey
     }
 
     public var body: some View {
@@ -38,7 +46,7 @@ public struct NumiSummaryTile: View {
                 .foregroundStyle(textColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
-                .accessibilityIdentifier("summary.\(title).value")
+                .accessibilityIdentifier("summary.\(accessibilityKey).value")
         }
         .frame(maxWidth: .infinity, minHeight: 78, alignment: .leading)
         .padding(.horizontal, NumiSpacing.s4)

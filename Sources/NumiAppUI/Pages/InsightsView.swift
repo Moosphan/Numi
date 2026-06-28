@@ -5,17 +5,17 @@ import NumiCore
 
 public struct InsightsDistributionRow: Identifiable, Equatable {
     public let categoryID: UUID
-    public let categoryName: String
-    public let iconName: String
+    public let fallbackCategoryName: String
+    public let fallbackIconName: String
     public let amount: Money
     public let percentage: Double
 
     public var id: UUID { categoryID }
 
-    public init(categoryID: UUID, categoryName: String, iconName: String, amount: Money, percentage: Double) {
+    public init(categoryID: UUID, fallbackCategoryName: String, fallbackIconName: String, amount: Money, percentage: Double) {
         self.categoryID = categoryID
-        self.categoryName = categoryName
-        self.iconName = iconName
+        self.fallbackCategoryName = fallbackCategoryName
+        self.fallbackIconName = fallbackIconName
         self.amount = amount
         self.percentage = percentage
     }
@@ -24,13 +24,23 @@ public struct InsightsDistributionRow: Identifiable, Equatable {
 // MARK: - Time Dimension
 
 public enum InsightsTimeDimension: String, CaseIterable, Identifiable {
-    case day = "日"
-    case week = "周"
-    case month = "月"
-    case quarter = "季"
-    case year = "年"
+    case day
+    case week
+    case month
+    case quarter
+    case year
 
     public var id: String { rawValue }
+
+    public var displayName: String {
+        switch self {
+        case .day: NumiLocalized.string("insight.dim.day")
+        case .week: NumiLocalized.string("insight.dim.week")
+        case .month: NumiLocalized.string("insight.dim.month")
+        case .quarter: NumiLocalized.string("insight.dim.quarter")
+        case .year: NumiLocalized.string("insight.dim.year")
+        }
+    }
 }
 
 // MARK: - Insights View
@@ -39,6 +49,7 @@ public struct InsightsView: View {
     private let summary: TransactionSummary
     private let expenseDistribution: [InsightsDistributionRow]
     private let incomeDistribution: [InsightsDistributionRow]
+    private let categories: [NumiCore.Category]
     private let periodTitle: String
     private let onPreviousPeriod: () -> Void
     private let onNextPeriod: () -> Void
@@ -51,6 +62,7 @@ public struct InsightsView: View {
         summary: TransactionSummary,
         distribution: [InsightsDistributionRow],
         incomeDistribution: [InsightsDistributionRow] = [],
+        categories: [NumiCore.Category] = [],
         periodTitle: String = "",
         onPreviousPeriod: @escaping () -> Void = {},
         onNextPeriod: @escaping () -> Void = {},
@@ -60,6 +72,7 @@ public struct InsightsView: View {
         self.summary = summary
         self.expenseDistribution = distribution
         self.incomeDistribution = incomeDistribution
+        self.categories = categories
         self.periodTitle = periodTitle
         self.onPreviousPeriod = onPreviousPeriod
         self.onNextPeriod = onNextPeriod
@@ -72,7 +85,7 @@ public struct InsightsView: View {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // Time dimension - capsule style with sliding indicator
                 CapsuleTabPicker(
-                    options: InsightsTimeDimension.allCases.map { $0.rawValue },
+                    options: InsightsTimeDimension.allCases.map(\.displayName),
                     selectedIndex: InsightsTimeDimension.allCases.firstIndex(of: selectedDimension) ?? 0
                 ) { index in
                     let dim = InsightsTimeDimension.allCases[index]
@@ -122,16 +135,16 @@ public struct InsightsView: View {
 
                 // Summary grid
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: NumiSpacing.s3) {
-                    NumiSummaryTile(title: "支出", value: summary.expense.formatted(), variant: .expense)
-                    NumiSummaryTile(title: "收入", value: summary.income.formatted(), variant: .income)
-                    NumiSummaryTile(title: "结余", value: summary.balance.formatted(), variant: summary.balance.minorUnits < 0 ? .negative : .neutral)
-                    NumiSummaryTile(title: "记账次数", value: "\(summary.recordCount)", variant: .neutral)
+                    NumiSummaryTile(title: NumiLocalized.string( "insight.expense"), value: summary.expense.formatted(), variant: .expense, accessibilityKey: "insights.expense")
+                    NumiSummaryTile(title: NumiLocalized.string( "insight.income"), value: summary.income.formatted(), variant: .income, accessibilityKey: "insights.income")
+                    NumiSummaryTile(title: NumiLocalized.string( "insight.balance"), value: summary.balance.formatted(), variant: summary.balance.minorUnits < 0 ? .negative : .neutral, accessibilityKey: "insights.balance")
+                    NumiSummaryTile(title: NumiLocalized.string( "insight.record.count"), value: "\(summary.recordCount)", variant: .neutral, accessibilityKey: "insights.recordCount")
                 }
 
                 // Expense distribution
                 if !expenseDistribution.isEmpty {
                     distributionSection(
-                        title: "支出分布",
+                        title: NumiLocalized.string( "insight.expense.distribution"),
                         rows: expenseDistribution,
                         accentColor: NumiColor.expenseText,
                         type: "expense"
@@ -141,7 +154,7 @@ public struct InsightsView: View {
                 // Income distribution
                 if !incomeDistribution.isEmpty {
                     distributionSection(
-                        title: "收入分布",
+                        title: NumiLocalized.string( "insight.income.distribution"),
                         rows: incomeDistribution,
                         accentColor: NumiColor.incomeText,
                         type: "income"
@@ -152,7 +165,7 @@ public struct InsightsView: View {
             .padding(.bottom, 120)
         }
         .background(NumiColor.surfacePage)
-        .navigationTitle("洞悉")
+        .navigationTitle(Text("insight.title"))
         .modifier(LargeTitleNavigationChrome())
     }
 
@@ -169,7 +182,7 @@ public struct InsightsView: View {
             Text(title)
                 .font(NumiFont.bodyStrong)
                 .foregroundStyle(NumiColor.textPrimary)
-                .accessibilityIdentifier("insights.distribution.\(title)")
+                .accessibilityIdentifier("insights.distribution.\(type)")
 
             ForEach(rows) { item in
                 Button {
@@ -177,22 +190,22 @@ public struct InsightsView: View {
                 } label: {
                     VStack(alignment: .leading, spacing: NumiSpacing.s2) {
                         HStack(spacing: NumiSpacing.s3) {
-                            CategoryIconView(iconName: item.iconName, size: 36)
+                            CategoryIconView(iconName: resolvedIconName(for: item), size: 36)
                                 .foregroundStyle(NumiColor.textPrimary)
                                 .background(NumiColor.surfaceCardSubtle)
                                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
-                                .accessibilityIdentifier("insights.categoryIcon.\(item.categoryName)")
+                                .accessibilityIdentifier("insights.categoryIcon.\(item.categoryID.uuidString)")
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(item.categoryName)
+                                Text(resolvedCategoryName(for: item))
                                     .font(NumiFont.bodyStrong)
                                     .foregroundStyle(NumiColor.textPrimary)
-                                    .accessibilityIdentifier("insights.category.\(item.categoryName)")
+                                    .accessibilityIdentifier("insights.category.\(item.categoryID.uuidString)")
                                 Text(item.amount.formatted())
                                     .font(NumiFont.bodySmall)
                                     .foregroundStyle(NumiColor.textSecondary)
                             }
                             Spacer()
-                            Text("\(Int(item.percentage * 100))%")
+                            Text(NumiLocalized.percent(item.percentage))
                                 .font(NumiFont.bodySmall)
                                 .foregroundStyle(NumiColor.textTertiary)
                         }
@@ -214,32 +227,51 @@ public struct InsightsView: View {
             }
         }
     }
+
+    private func resolvedCategoryName(for row: InsightsDistributionRow) -> String {
+        RuntimeLocalizedDisplay.categoryName(
+            for: row.categoryID,
+            categories: categories,
+            fallbackCategoryName: row.fallbackCategoryName
+        )
+    }
+
+    private func resolvedIconName(for row: InsightsDistributionRow) -> String {
+        RuntimeLocalizedDisplay.categoryIconName(
+            for: row.categoryID,
+            categories: categories,
+            fallbackCategoryIcon: row.fallbackIconName
+        )
+    }
 }
 
 // MARK: - Category Transactions Detail View
 
 public struct CategoryTransactionsDetailView: View {
-    private let categoryName: String
-    private let iconName: String
+    private let categoryID: UUID
     private let transactions: [NumiCore.Transaction]
     private let categories: [NumiCore.Category]
     private let accentColor: Color
     private let periodTitle: String
+    private let fallbackCategoryName: String?
+    private let fallbackIconName: String?
 
     public init(
-        categoryName: String,
-        iconName: String,
+        categoryID: UUID,
         transactions: [NumiCore.Transaction],
         categories: [NumiCore.Category],
         accentColor: Color,
-        periodTitle: String = ""
+        periodTitle: String = "",
+        fallbackCategoryName: String? = nil,
+        fallbackIconName: String? = nil
     ) {
-        self.categoryName = categoryName
-        self.iconName = iconName
+        self.categoryID = categoryID
         self.transactions = transactions
         self.categories = categories
         self.accentColor = accentColor
         self.periodTitle = periodTitle
+        self.fallbackCategoryName = fallbackCategoryName
+        self.fallbackIconName = fallbackIconName
     }
 
     private var sortedTransactions: [NumiCore.Transaction] {
@@ -286,7 +318,7 @@ public struct CategoryTransactionsDetailView: View {
                                         .font(NumiFont.bodySmall)
                                         .foregroundStyle(NumiColor.textTertiary)
                                 }
-                                Text("\(sortedTransactions.count) 笔交易")
+                                Text(NumiLocalized.string("insight.transaction.count", sortedTransactions.count))
                                     .font(NumiFont.bodySmall)
                                     .foregroundStyle(NumiColor.textTertiary)
                             }
@@ -294,7 +326,7 @@ public struct CategoryTransactionsDetailView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("总金额")
+                        Text("insight.total.amount")
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
                         Text(totalAmount.formatted())
@@ -371,7 +403,7 @@ public struct CategoryTransactionsDetailView: View {
                         Image(systemName: "tray")
                             .font(.system(size: 36))
                             .foregroundStyle(NumiColor.textTertiary)
-                        Text("暂无交易记录")
+                        Text("insight.no.transactions")
                             .font(NumiFont.body)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -406,7 +438,7 @@ public struct CategoryTransactionsDetailView: View {
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
                 HStack(spacing: NumiSpacing.s1) {
-                    Text(timeFormatter.string(from: tx.occurredAt))
+                    Text(tx.occurredAt.numiTimeText())
                     if !tx.note.isEmpty {
                         Text("·")
                         Text(tx.note)
@@ -445,23 +477,32 @@ public struct CategoryTransactionsDetailView: View {
 
     private func sectionDateTitle(_ date: Date) -> String {
         let cal = Calendar.current
-        if cal.isDateInToday(date) { return "今天" }
-        if cal.isDateInYesterday(date) { return "昨天" }
+        if cal.isDateInToday(date) { return NumiLocalized.string( "date.today") }
+        if cal.isDateInYesterday(date) { return NumiLocalized.string( "date.yesterday") }
         return dateTitleFormatter.string(from: date)
-    }
-
-    private var timeFormatter: DateFormatter {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_CN")
-        f.dateFormat = "HH:mm"
-        return f
     }
 
     private var dateTitleFormatter: DateFormatter {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_CN")
-        f.dateFormat = "M月d日 EEEE"
+        f.locale = NumiLocalized.currentLocale
+        f.setLocalizedDateFormatFromTemplate("MMMMdEEEE")
         return f
+    }
+
+    private var categoryName: String {
+        RuntimeLocalizedDisplay.categoryName(
+            for: categoryID,
+            categories: categories,
+            fallbackCategoryName: fallbackCategoryName
+        )
+    }
+
+    private var iconName: String {
+        RuntimeLocalizedDisplay.categoryIconName(
+            for: categoryID,
+            categories: categories,
+            fallbackCategoryIcon: fallbackIconName
+        )
     }
 }
 

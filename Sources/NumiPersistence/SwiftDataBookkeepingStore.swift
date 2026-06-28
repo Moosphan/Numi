@@ -6,11 +6,13 @@ import NumiCore
 final class LedgerEntity {
     @Attribute(.unique) var id: UUID
     var name: String
+    var builtInKey: String?
     var currencyCode: String
 
-    init(id: UUID, name: String, currencyCode: String) {
+    init(id: UUID, name: String, builtInKey: String? = nil, currencyCode: String) {
         self.id = id
         self.name = name
+        self.builtInKey = builtInKey
         self.currencyCode = currencyCode
     }
 }
@@ -20,14 +22,16 @@ final class CategoryEntity {
     @Attribute(.unique) var id: UUID
     var kindRawValue: String
     var name: String
+    var builtInKey: String?
     var icon: String
     var isHidden: Bool
     var sortOrder: Int
 
-    init(id: UUID, kind: CategoryKind, name: String, icon: String, isHidden: Bool, sortOrder: Int) {
+    init(id: UUID, kind: CategoryKind, name: String, builtInKey: String? = nil, icon: String, isHidden: Bool, sortOrder: Int) {
         self.id = id
         self.kindRawValue = kind.rawValue
         self.name = name
+        self.builtInKey = builtInKey
         self.icon = icon
         self.isHidden = isHidden
         self.sortOrder = sortOrder
@@ -38,6 +42,7 @@ final class CategoryEntity {
 final class AccountEntity {
     @Attribute(.unique) var id: UUID
     var name: String
+    var builtInKey: String?
     var typeRawValue: String
     var balanceMinorUnits: Int64
     var currencyCode: String
@@ -47,6 +52,7 @@ final class AccountEntity {
     init(
         id: UUID,
         name: String,
+        builtInKey: String? = nil,
         type: AccountType,
         balance: Money,
         isIncludedInAssets: Bool,
@@ -54,6 +60,7 @@ final class AccountEntity {
     ) {
         self.id = id
         self.name = name
+        self.builtInKey = builtInKey
         self.typeRawValue = type.rawValue
         self.balanceMinorUnits = balance.minorUnits
         self.currencyCode = balance.currencyCode
@@ -276,20 +283,27 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         else {
             // 已有数据，执行账本迁移
             try migrateTransactionsToLedgerIfNeeded()
+            try backfillBuiltInKeysIfNeeded()
             return
         }
 
-        let defaultLedger = LedgerEntity(id: UUID(), name: "默认账本", currencyCode: currencyCode)
+        let defaultLedger = LedgerEntity(
+            id: UUID(),
+            name: NumiLocalized.string("ledger.default.name"),
+            builtInKey: NumiBuiltInCatalog.defaultLedgerKey,
+            currencyCode: currencyCode
+        )
         context.insert(defaultLedger)
-        for (index, item) in Self.defaultExpenseCategories.enumerated() {
-            context.insert(CategoryEntity(id: UUID(), kind: .expense, name: item.name, icon: item.icon, isHidden: false, sortOrder: index))
+        for (index, item) in Self.defaultExpenseCategories().enumerated() {
+            context.insert(CategoryEntity(id: UUID(), kind: .expense, name: item.name, builtInKey: item.key, icon: item.icon, isHidden: false, sortOrder: index))
         }
-        for (index, item) in Self.defaultIncomeCategories.enumerated() {
-            context.insert(CategoryEntity(id: UUID(), kind: .income, name: item.name, icon: item.icon, isHidden: false, sortOrder: index))
+        for (index, item) in Self.defaultIncomeCategories().enumerated() {
+            context.insert(CategoryEntity(id: UUID(), kind: .income, name: item.name, builtInKey: item.key, icon: item.icon, isHidden: false, sortOrder: index))
         }
         context.insert(AccountEntity(
             id: UUID(),
-            name: "现金",
+            name: NumiLocalized.string("account.default.cash"),
+            builtInKey: "account.default.cash",
             type: .cash,
             balance: .zero(currencyCode: currencyCode),
             isIncludedInAssets: true,
@@ -297,7 +311,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         ))
         context.insert(AccountEntity(
             id: UUID(),
-            name: "银行卡",
+            name: NumiLocalized.string("account.default.bankCard"),
+            builtInKey: "account.default.bankCard",
             type: .debitCard,
             balance: .zero(currencyCode: currencyCode),
             isIncludedInAssets: true,
@@ -325,6 +340,38 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         for budget in allBudgets where !existingLedgerIDs.contains(budget.ledgerID) {
             budget.ledgerID = defaultLedgerID
             needsSave = true
+        }
+
+        if needsSave {
+            try save()
+            changeRevision += 1
+            objectWillChange.send()
+        }
+    }
+
+    private func backfillBuiltInKeysIfNeeded() throws {
+        var needsSave = false
+
+        for ledger in fetchLedgerEntities() where ledger.builtInKey == nil {
+            if let key = NumiBuiltInCatalog.builtInLedgerKey(name: ledger.name) {
+                ledger.builtInKey = key
+                needsSave = true
+            }
+        }
+
+        for category in fetchCategoryEntities() where category.builtInKey == nil {
+            if let key = NumiBuiltInCatalog.builtInCategoryKey(name: category.name, icon: category.icon) {
+                category.builtInKey = key
+                needsSave = true
+            }
+        }
+
+        for account in fetchAccountEntities() where account.builtInKey == nil {
+            let type = AccountType(rawValue: account.typeRawValue) ?? .other
+            if let key = NumiBuiltInCatalog.builtInAccountKey(name: account.name, type: type) {
+                account.builtInKey = key
+                needsSave = true
+            }
         }
 
         if needsSave {
@@ -523,6 +570,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             throw SwiftDataBookkeepingStoreError.ledgerNotFound
         }
         entity.name = name
+        entity.builtInKey = NumiBuiltInCatalog.builtInLedgerKey(name: name)
         entity.currencyCode = currencyCode
         try save()
         changeRevision += 1
@@ -585,14 +633,14 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
 
         // 导入账本
         for ledger in snapshot.ledgers {
-            let entity = LedgerEntity(id: ledger.id, name: ledger.name, currencyCode: ledger.currencyCode)
+            let entity = LedgerEntity(id: ledger.id, name: ledger.name, builtInKey: ledger.builtInKey, currencyCode: ledger.currencyCode)
             context.insert(entity)
         }
 
         // 导入分类
         for cat in snapshot.categories {
             let entity = CategoryEntity(
-                id: cat.id, kind: cat.kind, name: cat.name,
+                id: cat.id, kind: cat.kind, name: cat.name, builtInKey: cat.builtInKey,
                 icon: cat.icon, isHidden: cat.isHidden, sortOrder: cat.sortOrder
             )
             context.insert(entity)
@@ -601,7 +649,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         // 导入账户
         for acc in snapshot.accounts {
             let entity = AccountEntity(
-                id: acc.id, name: acc.name, type: acc.type,
+                id: acc.id, name: acc.name, builtInKey: acc.builtInKey, type: acc.type,
                 balance: acc.balance, isIncludedInAssets: acc.isIncludedInAssets,
                 isHidden: acc.isHidden
             )
@@ -842,6 +890,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
 
         account.name = name
         account.typeRawValue = type.rawValue
+        account.builtInKey = NumiBuiltInCatalog.builtInAccountKey(name: name, type: type)
         account.balanceMinorUnits = balance.minorUnits
         account.currencyCode = balance.currencyCode
         account.isIncludedInAssets = isIncludedInAssets
@@ -981,58 +1030,17 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         try save()
     }
 
-    private static let defaultExpenseCategories: [(name: String, icon: String)] = [
-        ("餐饮", "acai-bowl"),
-        ("交通", "articulated-bus"),
-        ("购物", "bag-of-groceries"),
-        ("住房", "apartment-building"),
-        ("水电燃气", "digital-billboard"),
-        ("通讯", "cell-phone-cleaning-kit"),
-        ("医疗", "medicine-capsule"),
-        ("运动", "ab-bench"),
-        ("学习", "book"),
-        ("娱乐", "cinema-clapperboard"),
-        ("旅行", "airplane"),
-        ("游戏", "game-controller"),
-        ("数码", "desktop-computer"),
-        ("美容", "lipstick"),
-        ("服饰", "button-down-shirt"),
-        ("美发", "barber"),
-        ("人情", "gift-box"),
-        ("育儿", "baby"),
-        ("宠物", "cat"),
-        ("家居", "armchair"),
-        ("维修", "computer-technician"),
-        ("办公", "desk"),
-        ("保险", "insurance"),
-        ("税费", "cash-register"),
-        ("慈善", "charity-ball"),
-        ("订阅", "digital-certificate"),
-        ("车辆", "black-car"),
-        ("其他", "coins")
-    ]
+    private static func defaultExpenseCategories() -> [(key: String, name: String, icon: String)] {
+        NumiBuiltInCatalog.defaultExpenseCategories.map { item in
+            (key: item.key, name: NumiLocalized.string(item.key), icon: item.icon)
+        }
+    }
 
-    private static let defaultIncomeCategories: [(name: String, icon: String)] = [
-        ("工资", "cash"),
-        ("奖金", "trophy"),
-        ("加班补贴", "digital-alarm-clock"),
-        ("投资收益", "stock-trading-candlestick"),
-        ("利息分红", "coin-jar"),
-        ("租金收入", "farmhouse"),
-        ("副业", "briefcase"),
-        ("创作稿费", "calligraphy-practice-book"),
-        ("咨询服务", "accountant"),
-        ("报销", "checkbook"),
-        ("退款", "atm-cash-machine"),
-        ("赔偿理赔", "health-insurance-card"),
-        ("礼金", "unboxing-gift"),
-        ("中奖", "bingo-ball"),
-        ("借款收回", "coin-purse"),
-        ("闲置出售", "flea-market"),
-        ("政府补贴", "award-ceremony"),
-        ("继承赠与", "golden-heart"),
-        ("其他", "money")
-    ]
+    private static func defaultIncomeCategories() -> [(key: String, name: String, icon: String)] {
+        NumiBuiltInCatalog.defaultIncomeCategories.map { item in
+            (key: item.key, name: NumiLocalized.string(item.key), icon: item.icon)
+        }
+    }
 }
 
 public enum SwiftDataBookkeepingStoreError: Error, Equatable {
@@ -1094,7 +1102,7 @@ private extension Transaction {
 
 private extension LedgerEntity {
     var domainModel: Ledger {
-        Ledger(id: id, name: name, currencyCode: currencyCode)
+        Ledger(id: id, name: name, builtInKey: builtInKey, currencyCode: currencyCode)
     }
 }
 
@@ -1104,6 +1112,7 @@ private extension CategoryEntity {
             id: id,
             kind: CategoryKind(rawValue: kindRawValue) ?? .expense,
             name: name,
+            builtInKey: builtInKey,
             icon: icon,
             isHidden: isHidden,
             sortOrder: sortOrder
@@ -1116,6 +1125,7 @@ private extension AccountEntity {
         Account(
             id: id,
             name: name,
+            builtInKey: builtInKey,
             type: AccountType(rawValue: typeRawValue) ?? .other,
             balance: Money(minorUnits: balanceMinorUnits, currencyCode: currencyCode),
             isIncludedInAssets: isIncludedInAssets,

@@ -30,7 +30,7 @@ final class TransactionServiceIntegrationTests: XCTestCase {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
 
-        let categoryNames = store.categories.map(\.name)
+        let categoryNames = store.categories.localizedCategoryNames()
 
         // Step 1: AI 解析
         let parsed = try await parser.parseTransaction("中午外卖28块", categories: categoryNames)
@@ -41,12 +41,13 @@ final class TransactionServiceIntegrationTests: XCTestCase {
                        "AI 返回的分类 '\(parsed.categoryName)' 应存在于默认分类中")
 
         // Step 2: 匹配分类
-        let category = store.categories.first { $0.name == parsed.categoryName }
+        let category = store.categories.resolveLocalizedCategory(named: parsed.categoryName)
         XCTAssertNotNil(category, "分类 '\(parsed.categoryName)' 应可精确匹配")
 
         // Step 3: 创建账单
-        guard let account = store.accounts.first else {
-            XCTFail("无默认账户")
+        guard let account = store.accounts.first,
+              let ledger = store.ledgers.first else {
+            XCTFail("无默认账户或账本")
             return
         }
 
@@ -56,6 +57,7 @@ final class TransactionServiceIntegrationTests: XCTestCase {
             amount: money,
             categoryID: category?.id,
             accountID: account.id,
+            ledgerID: ledger.id,
             note: parsed.note
         )
 
@@ -71,21 +73,23 @@ final class TransactionServiceIntegrationTests: XCTestCase {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
 
-        let parsed = try await parser.parseTransaction("收到工资8000元", categories: store.categories.map(\.name))
+        let parsed = try await parser.parseTransaction("收到工资8000元", categories: store.categories.localizedCategoryNames())
 
         XCTAssertEqual(parsed.type, .income)
         XCTAssertEqual(parsed.amount, 8000)
 
-        let category = store.categories.first { $0.name == parsed.categoryName }
+        let category = store.categories.resolveLocalizedCategory(named: parsed.categoryName)
         XCTAssertNotNil(category, "分类 '\(parsed.categoryName)' 应可匹配")
 
-        guard let account = store.accounts.first else { XCTFail("无默认账户"); return }
+        guard let account = store.accounts.first,
+              let ledger = store.ledgers.first else { XCTFail("无默认账户或账本"); return }
         let money = try Money(decimalString: "\(parsed.amount)", currencyCode: "CNY")
         let tx = try store.createTransaction(
             type: parsed.type,
             amount: money,
             categoryID: category?.id,
             accountID: account.id,
+            ledgerID: ledger.id,
             note: parsed.note
         )
 
@@ -98,22 +102,31 @@ final class TransactionServiceIntegrationTests: XCTestCase {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
 
-        let parsed = try await parser.parseTransaction("转账500给老婆", categories: store.categories.map(\.name))
+        let parsed = try await parser.parseTransaction(
+            "转账500给老婆",
+            categories: store.categories.localizedCategoryNames(),
+            accounts: store.accounts.localizedAccountNames()
+        )
 
         XCTAssertEqual(parsed.type, .transfer)
         XCTAssertEqual(parsed.amount, 500)
 
-        guard let account = store.accounts.first else { XCTFail("无默认账户"); return }
+        guard let account = store.accounts.first,
+              let ledger = store.ledgers.first else { XCTFail("无默认账户或账本"); return }
+        let targetAccount = store.accounts.dropFirst().first
         let money = try Money(decimalString: "\(parsed.amount)", currencyCode: "CNY")
         let tx = try store.createTransaction(
             type: parsed.type,
             amount: money,
             categoryID: nil,
             accountID: account.id,
+            targetAccountID: targetAccount?.id,
+            ledgerID: ledger.id,
             note: parsed.note
         )
 
         XCTAssertEqual(tx.type, .transfer)
+        XCTAssertEqual(tx.targetAccountID, targetAccount?.id)
         XCTAssertTrue(store.visibleTransactions.contains { $0.id == tx.id })
     }
 
@@ -124,16 +137,18 @@ final class TransactionServiceIntegrationTests: XCTestCase {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
 
-        guard let account = store.accounts.first else { XCTFail("无默认账户"); return }
+        guard let account = store.accounts.first,
+              let ledger = store.ledgers.first else { XCTFail("无默认账户或账本"); return }
         let initialBalance = account.balance.minorUnits
 
-        let parsed = try await parser.parseTransaction("买咖啡32块", categories: store.categories.map(\.name))
+        let parsed = try await parser.parseTransaction("买咖啡32块", categories: store.categories.localizedCategoryNames())
         let money = try Money(decimalString: "\(parsed.amount)", currencyCode: "CNY")
         _ = try store.createTransaction(
             type: parsed.type,
             amount: money,
             categoryID: nil,
             accountID: account.id,
+            ledgerID: ledger.id,
             note: parsed.note
         )
 
@@ -148,17 +163,19 @@ final class TransactionServiceIntegrationTests: XCTestCase {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
 
-        guard let account = store.accounts.first else { XCTFail("无默认账户"); return }
+        guard let account = store.accounts.first,
+              let ledger = store.ledgers.first else { XCTFail("无默认账户或账本"); return }
         let inputs = ["早饭12块", "地铁5块", "午饭28块"]
 
         for input in inputs {
-            let parsed = try await parser.parseTransaction(input, categories: store.categories.map(\.name))
+            let parsed = try await parser.parseTransaction(input, categories: store.categories.localizedCategoryNames())
             let money = try Money(decimalString: "\(parsed.amount)", currencyCode: "CNY")
             _ = try store.createTransaction(
                 type: parsed.type,
                 amount: money,
                 categoryID: nil,
                 accountID: account.id,
+                ledgerID: ledger.id,
                 note: parsed.note
             )
         }

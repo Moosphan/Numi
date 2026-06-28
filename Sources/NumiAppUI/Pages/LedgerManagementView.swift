@@ -63,7 +63,7 @@ public struct LedgerManagementView: View {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // 说明卡片
                 VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                    Text("账本用于隔离不同场景的账单数据。切换账本后，交易列表、统计和预算都会随之变化。分类和账户在所有账本间共享。")
+                    Text("ledger.info")
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                 }
@@ -75,14 +75,14 @@ public struct LedgerManagementView: View {
 
                 // 账本列表
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text("账本")
+                    Text("ledger.section")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(NumiColor.textSecondary)
 
                     VStack(spacing: 0) {
-                        ForEach(ledgers) { ledger in
+                        ForEach(sortedLedgers) { ledger in
                             ledgerRow(ledger)
-                            if ledger.id != ledgers.last?.id {
+                            if ledger.id != sortedLedgers.last?.id {
                                 Divider().padding(.leading, 36 + NumiSpacing.s3)
                             }
                         }
@@ -98,7 +98,7 @@ public struct LedgerManagementView: View {
         }
         .scrollIndicators(.hidden)
         .background(NumiColor.surfacePage)
-        .navigationTitle("账本管理")
+        .navigationTitle("ledger.title")
         .modifier(LargeTitleNavigationChrome())
         .tint(NumiColor.accentDeep)
         .toolbar {
@@ -114,11 +114,11 @@ public struct LedgerManagementView: View {
         .sheet(item: $editingDraft) { draft in
             LedgerFormSheet(
                 draft: draft,
-                existingNames: ledgers.map(\.name)
+                existingNames: sortedLedgers.map(\.name)
             ) { saved in
                 if saved.isNew {
                     onCreate(saved)
-                } else if let ledger = ledgers.first(where: { $0.id == saved.id }) {
+                } else if let ledger = sortedLedgers.first(where: { $0.id == saved.id }) {
                     onUpdate(ledger, saved)
                 }
                 editingDraft = nil
@@ -126,11 +126,11 @@ public struct LedgerManagementView: View {
             .presentationDetents([.medium])
             .presentationCornerRadius(28)
         }
-        .alert("确认删除", isPresented: $showDeleteConfirm) {
-            Button("取消", role: .cancel) {
+        .alert("ledger.delete.confirm", isPresented: $showDeleteConfirm) {
+            Button("common.cancel", role: .cancel) {
                 pendingDelete = nil
             }
-            Button("删除", role: .destructive) {
+            Button("common.delete", role: .destructive) {
                 if let ledger = pendingDelete {
                     onDelete(ledger)
                     pendingDelete = nil
@@ -139,9 +139,13 @@ public struct LedgerManagementView: View {
         } message: {
             if let ledger = pendingDelete {
                 let count = transactionCounts[ledger.id] ?? 0
-                Text("删除「\(ledger.name)」将同时删除其关联的 \(count) 条交易记录和预算设置，此操作不可撤销。")
+                Text(NumiLocalized.string("ledger.delete.msg", ledger.localizedDisplayName, count))
             }
         }
+    }
+
+    private var sortedLedgers: [Ledger] {
+        ledgers.sortedForLocalizedDisplay()
     }
 
     @ViewBuilder
@@ -161,11 +165,11 @@ public struct LedgerManagementView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: NumiSpacing.s1) {
-                    Text(ledger.name)
+                    Text(ledger.localizedDisplayName)
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
                     if isCurrent {
-                        Text("当前")
+                        Text("ledger.current")
                             .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(NumiColor.accentDeep)
                             .padding(.horizontal, 6)
@@ -174,7 +178,7 @@ public struct LedgerManagementView: View {
                             .clipShape(Capsule())
                     }
                 }
-                Text("\(ledger.currencyCode) · \(count) 笔记录")
+                Text("\(ledger.currencyCode) · \(NumiLocalized.string("insight.transaction.count", count))")
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
             }
@@ -186,20 +190,20 @@ public struct LedgerManagementView: View {
                     Button {
                         onSelect(ledger)
                     } label: {
-                        Label("切换到账本", systemImage: "arrow.left.arrow.right")
+                        Label("ledger.switch", systemImage: "arrow.left.arrow.right")
                     }
                 }
                 Button {
                     editingDraft = .existing(ledger)
                 } label: {
-                    Label("编辑", systemImage: "pencil")
+                    Label("common.edit", systemImage: "pencil")
                 }
-                if ledgers.count > 1 {
+                if sortedLedgers.count > 1 {
                     Button(role: .destructive) {
                         pendingDelete = ledger
                         showDeleteConfirm = true
                     } label: {
-                        Label("删除", systemImage: "trash")
+                        Label("common.delete", systemImage: "trash")
                     }
                 }
             } label: {
@@ -254,17 +258,17 @@ private struct LedgerFormSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("账本名称") {
-                    TextField("例如：个人账本、家庭账本", text: $draft.name)
+                Section("account.name") {
+                    TextField("ledger.name.placeholder", text: $draft.name)
                         .font(NumiFont.body)
                 }
 
-                Section("货币") {
+                Section("ledger.currency") {
                     Button {
                         showCurrencyPicker = true
                     } label: {
                         HStack {
-                            Text("货币")
+                            Text("ledger.currency")
                                 .foregroundStyle(NumiColor.textPrimary)
                             Spacer()
                             Text("\(draft.currencyCode) \(currencyDisplayName)")
@@ -279,20 +283,22 @@ private struct LedgerFormSheet: View {
 
                 if !isValid && !draft.name.trimmingCharacters(in: .whitespaces).isEmpty {
                     Section {
-                        Text("账本名称已存在")
+                        Text("ledger.name.exists")
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.negativeText)
                     }
                 }
             }
-            .navigationTitle(draft.isNew ? "新建账本" : "编辑账本")
+            .navigationTitle(draft.isNew ? Text("ledger.new") : Text("ledger.edit"))
+#if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+#endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button("common.cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
+                    Button("common.save") {
                         draft.name = draft.name.trimmingCharacters(in: .whitespaces)
                         onSave(draft)
                     }
@@ -320,11 +326,13 @@ private struct LedgerFormSheet: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    .navigationTitle("选择货币")
+                    .navigationTitle("ledger.select.currency")
+#if os(iOS)
                     .navigationBarTitleDisplayMode(.inline)
+#endif
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("取消") { showCurrencyPicker = false }
+                            Button("common.cancel") { showCurrencyPicker = false }
                         }
                     }
                 }

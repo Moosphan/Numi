@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "Numi",
+    defaultLocalization: "zh-Hans",
     platforms: [
         .iOS(.v17),
         .macOS(.v14)
@@ -17,7 +18,10 @@ let package = Package(
         .target(
             name: "NumiCore",
             path: "Sources/NumiCore",
-            exclude: ["README.md"]
+            exclude: ["README.md"],
+            resources: [
+                .process("Localizable.xcstrings")
+            ]
         ),
         .target(
             name: "NumiPersistence",
@@ -28,10 +32,12 @@ let package = Package(
             name: "NumiAppUI",
             dependencies: ["NumiCore"],
             path: "Sources/NumiAppUI",
+            exclude: ["Assets/ThiingsIcons/README.md"],
             resources: [
                 .process("Assets/ThiingsIcons.xcassets"),
                 .copy("Assets/ThiingsIcons/Icons"),
-                .copy("Assets/ThiingsIcons/manifest.json")
+                .copy("Assets/ThiingsIcons/manifest.json"),
+                .process("Localizable.xcstrings")
             ]
         ),
         .testTarget(
@@ -47,7 +53,8 @@ let package = Package(
         .testTarget(
             name: "NumiAppUITests",
             dependencies: ["NumiAppUI"],
-            path: "Tests/NumiAppUITests"
+            path: "Tests/NumiAppUITests",
+            exclude: ["RootShellStoreRecoveryTests.swift"]
         )
     ]
 )

@@ -44,6 +44,19 @@ final class QwenTransactionParserTests: XCTestCase {
         XCTAssertEqual(result.categoryName, "奖金")
     }
 
+    func testParseTransferWithTargetAccount() async throws {
+        MockURLProtocol.mockResponse = (makeQwenJSON("""
+        {"type":"transfer","amount":320,"category":"转账","account":"支付宝","targetAccount":"银行卡","date":"2026-06-20","note":"提现"}
+        """), HTTPURLResponse(url: URL(string: "https://test")!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+
+        let result = try await parser.parseTransaction("支付宝提现320到银行卡", categories: ["转账"], accounts: ["支付宝", "银行卡"])
+
+        XCTAssertEqual(result.type, .transfer)
+        XCTAssertEqual(result.amount, 320)
+        XCTAssertEqual(result.accountName, "支付宝")
+        XCTAssertEqual(result.targetAccountName, "银行卡")
+    }
+
     func testHTTPError() async {
         MockURLProtocol.mockResponse = (Data(), HTTPURLResponse(url: URL(string: "https://test")!, statusCode: 403, httpVersion: nil, headerFields: nil)!)
 

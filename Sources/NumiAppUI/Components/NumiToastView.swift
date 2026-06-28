@@ -2,9 +2,11 @@ import SwiftUI
 
 public struct NumiToastView: View {
     let message: String
+    let isError: Bool
 
-    public init(message: String) {
+    public init(message: String, isError: Bool = false) {
         self.message = message
+        self.isError = isError
     }
 
     public var body: some View {
@@ -16,10 +18,6 @@ public struct NumiToastView: View {
             .background(isError ? Color.red.opacity(0.9) : Color.green.opacity(0.9))
             .clipShape(Capsule())
             .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
-    }
-
-    private var isError: Bool {
-        message.contains("失败") || message.contains("错误")
     }
 }
 

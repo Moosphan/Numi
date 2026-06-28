@@ -11,9 +11,9 @@ public enum ColorSchemeMode: String, CaseIterable, Identifiable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .system: return "跟随系统"
-        case .light: return "浅色"
-        case .dark: return "深色"
+        case .system: return NumiLocalized.string( "theme.follow.system")
+        case .light: return NumiLocalized.string( "theme.light")
+        case .dark: return NumiLocalized.string( "theme.dark")
         }
     }
 
@@ -74,6 +74,13 @@ public struct NumiTheme: AppTheme {
     public let light: ThemePalette
     public let dark: ThemePalette
 
+    public var primaryHex: String { light.primary }
+    public var backgroundHex: String { light.background }
+    public var accentHex: String { light.accent }
+    public var positiveHex: String { light.positive }
+    public var warningHex: String { light.warning }
+    public var textPrimaryHex: String { light.textPrimary }
+
     public init(id: String, displayName: String, light: ThemePalette, dark: ThemePalette) {
         self.id = id
         self.displayName = displayName
@@ -83,54 +90,64 @@ public struct NumiTheme: AppTheme {
 
     // MARK: - Built-in Themes
 
-    public static let `default` = NumiTheme(
-        id: "default",
-        displayName: "默认",
-        light: ThemePalette(
-            primary: "#79D983",
-            background: "#FBF9F3",
-            accent: "#296956",
-            positive: "#93C9A1",
-            warning: "#D38A63",
-            textPrimary: "#1E211F"
-        ),
-        dark: ThemePalette(
-            primary: "#5CB86A",
-            background: "#1A1D1B",
-            accent: "#3D8B72",
-            positive: "#6BAF7A",
-            warning: "#D4956E",
-            textPrimary: "#E8E8E8"
+    public static var `default`: NumiTheme {
+        NumiTheme(
+            id: "default",
+            displayName: NumiLocalized.string( "theme.default"),
+            light: ThemePalette(
+                primary: "#79D983",
+                background: "#FBF9F3",
+                accent: "#296956",
+                positive: "#93C9A1",
+                warning: "#D38A63",
+                textPrimary: "#1E211F"
+            ),
+            dark: ThemePalette(
+                primary: "#5CB86A",
+                background: "#1A1D1B",
+                accent: "#3D8B72",
+                positive: "#6BAF7A",
+                warning: "#D4956E",
+                textPrimary: "#E8E8E8"
+            )
         )
-    )
+    }
 
-    public static let brandWarm = NumiTheme(
-        id: "brandWarm",
-        displayName: "暖调品牌",
-        light: ThemePalette(
-            primary: "#F0A050",
-            background: "#FCF6EF",
-            accent: "#C87A6E",
-            positive: "#A8C3A2",
-            warning: "#E08B5A",
-            textPrimary: "#3D2C26"
-        ),
-        dark: ThemePalette(
-            primary: "#E8963F",
-            background: "#1E1B18",
-            accent: "#D4887C",
-            positive: "#8AAF85",
-            warning: "#E09A6E",
-            textPrimary: "#E8E0D8"
+    public static var defaultTheme: NumiTheme {
+        .default
+    }
+
+    public static var brandWarm: NumiTheme {
+        NumiTheme(
+            id: "brandWarm",
+            displayName: NumiLocalized.string( "theme.warm"),
+            light: ThemePalette(
+                primary: "#F0A050",
+                background: "#FCF6EF",
+                accent: "#C87A6E",
+                positive: "#A8C3A2",
+                warning: "#E08B5A",
+                textPrimary: "#3D2C26"
+            ),
+            dark: ThemePalette(
+                primary: "#E8963F",
+                background: "#1E1B18",
+                accent: "#D4887C",
+                positive: "#8AAF85",
+                warning: "#E09A6E",
+                textPrimary: "#E8E0D8"
+            )
         )
-    )
+    }
 
     // MARK: - Registry
 
-    public static let allCases: [NumiTheme] = [
-        .default,
-        .brandWarm
-    ]
+    public static var allCases: [NumiTheme] {
+        [
+            .default,
+            .brandWarm
+        ]
+    }
 
     public static func theme(for id: String) -> NumiTheme {
         allCases.first(where: { $0.id == id }) ?? .default

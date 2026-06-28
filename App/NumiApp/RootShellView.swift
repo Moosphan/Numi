@@ -12,13 +12,23 @@ struct RootShellView: View {
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @AppStorage("app.currentLedgerID") private var currentLedgerIDString: String = ""
+    @AppStorage(NumiAppLanguage.pendingToastDefaultsKey) private var pendingLanguageToastCode: String = ""
     @StateObject private var rateService = ExchangeRateService.shared
 
     enum Tab: String, CaseIterable {
-        case transactions = "明细"
-        case insights = "洞悉"
-        case plans = "计划"
-        case settings = "我的"
+        case transactions
+        case insights
+        case plans
+        case settings
+
+        var title: String {
+            switch self {
+            case .transactions: NumiLocalized.string( "tab.transactions")
+            case .insights: NumiLocalized.string( "tab.insights")
+            case .plans: NumiLocalized.string( "tab.plans")
+            case .settings: NumiLocalized.string( "tab.settings")
+            }
+        }
 
         var systemImage: String {
             switch self {
@@ -46,10 +56,11 @@ struct RootShellView: View {
     @State private var backgroundTime: Date?
     @State private var lockTimer: Timer?
     @State private var aiRecordToast: String?
+    @State private var aiRecordToastIsError = false
     @State private var showAIRecordToast = false
     @State private var insightsDimension: InsightsTimeDimension = .month
     @State private var insightsAnchorDate = Date()
-    @State private var selectedCategoryRow: InsightsDistributionRow?
+    @State private var selectedCategoryID: UUID?
     @State private var selectedCategoryType: String = "expense"
     @State private var isBottomAccessoryHiddenByPage = false
     @State private var bottomAccessoryMeasuredHeight: CGFloat = 0
@@ -89,7 +100,7 @@ struct RootShellView: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 36, weight: .semibold))
                         .foregroundStyle(NumiColor.negativeText)
-                    Text("本地数据初始化失败")
+                    Text("error.data.init.failed")
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
                     Text(initializationError)
@@ -111,6 +122,7 @@ struct RootShellView: View {
         }
         .onAppear {
             bottomAccessoryHiddenProgress = bottomAccessoryShouldBeHidden ? 1 : 0
+            consumePendingLanguageToastIfNeeded()
         }
         .onChange(of: isBottomAccessoryHiddenByPage) { _, _ in
             animateBottomAccessoryVisibility()
@@ -153,7 +165,7 @@ struct RootShellView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, NumiSpacing.s4)
                     .padding(.vertical, 10)
-                    .background(msg.contains("失败") ? Color.red.opacity(0.9) : Color.green.opacity(0.9))
+                    .background(aiRecordToastIsError ? Color.red.opacity(0.9) : Color.green.opacity(0.9))
                     .clipShape(Capsule())
                     .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
                     .padding(.bottom, 140)
@@ -232,10 +244,10 @@ struct RootShellView: View {
             let category = category(for: transaction)
             RecordDetailView(
                 transaction: transaction,
-                categoryName: category.name,
-                iconName: category.icon,
-                accountName: accountName(for: transaction),
-                targetAccountName: targetAccountName(for: transaction),
+                categories: store.categories,
+                accounts: store.accounts,
+                fallbackCategoryName: category.localizedName,
+                fallbackIconName: category.icon,
                 onClose: {
                     selectedTransactionID = nil
                 },
@@ -277,7 +289,11 @@ struct RootShellView: View {
         }
         .fullScreenCover(isPresented: $isTransactionSearchPresented) {
             NavigationStack {
-                TransactionSearchView(rows: searchRows()) { transaction in
+                TransactionSearchView(
+                    rows: searchRows(),
+                    categories: store.categories,
+                    accounts: store.accounts
+                ) { transaction in
                     isTransactionSearchPresented = false
                     selectedTransactionID = transaction.id
                 }
@@ -347,6 +363,8 @@ struct RootShellView: View {
                 selectedPeriod: selectedHomePeriod,
                 isNextPeriodEnabled: canMoveHomePeriodForward,
                 sections: data.sections,
+                categories: store.categories,
+                accounts: store.accounts,
                 currentLedger: currentLedger,
                 ledgers: store.ledgers,
                 onPreviousPeriod: moveHomePeriodBackward,
@@ -411,6 +429,7 @@ struct RootShellView: View {
                 summary: summary,
                 distribution: distribution,
                 incomeDistribution: income,
+                categories: store.categories,
                 periodTitle: periodTitle,
                 onPreviousPeriod: { moveInsightsPeriod(-1) },
                 onNextPeriod: { moveInsightsPeriod(1) },
@@ -419,24 +438,25 @@ struct RootShellView: View {
                     insightsAnchorDate = Date()
                 },
                 onSelectCategory: { row, type in
-                    selectedCategoryRow = row
+                    selectedCategoryID = row.categoryID
                     selectedCategoryType = type
                 }
             )
             .numiBottomAccessoryNavigationDepth()
             .navigationDestination(isPresented: Binding(
-                get: { selectedCategoryRow != nil },
-                set: { if !$0 { selectedCategoryRow = nil } }
+                get: { selectedCategoryID != nil },
+                set: { if !$0 { selectedCategoryID = nil } }
             )) {
-                if let row = selectedCategoryRow {
+                if let selectedCategoryRow {
                     let accentColor = selectedCategoryType == "expense" ? NumiColor.expenseText : NumiColor.incomeText
                     CategoryTransactionsDetailView(
-                        categoryName: row.categoryName,
-                        iconName: row.iconName,
-                        transactions: categoryTransactions(for: row.categoryID),
+                        categoryID: selectedCategoryRow.categoryID,
+                        transactions: categoryTransactions(for: selectedCategoryRow.categoryID),
                         categories: store.categories,
                         accentColor: accentColor,
-                        periodTitle: insightsPeriodTitle
+                        periodTitle: insightsPeriodTitle,
+                        fallbackCategoryName: selectedCategoryRow.fallbackCategoryName,
+                        fallbackIconName: selectedCategoryRow.fallbackIconName
                     )
                 }
             }
@@ -607,9 +627,9 @@ struct RootShellView: View {
             let category = store.categories.first { $0.id == transaction.categoryID }
             return TransactionHomeRow(
                 transaction: transaction,
-                categoryName: displayName(for: transaction, categoryName: category?.name),
-                iconName: displayIcon(for: transaction, categoryIcon: category?.icon),
-                subtitle: transferSubtitle(for: transaction)
+                fallbackCategoryName: displayName(for: transaction, categoryName: category?.localizedDisplayName),
+                fallbackIconName: displayIcon(for: transaction, categoryIcon: category?.icon),
+                fallbackSubtitle: transferSubtitle(for: transaction)
             )
         }
 
@@ -656,9 +676,9 @@ struct RootShellView: View {
                 let category = store.categories.first { $0.id == transaction.categoryID }
                 return TransactionSearchRow(
                     transaction: transaction,
-                    categoryName: displayName(for: transaction, categoryName: category?.name),
-                    iconName: displayIcon(for: transaction, categoryIcon: category?.icon),
-                    subtitle: transferSubtitle(for: transaction)
+                    fallbackCategoryName: displayName(for: transaction, categoryName: category?.localizedDisplayName),
+                    fallbackIconName: displayIcon(for: transaction, categoryIcon: category?.icon),
+                    fallbackSubtitle: transferSubtitle(for: transaction)
                 )
             }
     }
@@ -711,9 +731,9 @@ struct RootShellView: View {
         case .quarter:
             let quarter = ((calendar.component(.month, from: start) - 1) / 3) + 1
             let year = calendar.component(.year, from: start)
-            return "\(year)年第\(quarter)季度"
+            return NumiLocalized.string("period.quarter", String(year), String(quarter))
         case .year:
-            return "\(calendar.component(.year, from: start))年"
+            return NumiLocalized.string("period.year", String(calendar.component(.year, from: start)))
         }
     }
 
@@ -751,8 +771,8 @@ struct RootShellView: View {
             let category = store.categories.first { $0.id == item.categoryID }
             return InsightsDistributionRow(
                 categoryID: item.categoryID,
-                categoryName: category?.name ?? "其他",
-                iconName: category?.icon ?? "ellipsis.circle",
+                fallbackCategoryName: category?.localizedDisplayName ?? NumiLocalized.string( "other.fallback"),
+                fallbackIconName: category?.icon ?? "ellipsis.circle",
                 amount: item.amount,
                 percentage: item.percentage
             )
@@ -766,12 +786,18 @@ struct RootShellView: View {
             let category = store.categories.first { $0.id == item.categoryID }
             return InsightsDistributionRow(
                 categoryID: item.categoryID,
-                categoryName: category?.name ?? "其他",
-                iconName: category?.icon ?? "ellipsis.circle",
+                fallbackCategoryName: category?.localizedDisplayName ?? NumiLocalized.string( "other.fallback"),
+                fallbackIconName: category?.icon ?? "ellipsis.circle",
                 amount: item.amount,
                 percentage: item.percentage
             )
         }
+    }
+
+    private var selectedCategoryRow: InsightsDistributionRow? {
+        guard let selectedCategoryID else { return nil }
+        return (selectedCategoryType == "expense" ? insightsDistribution() : insightsIncomeDistribution())
+            .first(where: { $0.categoryID == selectedCategoryID })
     }
 
     private var selectedTransactionBinding: Binding<NumiCore.Transaction?> {
@@ -793,22 +819,22 @@ struct RootShellView: View {
         return store.visibleTransactions.first { $0.id == id }
     }
 
-    private func category(for transaction: NumiCore.Transaction) -> (name: String, icon: String) {
+    private func category(for transaction: NumiCore.Transaction) -> (localizedName: String, icon: String) {
         let category = store.categories.first { $0.id == transaction.categoryID }
         return (
-            displayName(for: transaction, categoryName: category?.name),
+            displayName(for: transaction, categoryName: category?.localizedDisplayName),
             displayIcon(for: transaction, categoryIcon: category?.icon)
         )
     }
 
     private func accountName(for transaction: NumiCore.Transaction) -> String {
-        guard let accountID = transaction.accountID else { return "未选择" }
-        return store.accounts.first { $0.id == accountID }?.name ?? "未选择"
+        guard let accountID = transaction.accountID else { return NumiLocalized.string( "empty.no.selection") }
+        return store.accounts.first { $0.id == accountID }?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection")
     }
 
     private func targetAccountName(for transaction: NumiCore.Transaction) -> String? {
         guard let targetAccountID = transaction.targetAccountID else { return nil }
-        return store.accounts.first { $0.id == targetAccountID }?.name ?? "未选择"
+        return store.accounts.first { $0.id == targetAccountID }?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection")
     }
 
     private func shareText(for transaction: NumiCore.Transaction) -> String {
@@ -816,17 +842,20 @@ struct RootShellView: View {
         let amount = transaction.amount.formatted()
         let date = NumiDatePickerRow.displayText(for: transaction.occurredAt)
         let account = accountName(for: transaction)
-        let transfer = transaction.type == .transfer ? " -> \(targetAccountName(for: transaction) ?? "未选择")" : ""
-        let note = transaction.note.isEmpty ? "" : "\n备注：\(transaction.note)"
+        let noSelection = NumiLocalized.string( "empty.no.selection")
+        let transfer = transaction.type == .transfer ? " -> \(targetAccountName(for: transaction) ?? noSelection)" : ""
+        let note = transaction.note.isEmpty ? "" : "\n\(NumiLocalized.string( "share.note"))\(transaction.note)"
+        let timeLabel = NumiLocalized.string( "share.time")
+        let accountLabel = NumiLocalized.string( "share.account")
         return """
-        \(category.name) \(amount)
-        时间：\(date)
-        账户：\(account)\(transfer)\(note)
+        \(category.localizedName) \(amount)
+        \(timeLabel)\(date)
+        \(accountLabel)\(account)\(transfer)\(note)
         """
     }
 
     private func displayName(for transaction: NumiCore.Transaction, categoryName: String?) -> String {
-        transaction.type == .transfer ? "转账" : (categoryName ?? "其他")
+        transaction.type == .transfer ? NumiLocalized.string( "other.transfer") : (categoryName ?? NumiLocalized.string( "other.fallback"))
     }
 
     private func displayIcon(for transaction: NumiCore.Transaction, categoryIcon: String?) -> String {
@@ -835,7 +864,7 @@ struct RootShellView: View {
 
     private func transferSubtitle(for transaction: NumiCore.Transaction) -> String? {
         guard transaction.type == .transfer else { return nil }
-        return "\(accountName(for: transaction)) -> \(targetAccountName(for: transaction) ?? "未选择")"
+        return "\(accountName(for: transaction)) -> \(targetAccountName(for: transaction) ?? NumiLocalized.string( "empty.no.selection"))"
     }
 
     private func budgetCards(today: Date = Date(), calendar: Calendar = Calendar.current) -> [BudgetCardModel] {
@@ -922,9 +951,9 @@ struct RootShellView: View {
         case .quarter:
             let quarter = ((calendar.component(.month, from: start) - 1) / 3) + 1
             let year = calendar.component(.year, from: start)
-            return "\(year)年第\(quarter)季度"
+            return NumiLocalized.string("period.quarter", String(year), String(quarter))
         case .year:
-            return "\(calendar.component(.year, from: start))年"
+            return NumiLocalized.string("period.year", String(calendar.component(.year, from: start)))
         }
     }
 
@@ -1014,10 +1043,10 @@ struct RootShellView: View {
 
     private func homeSectionTitle(for date: Date) -> String {
         if calendar.isDateInToday(date) {
-            return "今天"
+            return NumiLocalized.string( "date.today")
         }
         if calendar.isDateInYesterday(date) {
-            return "昨天"
+            return NumiLocalized.string( "date.yesterday")
         }
         if calendar.isDate(date, equalTo: Date(), toGranularity: .year) {
             return monthDayWeekdayFormatter.string(from: date)
@@ -1037,7 +1066,7 @@ struct RootShellView: View {
 
     private var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.locale = Locale(identifier: "zh_CN")
+        calendar.locale = NumiLocalized.currentLocale
         calendar.timeZone = .current
         calendar.firstWeekday = 2
         return calendar
@@ -1045,33 +1074,33 @@ struct RootShellView: View {
 
     private var yearMonthFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = NumiLocalized.currentLocale
         formatter.calendar = calendar
-        formatter.dateFormat = "yyyy年M月"
+        formatter.setLocalizedDateFormatFromTemplate("yyyyMMMM")
         return formatter
     }
 
     private var monthDayFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = NumiLocalized.currentLocale
         formatter.calendar = calendar
-        formatter.dateFormat = "M月d日"
+        formatter.setLocalizedDateFormatFromTemplate("MMMd")
         return formatter
     }
 
     private var monthDayWeekdayFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = NumiLocalized.currentLocale
         formatter.calendar = calendar
-        formatter.dateFormat = "M月d日 EEEE"
+        formatter.setLocalizedDateFormatFromTemplate("MMMMdEEEE")
         return formatter
     }
 
     private var yearMonthDayFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = NumiLocalized.currentLocale
         formatter.calendar = calendar
-        formatter.dateFormat = "yyyy年M月d日"
+        formatter.setLocalizedDateFormatFromTemplate("yyyyMMdd")
         return formatter
     }
 
@@ -1119,7 +1148,7 @@ struct RootShellView: View {
         guard url.scheme == "numi", url.host == "record" else { return }
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         guard let text = components?.queryItems?.first(where: { $0.name == "text" })?.value, !text.isEmpty else {
-            showToast("缺少 text 参数")
+            showToast(NumiLocalized.string( "error.missing.text"), isError: true)
             return
         }
 
@@ -1153,49 +1182,84 @@ struct RootShellView: View {
             } else if !qwenKey.isEmpty {
                 parser = QwenTransactionParser(apiKey: qwenKey)
             } else {
-                showToast("请先在设置中配置 AI 服务密钥")
+                showToast(NumiLocalized.string( "error.ai.no.key"), isError: true)
                 return
             }
         }
 
-        let categories = store.categories.map(\.name)
+        let visibleCategories = store.categories.filter { !$0.isHidden }
+        let visibleAccounts = store.accounts.filter { !$0.isHidden }
+        let categories = visibleCategories.localizedCategoryNames()
+        let accounts = visibleAccounts.localizedAccountNames()
 
         do {
-            let parsed = try await parser.parseTransaction(text, categories: categories)
+            let parsed = try await parser.parseTransaction(text, categories: categories, accounts: accounts)
 
-            guard let category = store.categories.first(where: { $0.name == parsed.categoryName }),
-                  let account = store.accounts.first else {
-                showToast("分类或账户匹配失败")
+            let category = parsed.type == .transfer
+                ? nil
+                : visibleCategories.resolveLocalizedCategory(named: parsed.categoryName)
+            let transferResolution = parsed.type == .transfer
+                ? visibleAccounts.resolveLocalizedTransferAccounts(
+                    parsedAccountName: parsed.accountName,
+                    parsedTargetAccountName: parsed.targetAccountName
+                )
+                : nil
+            let rawAccount = visibleAccounts.resolveLocalizedAccount(named: parsed.accountName)
+            let targetAccount = transferResolution?.target
+            let account = parsed.type == .transfer
+                ? transferResolution?.source
+                : (rawAccount ?? visibleAccounts.first)
+
+            guard let account,
+                  parsed.type == .transfer ? targetAccount != nil : category != nil else {
+                showToast(NumiLocalized.string( "error.ai.parse.fail"), isError: true)
                 return
             }
 
             let money = try Money(decimalString: "\(parsed.amount)", currencyCode: "CNY")
             guard let ledgerID = currentLedger?.id else {
-                showToast("请先创建账本")
+                showToast(NumiLocalized.string( "error.ai.no.ledger"), isError: true)
                 return
             }
             _ = try store.createTransaction(
                 type: parsed.type,
                 amount: money,
-                categoryID: category.id,
+                categoryID: category?.id,
                 accountID: account.id,
+                targetAccountID: parsed.type == .transfer ? targetAccount?.id : nil,
                 ledgerID: ledgerID,
                 note: parsed.note
             )
 
-            let symbol = parsed.type == .income ? "+" : "-"
-            showToast("已记录 \(parsed.categoryName) \(symbol)¥\(parsed.amount)")
+            let symbol = switch parsed.type {
+            case .income: "+"
+            case .expense: "-"
+            case .transfer: ""
+            }
+            let amountStr = "\(parsed.amount)"
+            let localizedCategoryName = parsed.type == .transfer
+                ? NumiLocalized.string("other.transfer")
+                : (category?.localizedDisplayName ?? parsed.categoryName)
+            showToast(NumiLocalized.string("error.ai.record.success", localizedCategoryName, symbol, "¥\(amountStr)"))
         } catch {
-            showToast("记账失败：\(error.localizedDescription)")
+            showToast(NumiLocalized.string("error.ai.record.fail", error.localizedDescription), isError: true)
         }
     }
 
-    private func showToast(_ message: String) {
+    private func showToast(_ message: String, isError: Bool = false) {
         aiRecordToast = message
+        aiRecordToastIsError = isError
         withAnimation { showAIRecordToast = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             withAnimation { showAIRecordToast = false }
         }
+    }
+
+    private func consumePendingLanguageToastIfNeeded() {
+        guard !pendingLanguageToastCode.isEmpty else { return }
+        let languageName = NumiAppLanguage.displayName(for: pendingLanguageToastCode)
+        pendingLanguageToastCode = ""
+        showToast(NumiLocalized.string("language.switch.success", languageName))
     }
 
     private static func makeStore() throws -> SwiftDataBookkeepingStore {
@@ -1279,7 +1343,7 @@ struct RootShellView: View {
             items: Tab.allCases.map {
                 NumiBottomNavigationBar.Item(
                     id: $0.rawValue,
-                    title: $0.rawValue,
+                    title: $0.title,
                     systemImage: $0.systemImage
                 )
             },
@@ -1290,7 +1354,7 @@ struct RootShellView: View {
                     selectedTab = tab
                 }
             },
-            trailingActionTitle: "新建账单",
+            trailingActionTitle: NumiLocalized.string( "common.newBill"),
             trailingActionSystemImage: "pencil",
             trailingAction: {
                 isAddingRecord = true
@@ -1349,7 +1413,7 @@ private extension RootShellView {
                         .font(.system(size: 48, weight: .medium))
                         .foregroundStyle(NumiColor.textSecondary)
 
-                    Text("应用已模糊")
+                    Text("security.app.blurred")
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
                 }
@@ -1362,14 +1426,14 @@ private extension RootShellView {
         var error: NSError?
 
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            let reason = "验证身份以解锁应用"
+            let reason = NumiLocalized.string( "security.verify.to.unlock")
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
                 DispatchQueue.main.async {
                     completion(success)
                 }
             }
         } else if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-            let reason = "验证身份以解锁应用"
+            let reason = NumiLocalized.string( "security.verify.to.unlock")
             context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, _ in
                 DispatchQueue.main.async {
                     completion(success)

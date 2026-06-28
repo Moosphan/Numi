@@ -42,10 +42,10 @@ public struct AddRecordView: View {
 
     private var header: some View {
         HStack {
-            Picker("类型", selection: $selectedType) {
-                Text("支出").tag(TransactionType.expense).accessibilityIdentifier("transactionType.支出")
-                Text("收入").tag(TransactionType.income).accessibilityIdentifier("transactionType.收入")
-                Text("转账").tag(TransactionType.transfer).accessibilityIdentifier("transactionType.转账")
+            Picker("record.type", selection: $selectedType) {
+                Text("record.expense").tag(TransactionType.expense).accessibilityIdentifier("transactionType.expense")
+                Text("record.income").tag(TransactionType.income).accessibilityIdentifier("transactionType.income")
+                Text("record.transfer").tag(TransactionType.transfer).accessibilityIdentifier("transactionType.transfer")
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("picker.transactionType")
@@ -60,10 +60,10 @@ public struct AddRecordView: View {
                     Image(systemName: "arrow.left.arrow.right.circle.fill")
                         .font(.system(size: 42, weight: .semibold))
                         .foregroundStyle(NumiColor.accentDeep)
-                    Text("账户转账")
+                    Text("record.transfer.title")
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
-                    Text("转账只调整账户余额，不计入支出或收入。")
+                    Text("record.transfer.desc")
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textTertiary)
                         .multilineTextAlignment(.center)
@@ -87,16 +87,16 @@ public struct AddRecordView: View {
                                             }
                                         }
                                         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-                                    Text(category.name)
+                                    Text(category.localizedDisplayName)
                                         .font(NumiFont.footnote)
                                         .foregroundStyle(category.id == selectedCategoryID ? NumiColor.textPrimary : NumiColor.textSecondary)
                                         .lineLimit(1)
                                 }
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel(category.name)
+                            .accessibilityLabel(category.localizedDisplayName)
                             .accessibilityAddTraits(category.id == selectedCategoryID ? [.isSelected] : [])
-                            .accessibilityIdentifier("category.\(category.name)")
+                            .accessibilityIdentifier("category.\(category.id.uuidString)")
                         }
                     }
                     .padding(.horizontal, NumiSpacing.s5)
@@ -110,7 +110,7 @@ public struct AddRecordView: View {
         NumiGlassSurface(role: .modal) {
             VStack(spacing: NumiSpacing.s4) {
                 HStack {
-                    Text("金额")
+                    Text("record.amount")
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textTertiary)
                     Spacer()
@@ -148,14 +148,14 @@ public struct AddRecordView: View {
             if selectedType == .transfer {
                 VStack(spacing: NumiSpacing.s3) {
                     NumiAccountPickerRow(
-                        title: "转出",
+                        title: NumiLocalized.string( "record.transfer.from"),
                         accounts: accounts,
                         selectedAccountID: $selectedAccountID,
                         accessibilityIdentifier: "picker.transferSourceAccount"
                     )
 
                     NumiAccountPickerRow(
-                        title: "转入",
+                        title: NumiLocalized.string( "record.transfer.to"),
                         accounts: accounts,
                         selectedAccountID: $selectedTargetAccountID,
                         excludedAccountID: selectedAccountID,
@@ -182,7 +182,7 @@ public struct AddRecordView: View {
             Image(systemName: "note.text")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(NumiColor.textTertiary)
-            TextField("备注", text: $note)
+            TextField("record.note", text: $note)
                 .autocorrectionDisabled()
                 .submitLabel(.done)
                 .focused($isNoteFocused)
@@ -212,7 +212,7 @@ public struct AddRecordView: View {
                 save()
                 inputState.apply(.clear)
             } label: {
-                Text("再记")
+                Text("addRecord.action.saveAndContinue")
                     .font(NumiFont.bodyStrong)
                     .frame(maxWidth: .infinity, minHeight: 52)
                     .background(NumiColor.accentPrimary.opacity(0.62))
@@ -225,7 +225,7 @@ public struct AddRecordView: View {
             Button {
                 save()
             } label: {
-                Text("记一笔")
+                Text("record.new")
                     .font(NumiFont.bodyStrong)
                     .frame(maxWidth: .infinity, minHeight: 52)
                     .background(NumiColor.accentPrimary)

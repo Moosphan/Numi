@@ -12,18 +12,21 @@ public struct NumiAmountKeypad: View {
     }
 
     @Binding private var state: MoneyInputState
-    private let dateShortcutTitle: String
+    private let dateShortcutTitleOverride: String?
+    private let dateShortcutAccessibilityKeyOverride: String?
     private let dateAccessorySystemImage: String
     private let onDateShortcut: () -> Void
 
     public init(
         state: Binding<MoneyInputState>,
-        dateShortcutTitle: String = "今天",
+        dateShortcutTitle: String? = nil,
+        dateShortcutAccessibilityKey: String? = nil,
         dateAccessorySystemImage: String = "calendar",
         onDateShortcut: @escaping () -> Void = {}
     ) {
         self._state = state
-        self.dateShortcutTitle = dateShortcutTitle
+        self.dateShortcutTitleOverride = dateShortcutTitle
+        self.dateShortcutAccessibilityKeyOverride = dateShortcutAccessibilityKey
         self.dateAccessorySystemImage = dateAccessorySystemImage
         self.onDateShortcut = onDateShortcut
     }
@@ -33,6 +36,7 @@ public struct NumiAmountKeypad: View {
     }
 
     private var keypadGrid: some View {
+        let dateShortcutTitle = resolvedDateShortcutTitle
         let keys = [
             ["7", "8", "9", dateShortcutTitle],
             ["4", "5", "6", "-"],
@@ -60,7 +64,7 @@ public struct NumiAmountKeypad: View {
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("keypad.\(accessibilityKeyName(key))")
-                        .accessibilityValue("style.\(keyStyle(for: key).rawValue)")
+                        .accessibilityValue(accessibilityValue(for: key))
                     }
                 }
             }
@@ -72,7 +76,7 @@ public struct NumiAmountKeypad: View {
         if key == "delete.left" {
             Image(systemName: key)
                 .font(.system(size: 20, weight: .semibold))
-        } else if key == dateShortcutTitle {
+        } else if key == resolvedDateShortcutTitle {
             HStack(spacing: 3) {
                 Text(key)
                     .font(dateLabelFont(for: key))
@@ -119,7 +123,7 @@ public struct NumiAmountKeypad: View {
     }
 
     func keyStyle(for key: String) -> KeyStyle {
-        if key == dateShortcutTitle {
+        if key == resolvedDateShortcutTitle {
             return .dateAccent
         }
         if ["+", "-", "="].contains(key) {
@@ -136,8 +140,14 @@ public struct NumiAmountKeypad: View {
         #endif
     }
 
-    private func showsDateAccessoryIcon(for key: String) -> Bool {
-        ["今天", "昨天", "前天"].contains(key)
+    func showsDateAccessoryIcon(for key: String) -> Bool {
+        guard key == resolvedDateShortcutTitle else { return false }
+        switch resolvedDateShortcutAccessibilityKey {
+        case "today", "yesterday", "dayBeforeYesterday":
+            return true
+        default:
+            return false
+        }
     }
 
     private func dateLabelFont(for key: String) -> Font {
@@ -151,7 +161,7 @@ public struct NumiAmountKeypad: View {
         switch key {
         case "delete.left":
             state.apply(.delete)
-        case dateShortcutTitle:
+        case resolvedDateShortcutTitle:
             onDateShortcut()
         default:
             state.apply(.token(key))
@@ -159,7 +169,7 @@ public struct NumiAmountKeypad: View {
     }
 
     private func accessibilityKeyName(_ key: String) -> String {
-        if key == dateShortcutTitle {
+        if key == resolvedDateShortcutTitle {
             return "openDatePicker"
         }
         switch key {
@@ -176,5 +186,27 @@ public struct NumiAmountKeypad: View {
         default:
             return key
         }
+    }
+
+    private var resolvedDateShortcutTitle: String {
+        dateShortcutTitleOverride ?? NumiLocalized.string("date.today")
+    }
+
+    var resolvedDateShortcutAccessibilityKey: String {
+        if let dateShortcutAccessibilityKeyOverride {
+            return dateShortcutAccessibilityKeyOverride
+        }
+        if dateShortcutTitleOverride == nil {
+            return "today"
+        }
+        return "custom"
+    }
+
+    private func accessibilityValue(for key: String) -> String {
+        let style = "style.\(keyStyle(for: key).rawValue)"
+        guard key == resolvedDateShortcutTitle else {
+            return style
+        }
+        return "\(style)|shortcut.\(resolvedDateShortcutAccessibilityKey)"
     }
 }

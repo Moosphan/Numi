@@ -18,7 +18,24 @@ public struct ExchangeRateData: Codable, Equatable {
 
 public enum FetchRateResult {
     case success
-    case failure(String)
+    case failure(FetchRateFailure)
+}
+
+public enum FetchRateFailure: Equatable {
+    case invalidURL
+    case httpStatus(Int)
+    case network(String)
+
+    public var displayMessage: String {
+        switch self {
+        case .invalidURL:
+            return NumiLocalized.string("setting.ai.error.invalid.url")
+        case .httpStatus(let statusCode):
+            return NumiLocalized.string("setting.ai.test.fail", statusCode)
+        case .network(let description):
+            return description
+        }
+    }
 }
 
 // MARK: - Exchange Rate Service
@@ -52,14 +69,14 @@ public final class ExchangeRateService: ObservableObject {
     @discardableResult
     public func fetchRates(base: String = "CNY") async -> FetchRateResult {
         guard let url = URL(string: "https://api.frankfurter.dev/v2/rates?base=\(base)") else {
-            return .failure("请求地址无效")
+            return .failure(.invalidURL)
         }
 
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
 
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-                return .failure("服务器返回错误 (\(httpResponse.statusCode))")
+                return .failure(.httpStatus(httpResponse.statusCode))
             }
 
             let items = try JSONDecoder().decode([FrankfurterRateItem].self, from: data)
@@ -79,7 +96,7 @@ public final class ExchangeRateService: ObservableObject {
             saveCache(rateData)
             return .success
         } catch {
-            return .failure(error.localizedDescription)
+            return .failure(.network(error.localizedDescription))
         }
     }
 

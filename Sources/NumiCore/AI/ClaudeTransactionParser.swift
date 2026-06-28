@@ -10,38 +10,45 @@ public final class ClaudeTransactionParser: TransactionLLMService, @unchecked Se
         self.session = session
     }
 
-    public func parseTransaction(_ text: String, categories: [String]) async throws -> ParsedTransaction {
-        let prompt = buildPrompt(text: text, categories: categories)
+    public func parseTransaction(_ text: String, categories: [String], accounts: [String]) async throws -> ParsedTransaction {
+        let prompt = buildPrompt(text: text, categories: categories, accounts: accounts)
         let dto = try await callLLM(prompt: prompt)
         return try mapToDomain(dto)
     }
 
     // MARK: - Prompt
 
-    private func buildPrompt(text: String, categories: [String]) -> String {
+    private func buildPrompt(text: String, categories: [String], accounts: [String]) -> String {
         let today = ISO8601DateFormatter().string(from: Date())
+        let exampleCategory = categories.first ?? "Other"
+        let availableAccounts = accounts.isEmpty ? "（未提供）" : accounts.joined(separator: "、")
+        let exampleAccount = accounts.first ?? "Cash"
         return """
         你是一个记账助手。从用户输入中提取账单信息。
 
         用户输入：「\(text)」
 
         可用分类：\(categories.joined(separator: "、"))
+        可用账户：\(availableAccounts)
 
         严格按以下 JSON 格式返回，不要输出其他内容：
         {
           "type": "expense",
           "amount": 35.00,
-          "category": "餐饮",
-          "account": null,
+          "category": "\(exampleCategory)",
+          "account": "\(exampleAccount)",
+          "targetAccount": null,
           "date": "2026-06-18",
           "note": "午饭"
         }
 
         规则：
         - type 只能是 expense、income、transfer
-        - category 必须从可用分类中选择最接近的
+        - expense / income 时，category 必须从可用分类中选择最接近的
+        - transfer 时，category 返回“转账”或与用户输入一致的转账语义词即可
+        - account 表示转出账户 / 收支账户；targetAccount 仅在 transfer 时使用，表示转入账户
+        - 如果提供了可用账户，account 和 targetAccount 必须优先从可用账户中选择最接近的；未指定时返回 null
         - date 用 ISO 8601 格式（今天=\(today)），相对日期转为绝对日期
-        - account 如果用户没指定则为 null
         - amount 为正数
         """
     }
@@ -103,6 +110,7 @@ public final class ClaudeTransactionParser: TransactionLLMService, @unchecked Se
             amount: dto.amount,
             categoryName: dto.category,
             accountName: dto.account,
+            targetAccountName: dto.targetAccount,
             occurredAt: LLMMapper.parseDate(dto.date),
             note: dto.note ?? ""
         )
@@ -140,11 +148,11 @@ public enum LLMError: Error, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .invalidURL: return "请求地址无效"
-        case .invalidResponse: return "服务器响应无效"
-        case .httpError(let code): return "服务器错误 (\(code))"
-        case .emptyResponse: return "AI 返回为空"
-        case .invalidJSON: return "AI 返回格式错误"
+        case .invalidURL: return NumiLocalized.string("error.ai.invalid.url")
+        case .invalidResponse: return NumiLocalized.string("error.ai.invalid.response")
+        case .httpError(let code): return NumiLocalized.string("error.ai.http", code)
+        case .emptyResponse: return NumiLocalized.string("error.ai.empty.response")
+        case .invalidJSON: return NumiLocalized.string("error.ai.invalid.json")
         }
     }
 }

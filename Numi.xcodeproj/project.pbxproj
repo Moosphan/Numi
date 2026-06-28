@@ -9,12 +9,17 @@
 /* Begin PBXBuildFile section */
 		2BA36CD4876D24E1940D6E1C /* NumiAppUI in Frameworks */ = {isa = PBXBuildFile; fileRef = F821A04AF10BDED7B816A3A0 /* NumiAppUI.framework */; productRef = 2B3C5680E9B909CA4342F609 /* NumiAppUI */; };
 		4BAAB3EB24DBB91E7583356E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C7448CB3DFF39CEB06D3352C /* Foundation.framework */; };
+		5B4F6814B3F744A8A91DB92D /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C696D8AA2A244D8A76179DA /* Config.swift */; };
 		656C90902A4070AE34E7AB74 /* RootShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0370E2C9BFEB8E881E9A7224 /* RootShellView.swift */; };
 		669BE256FB5A37BE787A883D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C7448CB3DFF39CEB06D3352C /* Foundation.framework */; };
 		66ACAAB2CF0409B76BE23850 /* NumiCore in Frameworks */ = {isa = PBXBuildFile; fileRef = 01730685E8EBDD0C8B7F7318 /* NumiCore.framework */; productRef = C1EE5A314E230431786FA126 /* NumiCore */; };
 		7286E1DCC3487701B26387CA /* NumiUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BD206989CB0E510A71CE95 /* NumiUITests.swift */; };
+		87C213B1B8C04D7485816B8E /* NumiShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94F8420EE5204E38AA8A9797 /* NumiShortcutsProvider.swift */; };
+		8B70F184CF5A4023B5A549B9 /* RecordTransactionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B1F0F9A4D44B72B84C905E /* RecordTransactionIntent.swift */; };
 		DADC3D40D32AF1B9E3E30327 /* NumiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FFA43CBCA48D6C895D410D /* NumiApp.swift */; };
 		FAE86F4D109AB291ECD3BDFF /* NumiPersistence in Frameworks */ = {isa = PBXBuildFile; fileRef = B853F1FB74B42C4714511279 /* NumiPersistence.framework */; productRef = 4A9AC963A344DFDEB566647A /* NumiPersistence */; };
+		2A592DDA13624A44B4353648 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0F48E1B791944C3E8877C051 /* Localizable.xcstrings */; };
+		9BC08E082F0E4F20B704F9AD /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B94ABB53823A46139605FC7F /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,12 +37,17 @@
 		0370E2C9BFEB8E881E9A7224 /* RootShellView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RootShellView.swift; path = App/NumiApp/RootShellView.swift; sourceTree = "<group>"; };
 		1653212C270078761ED94D70 /* Numi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Numi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		52BD206989CB0E510A71CE95 /* NumiUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NumiUITests.swift; path = App/NumiUITests/NumiUITests.swift; sourceTree = "<group>"; };
+		8C696D8AA2A244D8A76179DA /* Config.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Config.swift; path = NumiIntents/Config.swift; sourceTree = "<group>"; };
 		8C0F170ADCF3763528687628 /* NumiUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NumiUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		94F8420EE5204E38AA8A9797 /* NumiShortcutsProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NumiShortcutsProvider.swift; path = NumiIntents/NumiShortcutsProvider.swift; sourceTree = "<group>"; };
 		B853F1FB74B42C4714511279 /* NumiPersistence.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NumiPersistence.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7448CB3DFF39CEB06D3352C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		DC39486A436D62F9731704D6 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = App/NumiApp/Info.plist; sourceTree = "<group>"; };
+		E5B1F0F9A4D44B72B84C905E /* RecordTransactionIntent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecordTransactionIntent.swift; path = NumiIntents/RecordTransactionIntent.swift; sourceTree = "<group>"; };
 		F821A04AF10BDED7B816A3A0 /* NumiAppUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NumiAppUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9FFA43CBCA48D6C895D410D /* NumiApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NumiApp.swift; path = App/NumiApp/NumiApp.swift; sourceTree = "<group>"; };
+		0F48E1B791944C3E8877C051 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = App/NumiApp/Localizable.xcstrings; sourceTree = "<group>"; };
+		B94ABB53823A46139605FC7F /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = NumiIntents/Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +110,17 @@
 			name = NumiUITests;
 			sourceTree = "<group>";
 		};
+		84B6B70B3DB7445F8E8C02A4 /* NumiIntents */ = {
+			isa = PBXGroup;
+			children = (
+				8C696D8AA2A244D8A76179DA /* Config.swift */,
+				94F8420EE5204E38AA8A9797 /* NumiShortcutsProvider.swift */,
+				E5B1F0F9A4D44B72B84C905E /* RecordTransactionIntent.swift */,
+				B94ABB53823A46139605FC7F /* Localizable.xcstrings */,
+			);
+			name = NumiIntents;
+			sourceTree = "<group>";
+		};
 		88F10BD97F79A00FDBCC8A6F /* iOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -122,6 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				F08611021404FEA2A200D2D2 /* NumiApp */,
+				84B6B70B3DB7445F8E8C02A4 /* NumiIntents */,
 				82F0867439688059AD5C3BA3 /* NumiUITests */,
 			);
 			name = App;
@@ -186,6 +208,9 @@
 			knownRegions = (
 				en,
 				Base,
+				zh-Hans,
+				zh-Hant,
+				ja,
 			);
 			mainGroup = 43C3E84C84BE912D3E4EE4B9;
 			packageReferences = (
@@ -206,6 +231,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A592DDA13624A44B4353648 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,6 +239,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BC08E082F0E4F20B704F9AD /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -223,7 +250,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B4F6814B3F744A8A91DB92D /* Config.swift in Sources */,
 				DADC3D40D32AF1B9E3E30327 /* NumiApp.swift in Sources */,
+				87C213B1B8C04D7485816B8E /* NumiShortcutsProvider.swift in Sources */,
+				8B70F184CF5A4023B5A549B9 /* RecordTransactionIntent.swift in Sources */,
 				656C90902A4070AE34E7AB74 /* RootShellView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -395,7 +425,7 @@
 		D795544EDA19A276B42D80AD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -413,7 +443,7 @@
 		E169E88A3029B3E554CAB658 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CURRENT_PROJECT_VERSION = 1;

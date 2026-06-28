@@ -1,4 +1,5 @@
 import SwiftUI
+import NumiCore
 
 public struct NumiCurrencyOption: Identifiable, Equatable {
     public let code: String
@@ -15,13 +16,13 @@ public struct NumiCurrencyOption: Identifiable, Equatable {
 }
 
 public struct NumiCurrencyPickerRow: View {
-    private let title: String
+    private let title: String?
     private let options: [NumiCurrencyOption]
     @Binding private var selectedCode: String
     private let accessibilityIdentifier: String
 
     public init(
-        title: String = "币种",
+        title: String? = nil,
         options: [NumiCurrencyOption],
         selectedCode: Binding<String>,
         accessibilityIdentifier: String
@@ -48,7 +49,7 @@ public struct NumiCurrencyPickerRow: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(NumiColor.textTertiary)
                     .frame(width: 24)
-                Text(title)
+                Text(title ?? NumiLocalized.string("ledger.currency"))
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textSecondary)
                 Spacer()

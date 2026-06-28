@@ -62,7 +62,7 @@ public struct Money: Codable, Equatable, Hashable, Sendable {
         return Money(minorUnits: minorUnits - other.minorUnits, currencyCode: currencyCode)
     }
 
-    public func formatted(locale: Locale = Locale(identifier: "zh_CN")) -> String {
+    public func formatted(locale: Locale = NumiLocalized.currentLocale) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = currencyCode

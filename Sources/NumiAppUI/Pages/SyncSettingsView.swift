@@ -9,15 +9,56 @@ public enum SyncStatus: Equatable {
     case idle
     case syncing
     case success(Date)
-    case failure(String)
+    case failure(SyncFailureReason)
+
+    var displayMessage: String {
+        switch self {
+        case .idle:
+            return NumiLocalized.string("sync.status.waiting")
+        case .syncing:
+            return NumiLocalized.string("sync.status.syncing")
+        case .success:
+            return NumiLocalized.string("sync.status.success")
+        case .failure(let reason):
+            return reason.displayMessage
+        }
+    }
+}
+
+public enum SyncFailureReason: Equatable {
+    case networkUnavailable
+    case iCloudUnavailable
+    case cellularDisabled
+    case syncFailed
+
+    var displayMessage: String {
+        switch self {
+        case .networkUnavailable:
+            return NumiLocalized.string("sync.status.network.unavailable")
+        case .iCloudUnavailable:
+            return NumiLocalized.string("sync.status.icloud.unavailable")
+        case .cellularDisabled:
+            return NumiLocalized.string("sync.status.cellular.disabled")
+        case .syncFailed:
+            return NumiLocalized.string("sync.status.failed")
+        }
+    }
 }
 
 // MARK: - Network Type
 
 public enum NetworkType: String {
-    case wifi = "Wi-Fi"
-    case cellular = "蜂窝网络"
-    case unavailable = "无网络"
+    case wifi
+    case cellular
+    case unavailable
+
+    var displayName: String {
+        switch self {
+        case .wifi: return NumiLocalized.string( "sync.network.wifi")
+        case .cellular: return NumiLocalized.string( "sync.network.cellular")
+        case .unavailable: return NumiLocalized.string( "sync.network.none")
+        }
+    }
 
     var icon: String {
         switch self {
@@ -78,16 +119,16 @@ public class iCloudSyncService: ObservableObject {
     public func performSync() async {
         guard isSyncEnabled else { return }
         guard isNetworkAvailable else {
-            syncStatus = .failure("网络不可用")
+            syncStatus = .failure(.networkUnavailable)
             return
         }
         guard isiCloudAvailable else {
-            syncStatus = .failure("iCloud 不可用")
+            syncStatus = .failure(.iCloudUnavailable)
             return
         }
 
         if networkType == .cellular && !isCellularSyncEnabled {
-            syncStatus = .failure("蜂窝网络同步已关闭")
+            syncStatus = .failure(.cellularDisabled)
             return
         }
 
@@ -103,7 +144,7 @@ public class iCloudSyncService: ObservableObject {
                 syncStatus = .success(now)
                 syncProgress = 1.0
             } else {
-                syncStatus = .failure("同步失败")
+                syncStatus = .failure(.syncFailed)
             }
         } else {
             // 模拟同步
@@ -209,7 +250,7 @@ public struct SyncSettingsView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.syncSettings")
         .background(NumiColor.surfacePage)
-        .navigationTitle("iCloud 云同步")
+        .navigationTitle(Text("sync.title"))
         .modifier(LargeTitleNavigationChrome())
     }
 
@@ -226,10 +267,10 @@ public struct SyncSettingsView: View {
                     .foregroundStyle(NumiColor.accentPrimary)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("iCloud 云同步")
+                    Text("sync.enable")
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
-                    Text("启用后自动同步数据到 iCloud")
+                    Text("sync.enable.desc")
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                 }
@@ -260,10 +301,10 @@ public struct SyncSettingsView: View {
                         .foregroundStyle(NumiColor.accentPrimary)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("允许蜂窝网络同步")
+                        Text("sync.cellular")
                             .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(NumiColor.textPrimary)
-                        Text("关闭后仅在 Wi-Fi 下同步")
+                        Text("sync.cellular.desc")
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -298,10 +339,10 @@ public struct SyncSettingsView: View {
                 .foregroundStyle(NumiColor.accentPrimary)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("网络状态")
+                Text("sync.network.status")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
-                Text(syncService.isNetworkAvailable ? syncService.networkType.rawValue : "未连接")
+                Text(syncService.isNetworkAvailable ? syncService.networkType.displayName : NumiLocalized.string( "sync.network.not.connected"))
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
             }
@@ -331,10 +372,10 @@ public struct SyncSettingsView: View {
                 .foregroundStyle(NumiColor.accentPrimary)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("iCloud 连接")
+                Text("sync.icloud.connection")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
-                Text(syncService.isiCloudAvailable ? "已连接，数据可同步" : "未登录或不可用")
+                Text(syncService.isiCloudAvailable ? NumiLocalized.string( "sync.icloud.connected") : NumiLocalized.string( "sync.icloud.unavailable"))
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
             }
@@ -364,7 +405,7 @@ public struct SyncSettingsView: View {
                 .foregroundStyle(NumiColor.accentPrimary)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("同步状态")
+                Text("sync.status")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
                 Text(statusText)
@@ -375,7 +416,7 @@ public struct SyncSettingsView: View {
             Spacer()
 
             if let lastDate = syncService.lastSyncDate {
-                Text(lastDate.formatted(.dateTime.month().day().hour().minute()))
+                Text(lastDate.numiFormatted(.dateTime.month().day().hour().minute()))
                     .font(NumiFont.caption)
                     .foregroundStyle(NumiColor.textTertiary)
             }
@@ -409,11 +450,11 @@ public struct SyncSettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("手动同步")
+                    Text("sync.manual")
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
                     if let lastDate = syncService.lastSyncDate {
-                        Text("上次同步：\(lastDate.formatted(.dateTime.month().day().hour().minute()))")
+                        Text(NumiLocalized.string("sync.last.time", lastDate.numiFormatted(.dateTime.month().day().hour().minute())))
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -425,7 +466,7 @@ public struct SyncSettingsView: View {
                     ProgressView()
                         .scaleEffect(0.8)
                 } else {
-                    Text("同步")
+                    Text("sync.button")
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.accentDeep)
                 }
@@ -449,10 +490,10 @@ public struct SyncSettingsView: View {
 
     private var syncInfoCard: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-            Text("同步说明")
+            Text("sync.notes")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
-            Text("• 启用后数据通过 CloudKit 自动同步到 iCloud\n• 同一 Apple ID 的设备间自动同步\n• 默认仅在 Wi-Fi 下同步，可开启蜂窝同步\n• 同步过程不影响正常使用")
+            Text("sync.notes.detail")
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
         }
@@ -475,11 +516,6 @@ public struct SyncSettingsView: View {
     }
 
     private var statusText: String {
-        switch syncService.syncStatus {
-        case .idle: return "等待同步"
-        case .syncing: return "正在同步..."
-        case .success: return "同步成功"
-        case .failure(let msg): return msg
-        }
+        syncService.syncStatus.displayMessage
     }
 }

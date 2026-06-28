@@ -55,16 +55,16 @@ public enum DemoDataSeeder {
 
     private static func seedShowcase(into store: SwiftDataBookkeepingStore) throws {
         guard let ledgerID = store.defaultLedger()?.id else { return }
-        let cash = try account(named: "现金", in: store)
-        let bank = try account(named: "银行卡", in: store)
-        let food = try category(named: "餐饮", in: store)
-        let transport = try category(named: "交通", in: store)
-        let shopping = try category(named: "购物", in: store)
-        let housing = try category(named: "住房", in: store)
-        let subscription = try category(named: "订阅", in: store)
-        let salary = try category(named: "工资", in: store)
-        let refund = try category(named: "退款", in: store)
-        let sideJob = try category(named: "副业", in: store)
+        let cash = try account(type: .cash, in: store)
+        let bank = try account(type: .debitCard, in: store)
+        let food = try category(icon: "acai-bowl", in: store)
+        let transport = try category(icon: "articulated-bus", in: store)
+        let shopping = try category(icon: "bag-of-groceries", in: store)
+        let housing = try category(icon: "apartment-building", in: store)
+        let subscription = try category(icon: "digital-certificate", in: store)
+        let salary = try category(icon: "cash", in: store)
+        let refund = try category(icon: "atm-cash-machine", in: store)
+        let sideJob = try category(icon: "briefcase", in: store)
 
         let card = try store.updateAccount(
             id: bank.id,
@@ -138,11 +138,11 @@ public enum DemoDataSeeder {
 
     private static func seedPlansFocus(into store: SwiftDataBookkeepingStore) throws {
         guard let ledgerID = store.defaultLedger()?.id else { return }
-        let bank = try account(named: "银行卡", in: store)
-        let food = try category(named: "餐饮", in: store)
-        let shopping = try category(named: "购物", in: store)
-        let transport = try category(named: "交通", in: store)
-        let salary = try category(named: "工资", in: store)
+        let bank = try account(type: .debitCard, in: store)
+        let food = try category(icon: "acai-bowl", in: store)
+        let shopping = try category(icon: "bag-of-groceries", in: store)
+        let transport = try category(icon: "articulated-bus", in: store)
+        let salary = try category(icon: "cash", in: store)
 
         let now = Date()
         try createIncome(store, amount: "8600.00", categoryID: salary.id, accountID: bank.id, ledgerID: ledgerID, note: "月收入", daysAgo: 9, now: now)
@@ -168,16 +168,16 @@ public enum DemoDataSeeder {
 
     private static func seedScreenshotShowcase(into store: SwiftDataBookkeepingStore) throws {
         guard let ledgerID = store.defaultLedger()?.id else { return }
-        let cash = try account(named: "现金", in: store)
-        let bank = try account(named: "银行卡", in: store)
-        let food = try category(named: "餐饮", in: store)
-        let transport = try category(named: "交通", in: store)
-        let shopping = try category(named: "购物", in: store)
-        let entertainment = try category(named: "娱乐", in: store)
-        let housing = try category(named: "住房", in: store)
-        let salary = try category(named: "工资", in: store)
-        let sideJob = try category(named: "副业", in: store)
-        let refund = try category(named: "退款", in: store)
+        let cash = try account(type: .cash, in: store)
+        let bank = try account(type: .debitCard, in: store)
+        let food = try category(icon: "acai-bowl", in: store)
+        let transport = try category(icon: "articulated-bus", in: store)
+        let shopping = try category(icon: "bag-of-groceries", in: store)
+        let entertainment = try category(icon: "cinema-clapperboard", in: store)
+        let housing = try category(icon: "apartment-building", in: store)
+        let salary = try category(icon: "cash", in: store)
+        let sideJob = try category(icon: "briefcase", in: store)
+        let refund = try category(icon: "atm-cash-machine", in: store)
 
         let mainBank = try store.updateAccount(
             id: bank.id,
@@ -271,16 +271,20 @@ public enum DemoDataSeeder {
         store.allTransactions.contains { $0.note == marker }
     }
 
-    private static func account(named name: String, in store: SwiftDataBookkeepingStore) throws -> Account {
-        guard let account = store.accounts.first(where: { $0.name == name }) else {
-            throw DemoDataSeederError.missingAccount(name)
+    private static func account(type: AccountType, in store: SwiftDataBookkeepingStore) throws -> Account {
+        guard let account = store.accounts.first(where: {
+            $0.type == type && NumiBuiltInCatalog.isBuiltInAccountName($0.name, type: type)
+        }) else {
+            throw DemoDataSeederError.missingAccount(type.rawValue)
         }
         return account
     }
 
-    private static func category(named name: String, in store: SwiftDataBookkeepingStore) throws -> NumiCore.Category {
-        guard let category = store.categories.first(where: { $0.name == name }) else {
-            throw DemoDataSeederError.missingCategory(name)
+    private static func category(icon: String, in store: SwiftDataBookkeepingStore) throws -> NumiCore.Category {
+        guard let category = store.categories.first(where: {
+            $0.icon == icon && NumiBuiltInCatalog.isBuiltInCategoryName($0.name, icon: icon)
+        }) else {
+            throw DemoDataSeederError.missingCategory(icon)
         }
         return category
     }

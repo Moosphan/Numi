@@ -30,8 +30,9 @@ struct RecordTransactionIntent: AppIntent {
             try service.createTransaction(from: parsed)
 
             let symbol = parsed.type == .income ? "+" : "-"
+            let amountStr = "\(parsed.amount)"
             return .result(
-                dialog: "已记录 \(parsed.categoryName) \(symbol)¥\(parsed.amount)"
+                dialog: "已记录 \(parsed.categoryName) \(symbol)¥\(amountStr)"
             )
         } catch {
             return .result(dialog: "记录失败：\(error.localizedDescription)")

@@ -3,6 +3,32 @@ import LocalAuthentication
 import NumiCore
 
 public struct SettingsView: View {
+    enum AIKeyTestFailure: Equatable {
+        case emptyKey
+        case unknownProvider
+        case invalidURL
+        case unauthorized
+        case httpStatus(Int)
+        case transport(String)
+
+        var displayMessage: String {
+            switch self {
+            case .emptyKey:
+                return NumiLocalized.string("setting.ai.error.empty.key")
+            case .unknownProvider:
+                return NumiLocalized.string("setting.ai.error.unknown")
+            case .invalidURL:
+                return NumiLocalized.string("setting.ai.error.invalid.url")
+            case .unauthorized:
+                return NumiLocalized.string("setting.ai.error.unauthorized")
+            case .httpStatus(let statusCode):
+                return NumiLocalized.string("setting.ai.test.fail", statusCode)
+            case .transport(let description):
+                return NumiLocalized.string("setting.ai.test.fail", description)
+            }
+        }
+    }
+
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
     private let transactions: [NumiCore.Transaction]
@@ -27,6 +53,8 @@ public struct SettingsView: View {
     @State private var showLockMethodSheet = false
     @State private var showPasscodeSetup = false
     @State private var passcodeMode: PasscodeMode = .setup
+    @State private var showLanguageSheet = false
+    @AppStorage("app.language") private var languageCode: String = "system"
 
     @AppStorage("app.ai.provider") private var aiProvider: String = "claude"
     @AppStorage("app.ai.claudeAPIKey") private var claudeAPIKey: String = ""
@@ -42,7 +70,7 @@ public struct SettingsView: View {
 
     private enum TestResult: Equatable {
         case success
-        case failure(String)
+        case failure(AIKeyTestFailure)
 
         var isSuccess: Bool {
             if case .success = self { return true }
@@ -50,7 +78,7 @@ public struct SettingsView: View {
         }
 
         var message: String {
-            if case .failure(let msg) = self { return msg }
+            if case .failure(let failure) = self { return failure.displayMessage }
             return ""
         }
     }
@@ -98,14 +126,14 @@ public struct SettingsView: View {
                 statsRow
 
                 settingsSection(
-                    title: "数据",
+                    title: NumiLocalized.string( "setting.data"),
                     accessibilityID: "settings.section.data",
                     cardAccessibilityID: "settings.card.data"
                 ) {
                     Button {
                         onManageLedgers()
                     } label: {
-                        settingsRow("账本管理", icon: "book")
+                        settingsRow(NumiLocalized.string( "setting.ledger"), icon: "book")
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.ledgers")
@@ -118,7 +146,7 @@ public struct SettingsView: View {
                             onCategoryDelete: onCategoryDelete
                         )
                     } label: {
-                        settingsRow("分类管理", icon: "square.grid.2x2")
+                        settingsRow(NumiLocalized.string( "setting.category"), icon: "square.grid.2x2")
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.categories")
@@ -134,7 +162,7 @@ public struct SettingsView: View {
                             onDelete: onAccountDelete
                         )
                     } label: {
-                        settingsRow("账户管理", icon: "creditcard")
+                        settingsRow(NumiLocalized.string( "setting.account"), icon: "creditcard")
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.accounts")
@@ -142,7 +170,7 @@ public struct SettingsView: View {
                     NavigationLink {
                         CurrencyManagementView()
                     } label: {
-                        settingsRow("多货币管理", icon: "dollarsign.circle")
+                        settingsRow(NumiLocalized.string( "setting.multi.currency"), icon: "dollarsign.circle")
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.currency")
@@ -150,7 +178,7 @@ public struct SettingsView: View {
                     NavigationLink {
                         SyncSettingsView()
                     } label: {
-                        settingsRow("iCloud 云同步", icon: "icloud")
+                        settingsRow(NumiLocalized.string( "setting.icloud.sync"), icon: "icloud")
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.sync")
@@ -159,7 +187,7 @@ public struct SettingsView: View {
                         NavigationLink {
                             DataManagementView(exportSnapshot: export, importSnapshot: importFn)
                         } label: {
-                            settingsRow("导入与导出", icon: "square.and.arrow.up")
+                            settingsRow(NumiLocalized.string( "setting.import.export"), icon: "square.and.arrow.up")
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("settings.importExport")
@@ -167,7 +195,7 @@ public struct SettingsView: View {
                         NavigationLink {
                             BackupView(exportSnapshot: export, importSnapshot: importFn)
                         } label: {
-                            settingsRow("本地备份", icon: "lock.doc")
+                            settingsRow(NumiLocalized.string( "setting.local.backup"), icon: "lock.doc")
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("settings.backup")
@@ -175,7 +203,7 @@ public struct SettingsView: View {
                 }
 
                 settingsSection(
-                    title: "安全",
+                    title: NumiLocalized.string( "setting.security"),
                     accessibilityID: "settings.section.security",
                     cardAccessibilityID: "settings.card.security"
                 ) {
@@ -190,21 +218,29 @@ public struct SettingsView: View {
                 }
 
                 settingsSection(
-                    title: "外观",
+                    title: NumiLocalized.string( "setting.appearance"),
                     accessibilityID: "settings.section.appearance",
                     cardAccessibilityID: "settings.card.appearance"
                 ) {
+                    Button {
+                        showLanguageSheet = true
+                    } label: {
+                        settingsRow(NumiLocalized.string( "setting.language"), icon: "globe", trailingText: currentLanguageName)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings.language")
+
                     NavigationLink {
                         ThemeSelectionView()
                     } label: {
-                        settingsRow("主题", icon: "paintpalette")
+                        settingsRow(NumiLocalized.string( "setting.theme"), icon: "paintpalette")
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.theme")
                 }
 
                 settingsSection(
-                    title: "AI 服务",
+                    title: NumiLocalized.string( "setting.ai.service"),
                     accessibilityID: "settings.section.ai",
                     cardAccessibilityID: "settings.card.ai"
                 ) {
@@ -220,7 +256,7 @@ public struct SettingsView: View {
                                 .foregroundStyle(NumiColor.accentPrimary)
 
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("AI 服务配置")
+                                Text("setting.ai.config")
                                     .font(.system(size: 17, weight: .medium))
                                     .foregroundStyle(NumiColor.textPrimary)
                                 Text(currentProviderDisplayName)
@@ -269,17 +305,95 @@ public struct SettingsView: View {
             .padding(.bottom, 120)
         }
         .background(NumiColor.surfacePage)
-        .navigationTitle("我的")
+        .navigationTitle("setting.title")
         .modifier(LargeTitleNavigationChrome())
+        .sheet(isPresented: $showLanguageSheet) {
+            languageSheet
+                .presentationDetents([.medium])
+                .presentationCornerRadius(28)
+        }
+    }
+
+    static func providerDisplayName(for providerID: String) -> String {
+        switch providerID {
+        case "claude":
+            return NumiLocalized.string("setting.ai.provider.claude")
+        case "qwen":
+            return NumiLocalized.string("setting.ai.provider.qwen")
+        case "deepseek":
+            return NumiLocalized.string("setting.ai.provider.deepseek")
+        default:
+            return providerID
+        }
+    }
+
+    // MARK: - Language
+
+    private var currentLanguageName: String {
+        NumiAppLanguage.displayName(for: languageCode)
+    }
+
+    private struct LangOption: Identifiable {
+        let id: String
+        let title: String
+    }
+
+    private var languageOptions: [LangOption] {
+        NumiAppLanguage.allCases.map { .init(id: $0.rawValue, title: $0.displayName) }
+    }
+
+    private var languageSheet: some View {
+        NumiBottomSheet(
+            title: NumiLocalized.string( "setting.language"),
+            contentMode: .scroll,
+            accessibilityPrefix: "sheet.language",
+            dismissTitle: NumiLocalized.string( "common.close"),
+            onDismiss: { showLanguageSheet = false }
+        ) {
+            VStack(spacing: 0) {
+                ForEach(Array(languageOptions.enumerated()), id: \.element.id) { index, option in
+                    let isSelected = languageCode == option.id
+                    Button {
+                        guard !isSelected else { return }
+                        UserDefaults.standard.set(option.id, forKey: NumiAppLanguage.pendingToastDefaultsKey)
+                        languageCode = option.id
+                        showLanguageSheet = false
+                    } label: {
+                        HStack(spacing: NumiSpacing.s3) {
+                            Text(option.title)
+                                .font(.system(size: 17, weight: isSelected ? .semibold : .regular))
+                                .foregroundStyle(NumiColor.textPrimary)
+                            Spacer()
+                            if isSelected {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundStyle(NumiColor.accentDeep)
+                            }
+                        }
+                        .padding(.horizontal, NumiSpacing.s4)
+                        .padding(.vertical, 14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("language.\(option.id)")
+
+                    if index < languageOptions.count - 1 {
+                        Divider().padding(.leading, NumiSpacing.s4)
+                    }
+                }
+            }
+            .padding(.bottom, NumiSpacing.s4)
+        }
     }
 
     // MARK: - Stats Row
 
     private var statsRow: some View {
         HStack(spacing: NumiSpacing.s2) {
-            statCard(title: "记账天数", value: "\(recordDays)")
-            statCard(title: "日均支出", value: avgDailyExpense)
-            statCard(title: "最大支出", value: topExpenseCategory)
+            statCard(title: NumiLocalized.string( "setting.stat.days"), value: "\(recordDays)")
+            statCard(title: NumiLocalized.string( "setting.stat.avg.expense"), value: avgDailyExpense)
+            statCard(title: NumiLocalized.string( "setting.stat.max.expense"), value: topExpenseCategory)
         }
     }
 
@@ -326,7 +440,7 @@ public struct SettingsView: View {
             categoryTotals[catID, default: 0] += tx.amount.minorUnits
         }
         guard let topID = categoryTotals.max(by: { $0.value < $1.value })?.key else { return "-" }
-        return categories.first { $0.id == topID }?.name ?? "-"
+        return categories.first { $0.id == topID }?.localizedDisplayName ?? "-"
     }
 
     @ViewBuilder
@@ -336,6 +450,7 @@ public struct SettingsView: View {
         cardAccessibilityID: String,
         @ViewBuilder content: () -> Content
     ) -> some View {
+        // cardAccessibilityID reserved for future stable selectors
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
             Text(title)
                 .font(.system(size: 18, weight: .semibold))
@@ -348,7 +463,6 @@ public struct SettingsView: View {
             .background(NumiColor.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
-            .accessibilityIdentifier(cardAccessibilityID)
         }
     }
 
@@ -361,7 +475,7 @@ public struct SettingsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
-            Text("隐私锁")
+            Text("setting.privacy.lock")
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(NumiColor.textPrimary)
 
@@ -400,7 +514,7 @@ public struct SettingsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     .foregroundStyle(NumiColor.accentPrimary)
 
-                Text("解锁方式")
+                Text("setting.unlock.method")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -426,13 +540,13 @@ public struct SettingsView: View {
     private var lockMethodDisplayName: String {
         switch lockMethod {
         case "biometric":
-            return "生物识别"
+            return NumiLocalized.string( "setting.lock.biometric")
         case "passcode":
-            return "数字密码"
+            return NumiLocalized.string( "setting.lock.passcode")
         case "both":
-            return "生物识别 + 密码"
+            return NumiLocalized.string( "setting.lock.both")
         default:
-            return "生物识别"
+            return NumiLocalized.string( "setting.lock.biometric")
         }
     }
 
@@ -449,7 +563,7 @@ public struct SettingsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     .foregroundStyle(NumiColor.accentPrimary)
 
-                Text("修改密码")
+                Text("setting.change.password")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -484,7 +598,7 @@ public struct SettingsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
-            Text("后台自动模糊")
+            Text("setting.auto.blur")
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(NumiColor.textPrimary)
 
@@ -509,26 +623,26 @@ public struct SettingsView: View {
 
     private var lockMethodSheet: some View {
         NumiOptionSheet(
-            title: "解锁方式",
+            title: NumiLocalized.string( "setting.unlock.method"),
             options: [
                 NumiOptionItem(
                     id: "biometric",
                     icon: "faceid",
-                    title: "生物识别",
-                    subtitle: isBiometricAvailable ? "使用 Face ID 或 Touch ID" : "设备不支持生物识别",
+                    title: NumiLocalized.string( "setting.lock.biometric"),
+                    subtitle: isBiometricAvailable ? NumiLocalized.string( "setting.lock.biometric.desc") : NumiLocalized.string( "setting.lock.biometric.unavailable"),
                     isDisabled: !isBiometricAvailable
                 ),
                 NumiOptionItem(
                     id: "passcode",
                     icon: "key.fill",
-                    title: "数字密码",
-                    subtitle: "使用6位数字密码解锁"
+                    title: NumiLocalized.string( "setting.lock.passcode"),
+                    subtitle: NumiLocalized.string( "setting.lock.passcode.desc")
                 ),
                 NumiOptionItem(
                     id: "both",
                     icon: "lock.fill",
-                    title: "生物识别 + 密码",
-                    subtitle: isBiometricAvailable ? "两种方式都可使用" : "设备不支持生物识别",
+                    title: NumiLocalized.string( "setting.lock.both"),
+                    subtitle: isBiometricAvailable ? NumiLocalized.string( "setting.lock.both.desc") : NumiLocalized.string( "setting.lock.biometric.unavailable"),
                     isDisabled: !isBiometricAvailable
                 )
             ],
@@ -554,14 +668,14 @@ public struct SettingsView: View {
         var error: NSError?
 
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            let reason = "验证身份以启用隐私锁"
+            let reason = NumiLocalized.string( "security.verify.to.enable")
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
                 DispatchQueue.main.async {
                     completion(success)
                 }
             }
         } else if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-            let reason = "验证身份以启用隐私锁"
+            let reason = NumiLocalized.string( "security.verify.to.enable")
             context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, _ in
                 DispatchQueue.main.async {
                     completion(success)
@@ -574,7 +688,7 @@ public struct SettingsView: View {
         }
     }
 
-    private func settingsRow(_ title: String, icon: String) -> some View {
+    private func settingsRow(_ title: String, icon: String, trailingText: String? = nil) -> some View {
         HStack(spacing: NumiSpacing.s3) {
             Image(systemName: icon)
                 .font(.system(size: 17, weight: .semibold))
@@ -589,6 +703,12 @@ public struct SettingsView: View {
 
             Spacer(minLength: NumiSpacing.s3)
 
+            if let trailingText {
+                Text(trailingText)
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(NumiColor.textTertiary)
+            }
+
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(NumiColor.textTertiary)
@@ -602,12 +722,7 @@ public struct SettingsView: View {
     // MARK: - AI Config Helpers
 
     private var currentProviderDisplayName: String {
-        switch aiProvider {
-        case "claude": return "Claude (Anthropic)"
-        case "qwen": return "通义千问 (阿里)"
-        case "deepseek": return "DeepSeek"
-        default: return aiProvider
-        }
+        Self.providerDisplayName(for: aiProvider)
     }
 
     private var hasAPIKey: Bool {
@@ -628,7 +743,7 @@ public struct SettingsView: View {
                 Button {
                     showAIKeySheet = false
                 } label: {
-                    Text("取消")
+                    Text("common.cancel")
                         .font(NumiFont.body)
                         .foregroundStyle(NumiColor.toolbarIcon)
                         .frame(minWidth: 44, minHeight: 44)
@@ -637,7 +752,7 @@ public struct SettingsView: View {
 
                 Spacer()
 
-                Text("AI 服务配置")
+                Text("setting.ai.config")
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -658,7 +773,7 @@ public struct SettingsView: View {
                     }
                     showAIKeySheet = false
                 } label: {
-                    Text("保存")
+                    Text("common.save")
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.accentDeep)
                         .frame(minWidth: 44, minHeight: 44)
@@ -672,25 +787,25 @@ public struct SettingsView: View {
                 VStack(alignment: .leading, spacing: NumiSpacing.s4) {
                     // Provider picker - TabView
                     VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                        Text("选择服务商")
+                        Text("setting.ai.select.provider")
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
 
-                        Picker("服务商", selection: $editingProvider) {
-                            Text("Claude").tag("claude")
-                            Text("千问").tag("qwen")
-                            Text("DeepSeek").tag("deepseek")
+                        Picker("setting.ai.provider", selection: $editingProvider) {
+                            Text("setting.ai.provider.claude").tag("claude")
+                            Text("setting.ai.provider.qwen").tag("qwen")
+                            Text("setting.ai.provider.deepseek").tag("deepseek")
                         }
                         .pickerStyle(.segmented)
                     }
 
                     // API Key input
                     VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                        Text("API Key")
+                        Text("setting.ai.api.key")
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
 
-                        SecureField("输入 \(editingProviderDisplayName) API Key", text: editingAPIKeyBinding)
+                        SecureField(NumiLocalized.string("setting.ai.enter.key", editingProviderDisplayName), text: editingAPIKeyBinding)
                             .font(NumiFont.body)
                             .padding(.horizontal, NumiSpacing.s3)
                             .padding(.vertical, 12)
@@ -717,7 +832,7 @@ public struct SettingsView: View {
                                 Image(systemName: "bolt.fill")
                                     .font(.system(size: 14, weight: .semibold))
                             }
-                            Text(isTestingKey ? "测试中..." : "测试连接")
+                            Text(isTestingKey ? NumiLocalized.string( "testing") : NumiLocalized.string( "setting.ai.test.connection"))
                                 .font(NumiFont.bodySmall)
                         }
                         .foregroundStyle(.white)
@@ -734,7 +849,7 @@ public struct SettingsView: View {
                         HStack(spacing: NumiSpacing.s2) {
                             Image(systemName: testResult.isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
                                 .foregroundStyle(testResult.isSuccess ? NumiColor.positiveText : NumiColor.negativeText)
-                            Text(testResult.isSuccess ? "连接成功，API Key 有效" : "连接失败：\(testResult.message)")
+                            Text(testResult.isSuccess ? NumiLocalized.string("setting.ai.test.success") : testResult.message)
                                 .font(NumiFont.footnote)
                                 .foregroundStyle(testResult.isSuccess ? NumiColor.positiveText : NumiColor.negativeText)
                         }
@@ -742,16 +857,16 @@ public struct SettingsView: View {
                     }
 
                     // Description
-                    Text("API Key 用于 Siri 语音记账功能，调用 AI 解析账单文本。密钥存储在本地，不会上传到任何服务器。")
+                    Text("setting.ai.api.key.desc")
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
 
                     // Provider info
                     VStack(alignment: .leading, spacing: NumiSpacing.s1) {
-                        Text("各服务商说明：")
+                        Text("setting.ai.providers.title")
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.textSecondary)
-                        Text("• Claude: api.anthropic.com，推荐 Haiku 模型\n• 千问: dashscope.aliyuncs.com，推荐 qwen-turbo\n• DeepSeek: api.deepseek.com，推荐 deepseek-chat")
+                        Text("setting.ai.providers.detail")
                             .font(NumiFont.caption)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -764,12 +879,7 @@ public struct SettingsView: View {
     }
 
     private var editingProviderDisplayName: String {
-        switch editingProvider {
-        case "claude": return "Claude (Anthropic)"
-        case "qwen": return "通义千问 (阿里)"
-        case "deepseek": return "DeepSeek"
-        default: return editingProvider
-        }
+        Self.providerDisplayName(for: editingProvider)
     }
 
     private var editingAPIKeyBinding: Binding<String> {
@@ -792,7 +902,7 @@ public struct SettingsView: View {
 
     private func testCurrentAPIKey() async -> TestResult {
         let key = currentEditingKey
-        guard !key.isEmpty else { return .failure("请先输入 API Key") }
+        guard !key.isEmpty else { return .failure(.emptyKey) }
 
         switch editingProvider {
         case "claude":
@@ -802,13 +912,13 @@ public struct SettingsView: View {
         case "deepseek":
             return await testDeepSeek(key: key)
         default:
-            return .failure("未知服务商")
+            return .failure(.unknownProvider)
         }
     }
 
     private func testClaude(key: String) async -> TestResult {
         guard let url = URL(string: "https://api.anthropic.com/v1/messages") else {
-            return .failure("URL 无效")
+            return .failure(.invalidURL)
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -827,7 +937,7 @@ public struct SettingsView: View {
 
     private func testQwen(key: String) async -> TestResult {
         guard let url = URL(string: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions") else {
-            return .failure("URL 无效")
+            return .failure(.invalidURL)
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -845,7 +955,7 @@ public struct SettingsView: View {
 
     private func testDeepSeek(key: String) async -> TestResult {
         guard let url = URL(string: "https://api.deepseek.com/chat/completions") else {
-            return .failure("URL 无效")
+            return .failure(.invalidURL)
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -865,17 +975,17 @@ public struct SettingsView: View {
         do {
             let (_, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                return .failure("响应无效")
+                return .failure(.invalidURL)
             }
             if httpResponse.statusCode == 200 {
                 return .success
             } else if httpResponse.statusCode == 401 {
-                return .failure("API Key 无效 (401)")
+                return .failure(.unauthorized)
             } else {
-                return .failure("服务器错误 (\(httpResponse.statusCode))")
+                return .failure(.httpStatus(httpResponse.statusCode))
             }
         } catch {
-            return .failure(error.localizedDescription)
+            return .failure(.transport(error.localizedDescription))
         }
     }
 }

@@ -7,6 +7,7 @@ public struct ParsedTransaction: Codable, Equatable {
     public let amount: Decimal
     public let categoryName: String
     public let accountName: String?
+    public let targetAccountName: String?
     public let occurredAt: Date
     public let note: String
 
@@ -15,6 +16,7 @@ public struct ParsedTransaction: Codable, Equatable {
         amount: Decimal,
         categoryName: String,
         accountName: String? = nil,
+        targetAccountName: String? = nil,
         occurredAt: Date = Date(),
         note: String = ""
     ) {
@@ -22,6 +24,7 @@ public struct ParsedTransaction: Codable, Equatable {
         self.amount = amount
         self.categoryName = categoryName
         self.accountName = accountName
+        self.targetAccountName = targetAccountName
         self.occurredAt = occurredAt
         self.note = note
     }
@@ -34,6 +37,7 @@ struct ParsedTransactionDTO: Decodable {
     let amount: Decimal
     let category: String
     let account: String?
+    let targetAccount: String?
     let date: String?
     let note: String?
 }

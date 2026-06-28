@@ -3,17 +3,17 @@ import NumiCore
 
 public struct TransactionSearchRow: Identifiable {
     public let transaction: NumiCore.Transaction
-    public let categoryName: String
-    public let iconName: String
-    public let subtitle: String?
+    public let fallbackCategoryName: String
+    public let fallbackIconName: String
+    public let fallbackSubtitle: String?
 
     public var id: UUID { transaction.id }
 
-    public init(transaction: NumiCore.Transaction, categoryName: String, iconName: String, subtitle: String?) {
+    public init(transaction: NumiCore.Transaction, fallbackCategoryName: String, fallbackIconName: String, fallbackSubtitle: String?) {
         self.transaction = transaction
-        self.categoryName = categoryName
-        self.iconName = iconName
-        self.subtitle = subtitle
+        self.fallbackCategoryName = fallbackCategoryName
+        self.fallbackIconName = fallbackIconName
+        self.fallbackSubtitle = fallbackSubtitle
     }
 }
 
@@ -21,15 +21,21 @@ public struct TransactionSearchView: View {
     @Environment(\.dismiss) private var dismiss
 
     private let rows: [TransactionSearchRow]
+    private let categories: [NumiCore.Category]
+    private let accounts: [Account]
     private let onSelect: (NumiCore.Transaction) -> Void
 
     @State private var query = ""
 
     public init(
         rows: [TransactionSearchRow],
+        categories: [NumiCore.Category] = [],
+        accounts: [Account] = [],
         onSelect: @escaping (NumiCore.Transaction) -> Void = { _ in }
     ) {
         self.rows = rows
+        self.categories = categories
+        self.accounts = accounts
         self.onSelect = onSelect
     }
 
@@ -44,16 +50,16 @@ public struct TransactionSearchView: View {
                 ForEach(filteredRows) { row in
                     NumiRecordRow(
                         transaction: row.transaction,
-                        categoryName: row.categoryName,
-                        iconName: row.iconName,
-                        subtitle: row.subtitle,
+                        categoryName: resolvedCategoryName(for: row),
+                        iconName: resolvedIconName(for: row),
+                        subtitle: resolvedSubtitle(for: row),
                         style: .card
                     )
                     .contentShape(Rectangle())
                     .onTapGesture {
                         onSelect(row.transaction)
                     }
-                    .accessibilityIdentifier("search.record.\(row.categoryName)")
+                    .accessibilityIdentifier("search.record.\(row.transaction.id.uuidString)")
                     .listRowInsets(EdgeInsets(top: 0, leading: NumiSpacing.s5, bottom: NumiSpacing.s3, trailing: NumiSpacing.s5))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
@@ -64,20 +70,21 @@ public struct TransactionSearchView: View {
         .scrollContentBackground(.hidden)
         .background(NumiColor.surfacePage)
         .accessibilityIdentifier("list.transactionSearchResults")
-        .navigationTitle("搜索账单")
+        .navigationTitle("common.search")
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("关闭") {
+                Button("common.close") {
                     dismiss()
                 }
+                .accessibilityIdentifier("action.closeTransactionSearch")
             }
         }
         .accessibilityIdentifier("page.transactionSearch")
         #if os(iOS)
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索分类、备注、金额或时间")
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: NumiLocalized.string( "common.search"))
         .navigationBarTitleDisplayMode(.inline)
         #else
-        .searchable(text: $query, prompt: "搜索分类、备注、金额或时间")
+        .searchable(text: $query, prompt: NumiLocalized.string( "common.search"))
         #endif
     }
 
@@ -86,12 +93,38 @@ public struct TransactionSearchView: View {
         guard !keyword.isEmpty else { return [] }
 
         return rows.filter { (row: TransactionSearchRow) in
-            row.categoryName.localizedCaseInsensitiveContains(keyword)
+            resolvedCategoryName(for: row).localizedCaseInsensitiveContains(keyword)
+            || row.fallbackCategoryName.localizedCaseInsensitiveContains(keyword)
             || row.transaction.note.localizedCaseInsensitiveContains(keyword)
             || row.transaction.amount.formatted().localizedCaseInsensitiveContains(keyword)
-            || (row.subtitle?.localizedCaseInsensitiveContains(keyword) ?? false)
+            || (resolvedSubtitle(for: row)?.localizedCaseInsensitiveContains(keyword) ?? false)
+            || (row.fallbackSubtitle?.localizedCaseInsensitiveContains(keyword) ?? false)
             || NumiDatePickerRow.displayText(for: row.transaction.occurredAt).localizedCaseInsensitiveContains(keyword)
         }
+    }
+
+    private func resolvedCategoryName(for row: TransactionSearchRow) -> String {
+        RuntimeLocalizedDisplay.categoryName(
+            for: row.transaction,
+            categories: categories,
+            fallbackCategoryName: row.fallbackCategoryName
+        )
+    }
+
+    private func resolvedIconName(for row: TransactionSearchRow) -> String {
+        RuntimeLocalizedDisplay.categoryIconName(
+            for: row.transaction,
+            categories: categories,
+            fallbackCategoryIcon: row.fallbackIconName
+        )
+    }
+
+    private func resolvedSubtitle(for row: TransactionSearchRow) -> String? {
+        RuntimeLocalizedDisplay.transferSubtitle(
+            for: row.transaction,
+            accounts: accounts,
+            fallbackSubtitle: row.fallbackSubtitle
+        )
     }
 
     private var searchEmptyState: some View {
@@ -99,10 +132,10 @@ public struct TransactionSearchView: View {
             Image(systemName: "magnifyingglass.circle")
                 .font(.system(size: 42, weight: .regular))
                 .foregroundStyle(NumiColor.textTertiary)
-            Text("没有匹配的账单")
+            Text("empty.search")
                 .font(NumiFont.bodyStrong)
                 .foregroundStyle(NumiColor.textPrimary)
-            Text(query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "输入分类、备注、金额或时间来快速查找。" : "换个关键词试试，或者返回首页浏览最近记录。")
+            Text(query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? NumiLocalized.string( "empty.home.desc") : NumiLocalized.string( "empty.search"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textTertiary)
                 .multilineTextAlignment(.center)

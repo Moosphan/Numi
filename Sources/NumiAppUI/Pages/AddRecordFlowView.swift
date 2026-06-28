@@ -81,10 +81,10 @@ public struct AddRecordFlowView: View {
     private var categorySelectionPage: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
-                Picker("类型", selection: $selectedType) {
-                    Text("支出").tag(TransactionType.expense).accessibilityIdentifier("transactionType.支出")
-                    Text("收入").tag(TransactionType.income).accessibilityIdentifier("transactionType.收入")
-                    Text("转账").tag(TransactionType.transfer).accessibilityIdentifier("transactionType.转账")
+                Picker("record.type", selection: $selectedType) {
+                    Text("record.expense").tag(TransactionType.expense).accessibilityIdentifier("transactionType.expense")
+                    Text("record.income").tag(TransactionType.income).accessibilityIdentifier("transactionType.income")
+                    Text("record.transfer").tag(TransactionType.transfer).accessibilityIdentifier("transactionType.transfer")
                 }
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("picker.transactionType")
@@ -103,14 +103,14 @@ public struct AddRecordFlowView: View {
                                     CategoryIconView(category: category, size: 68)
                                         .background(NumiColor.surfaceCard)
                                         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
-                                    Text(category.name)
+                                    Text(category.localizedDisplayName)
                                         .font(NumiFont.footnote)
                                         .foregroundStyle(NumiColor.textPrimary)
                                 }
                                 .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.plain)
-                            .accessibilityIdentifier("category.\(category.name)")
+                            .accessibilityIdentifier("category.\(category.id.uuidString)")
                         }
                     }
                 }
@@ -119,13 +119,14 @@ public struct AddRecordFlowView: View {
             .padding(.bottom, 40)
         }
         .accessibilityIdentifier("sheet.addRecord")
-        .navigationTitle("选择分类")
+        .navigationTitle("record.select.category")
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("取消") {
+                Button("common.cancel") {
                     dismiss()
                 }
                 .tint(NumiColor.accentDeep)
+                .accessibilityIdentifier("action.closeAddRecordSelection")
             }
         }
         #if os(iOS)
@@ -153,11 +154,11 @@ public struct AddRecordFlowView: View {
                     Image(systemName: "arrow.left.arrow.right.circle.fill")
                         .font(.system(size: 30, weight: .semibold))
                         .foregroundStyle(NumiColor.accentDeep)
-                    Text("新建转账")
+                    Text("record.new.transfer")
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
                 }
-                Text("先选转出和转入账户，再填写金额、日期、备注和币种。")
+                Text("addRecordFlow.transfer.description")
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textTertiary)
                     .multilineTextAlignment(.leading)
@@ -232,7 +233,7 @@ private struct AddRecordEditorOverlay: View {
                             .padding(.bottom, 8)
 
                         HStack(spacing: NumiSpacing.s3) {
-                            Button("返回", action: onBack)
+                            Button("common.back", action: onBack)
                                 .font(NumiFont.body)
                                 .foregroundStyle(NumiColor.textSecondary)
                                 .accessibilityIdentifier("sheet.addRecordEditor.back")
@@ -305,11 +306,11 @@ private struct AddRecordEditorOverlay: View {
     private var title: String {
         switch draft.type {
         case .expense:
-            return "新建支出"
+            return NumiLocalized.string( "record.new.expense")
         case .income:
-            return "新建收入"
+            return NumiLocalized.string( "record.new.income")
         case .transfer:
-            return "新建转账"
+            return NumiLocalized.string( "record.new.transfer")
         }
     }
 
@@ -398,16 +399,16 @@ private struct AddRecordEntryContent: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
-                Button("收起") {
+                Button(NumiLocalized.string( "common.collapse")) {
                     isNoteFocused = false
                 }
                 Spacer()
-                Button("再记一笔") {
+                Button(NumiLocalized.string( "addRecordFlow.action.saveAndAddAnother")) {
                     save()
                     onAddAnother()
                 }
                 .disabled(!canSubmit)
-                Button(draft.type == .transfer ? "保存转账" : "记一笔") {
+                Button(draft.type == .transfer ? NumiLocalized.string( "addRecordFlow.action.saveTransfer") : NumiLocalized.string( "addRecordFlow.action.saveRecord")) {
                     save()
                     onDone()
                 }
@@ -449,6 +450,7 @@ private struct AddRecordEntryContent: View {
             NumiAmountKeypad(
                 state: $inputState,
                 dateShortcutTitle: currentDateShortcutTitle,
+                dateShortcutAccessibilityKey: currentDateShortcutAccessibilityKey,
                 dateAccessorySystemImage: "calendar.badge.clock",
                 onDateShortcut: presentDatePicker
             )
@@ -457,7 +459,7 @@ private struct AddRecordEntryContent: View {
                     save()
                     onAddAnother()
                 } label: {
-                    Text("再记一笔")
+                    Text("addRecordFlow.action.saveAndAddAnother")
                         .font(NumiFont.bodyStrong)
                         .frame(maxWidth: .infinity, minHeight: 50)
                         .background(NumiColor.controlFill)
@@ -475,7 +477,7 @@ private struct AddRecordEntryContent: View {
                     save()
                     onDone()
                 } label: {
-                    Text(draft.type == .transfer ? "保存转账" : "记一笔")
+                    Text(draft.type == .transfer ? "addRecordFlow.action.saveTransfer" : "addRecordFlow.action.saveRecord")
                         .font(NumiFont.bodyStrong)
                         .frame(maxWidth: .infinity, minHeight: 50)
                         .background(NumiColor.accentPrimary)
@@ -499,7 +501,7 @@ private struct AddRecordEntryContent: View {
 
     private var amountHeader: some View {
         HStack(alignment: .firstTextBaseline, spacing: NumiSpacing.s3) {
-            Text("金额")
+            Text("record.amount")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textTertiary)
             Spacer(minLength: NumiSpacing.s2)
@@ -538,15 +540,15 @@ private struct AddRecordEntryContent: View {
             if draft.type == .transfer {
                 HStack(spacing: NumiSpacing.s2) {
                     inlineAccountMenu(
-                        title: "转出",
-                        selectedName: selectedAccount?.name ?? "未选择",
+                        title: NumiLocalized.string( "record.transfer.from"),
+                        selectedName: selectedAccount?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection"),
                         accessibilityIdentifier: "picker.transferSourceAccount",
                         accounts: visibleAccounts,
                         selectedID: $selectedAccountID
                     )
                     inlineAccountMenu(
-                        title: "转入",
-                        selectedName: selectedTargetAccount?.name ?? "未选择",
+                        title: NumiLocalized.string( "record.transfer.to"),
+                        selectedName: selectedTargetAccount?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection"),
                         accessibilityIdentifier: "picker.transferTargetAccount",
                         accounts: targetAccounts,
                         selectedID: $selectedTargetAccountID
@@ -555,8 +557,8 @@ private struct AddRecordEntryContent: View {
             } else {
                 HStack(spacing: NumiSpacing.s2) {
                     inlineAccountMenu(
-                        title: "账户",
-                        selectedName: selectedAccount?.name ?? "未选择",
+                        title: NumiLocalized.string( "record.account"),
+                        selectedName: selectedAccount?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection"),
                         accessibilityIdentifier: "picker.inlineRecordAccount",
                         accounts: visibleAccounts,
                         selectedID: $selectedAccountID
@@ -572,7 +574,7 @@ private struct AddRecordEntryContent: View {
             Image(systemName: "note.text")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(NumiColor.textTertiary)
-            TextField("备注", text: $note)
+            TextField("record.note", text: $note)
                 .autocorrectionDisabled()
                 .submitLabel(.done)
                 .focused($isNoteFocused)
@@ -617,7 +619,7 @@ private struct AddRecordEntryContent: View {
     }
 
     private var categoryTitle: String {
-        draft.type == .transfer ? "账户转账" : (selectedCategory?.name ?? "未分类")
+        draft.type == .transfer ? NumiLocalized.string( "record.transfer.title") : (selectedCategory?.localizedDisplayName ?? NumiLocalized.string( "empty.no.category"))
     }
 
     private var categoryIconName: String {
@@ -625,7 +627,7 @@ private struct AddRecordEntryContent: View {
     }
 
     private var summarySubtitle: String {
-        draft.type == .transfer ? "选择转出与转入账户后完成转账" : "金额、账户、日期和备注都在下方完成"
+        draft.type == .transfer ? NumiLocalized.string( "addRecordFlow.transfer.subtitle") : NumiLocalized.string( "addRecordFlow.record.subtitle")
     }
 
     private var selectedCurrencySymbol: String {
@@ -634,6 +636,20 @@ private struct AddRecordEntryContent: View {
 
     private var currentDateShortcutTitle: String {
         NumiDatePickerRow.displayText(for: selectedDate, includesTime: false)
+    }
+
+    private var currentDateShortcutAccessibilityKey: String {
+        if Calendar.current.isDateInToday(selectedDate) {
+            return "today"
+        }
+        if Calendar.current.isDateInYesterday(selectedDate) {
+            return "yesterday"
+        }
+        if let dayBeforeYesterday = Calendar.current.date(byAdding: .day, value: -2, to: Date()),
+           Calendar.current.isDate(selectedDate, inSameDayAs: dayBeforeYesterday) {
+            return "dayBeforeYesterday"
+        }
+        return "custom"
     }
 
     private var canSubmit: Bool {
@@ -672,13 +688,13 @@ private struct AddRecordEntryContent: View {
 
     private var datePickerSheet: some View {
         NumiBottomSheet(
-            title: "选择日期",
+            title: NumiLocalized.string( "addRecordFlow.datePicker.title"),
             contentMode: .fit,
             accessibilityPrefix: "sheet.datePicker",
             dismissAccessibilitySuffix: "cancel",
             confirmAccessibilitySuffix: "confirm",
-            dismissTitle: "取消",
-            confirmTitle: "完成",
+            dismissTitle: NumiLocalized.string( "common.cancel"),
+            confirmTitle: NumiLocalized.string( "common.done"),
             onDismiss: {
                 isDatePickerPresented = false
             },
@@ -688,7 +704,7 @@ private struct AddRecordEntryContent: View {
             }
         ) {
             DatePicker(
-                "日期",
+                "record.date",
                 selection: $pendingDate,
                 displayedComponents: [.date]
             )
@@ -718,9 +734,9 @@ private struct AddRecordEntryContent: View {
                 Button {
                     selectedID.wrappedValue = account.id
                 } label: {
-                    Label(account.name, systemImage: "circle")
+                    Label(account.localizedDisplayName, systemImage: "circle")
                 }
-                .accessibilityIdentifier("account.\(account.name)")
+                .accessibilityIdentifier("account.\(account.id.uuidString)")
             }
         } label: {
             HStack(spacing: 6) {

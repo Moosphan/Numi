@@ -1,4 +1,5 @@
 import SwiftUI
+import NumiCore
 
 /// Thiings图标使用示例
 struct ThiingsIconUsageExample: View {
@@ -6,14 +7,14 @@ struct ThiingsIconUsageExample: View {
         NavigationView {
             List {
                 // MARK: - 基础使用
-                Section("基础使用") {
+                Section(NumiLocalized.string("preview.icon.section.basic")) {
                     HStack {
                         Image("acai-bowl")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 40, height: 40)
 
-                        Text("餐饮分类")
+                        Text(CategoryIcon.acaiBowl.displayName)
                     }
 
                     HStack {
@@ -22,12 +23,12 @@ struct ThiingsIconUsageExample: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 40, height: 40)
 
-                        Text("工资收入")
+                        Text(CategoryIcon.cash.displayName)
                     }
                 }
 
                 // MARK: - 带样式
-                Section("带样式") {
+                Section(NumiLocalized.string("preview.icon.section.styled")) {
                     HStack {
                         Image("airplane")
                             .resizable()
@@ -40,9 +41,9 @@ struct ThiingsIconUsageExample: View {
                             )
 
                         VStack(alignment: .leading) {
-                            Text("旅行出游")
+                            Text(CategoryIcon.airplane.displayName)
                                 .font(.headline)
-                            Text("机票、酒店、景点")
+                            Text(CategoryIcon.airplane.description)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -50,7 +51,7 @@ struct ThiingsIconUsageExample: View {
                 }
 
                 // MARK: - 图标网格
-                Section("图标网格") {
+                Section(NumiLocalized.string("preview.icon.section.grid")) {
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible()),
@@ -74,7 +75,7 @@ struct ThiingsIconUsageExample: View {
                 }
 
                 // MARK: - 使用CategoryIcon枚举
-                Section("使用CategoryIcon枚举") {
+                Section(NumiLocalized.string("preview.icon.section.enum")) {
                     ForEach(CategoryIcon.allCases.prefix(6), id: \.self) { icon in
                         HStack(spacing: 12) {
                             Image(icon.iconName)
@@ -100,7 +101,7 @@ struct ThiingsIconUsageExample: View {
 
                             Spacer()
 
-                            Text(icon.category == .expense ? "支出" : "收入")
+                            Text(NumiLocalized.string(icon.category == .expense ? "preview.icon.badge.expense" : "preview.icon.badge.income"))
                                 .font(.caption2)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
@@ -111,7 +112,7 @@ struct ThiingsIconUsageExample: View {
                     }
                 }
             }
-            .navigationTitle("Thiings图标示例")
+            .navigationTitle("preview.icon.example.title")
         }
     }
 }
@@ -159,7 +160,12 @@ struct IconPickerView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
             }
-            .navigationTitle(category == .expense ? "选择支出分类" : "选择收入分类")
+            .navigationTitle(
+                NumiLocalized.string(
+                    "preview.icon.select.category",
+                    NumiLocalized.string(category == .expense ? "category.expense" : "category.income")
+                )
+            )
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -203,7 +209,7 @@ struct IconDetailView: View {
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
 
-                Text("文件名: \(icon.iconName)")
+                Text(NumiLocalized.string("preview.icon.fileName", icon.iconName))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -211,7 +217,7 @@ struct IconDetailView: View {
             // 分类标签
             HStack {
                 Label(
-                    icon.category == .expense ? "支出分类" : "收入分类",
+                    NumiLocalized.string(icon.category == .expense ? "category.expense" : "category.income"),
                     systemImage: icon.category == .expense ? "arrow.down.circle.fill" : "arrow.up.circle.fill"
                 )
                 .foregroundColor(icon.category == .expense ? .red : .green)
@@ -224,7 +230,7 @@ struct IconDetailView: View {
 
             // 代码示例
             VStack(alignment: .leading, spacing: 8) {
-                Text("代码示例:")
+                Text(NumiLocalized.string("preview.icon.codeExample"))
                     .font(.headline)
 
                 Text("Image(\"\(icon.iconName)\")")

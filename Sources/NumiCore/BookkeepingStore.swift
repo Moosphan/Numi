@@ -8,11 +8,13 @@ public enum CategoryKind: String, Codable, Sendable {
 public struct Ledger: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var name: String
+    public var builtInKey: String?
     public var currencyCode: String
 
-    public init(id: UUID = UUID(), name: String, currencyCode: String) {
+    public init(id: UUID = UUID(), name: String, builtInKey: String? = nil, currencyCode: String) {
         self.id = id
         self.name = name
+        self.builtInKey = builtInKey
         self.currencyCode = currencyCode.uppercased()
     }
 }
@@ -21,14 +23,24 @@ public struct Category: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var kind: CategoryKind
     public var name: String
+    public var builtInKey: String?
     public var icon: String
     public var isHidden: Bool
     public var sortOrder: Int
 
-    public init(id: UUID = UUID(), kind: CategoryKind, name: String, icon: String, isHidden: Bool = false, sortOrder: Int) {
+    public init(
+        id: UUID = UUID(),
+        kind: CategoryKind,
+        name: String,
+        builtInKey: String? = nil,
+        icon: String,
+        isHidden: Bool = false,
+        sortOrder: Int
+    ) {
         self.id = id
         self.kind = kind
         self.name = name
+        self.builtInKey = builtInKey
         self.icon = icon
         self.isHidden = isHidden
         self.sortOrder = sortOrder
@@ -49,6 +61,7 @@ public enum AccountType: String, Codable, Sendable {
 public struct Account: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var name: String
+    public var builtInKey: String?
     public var type: AccountType
     public var balance: Money
     public var isIncludedInAssets: Bool
@@ -57,6 +70,7 @@ public struct Account: Codable, Equatable, Identifiable, Sendable {
     public init(
         id: UUID = UUID(),
         name: String,
+        builtInKey: String? = nil,
         type: AccountType,
         balance: Money,
         isIncludedInAssets: Bool = true,
@@ -64,6 +78,7 @@ public struct Account: Codable, Equatable, Identifiable, Sendable {
     ) {
         self.id = id
         self.name = name
+        self.builtInKey = builtInKey
         self.type = type
         self.balance = balance
         self.isIncludedInAssets = isIncludedInAssets
@@ -121,15 +136,15 @@ public final class InMemoryBookkeepingStore {
     public func seedDefaultsIfNeeded(currencyCode: String = "CNY") throws {
         guard ledgers.isEmpty, categories.isEmpty, accounts.isEmpty else { return }
 
-        ledgers = [Ledger(name: "默认账本", currencyCode: currencyCode)]
-        categories = Self.defaultExpenseCategories.enumerated().map { index, item in
-            Category(kind: .expense, name: item.name, icon: item.icon, sortOrder: index)
-        } + Self.defaultIncomeCategories.enumerated().map { index, item in
-            Category(kind: .income, name: item.name, icon: item.icon, sortOrder: index)
+        ledgers = [Ledger(name: NumiLocalized.string( "ledger.default.name"), builtInKey: NumiBuiltInCatalog.defaultLedgerKey, currencyCode: currencyCode)]
+        categories = Self.defaultExpenseCategories().enumerated().map { index, item in
+            Category(kind: .expense, name: item.name, builtInKey: item.key, icon: item.icon, sortOrder: index)
+        } + Self.defaultIncomeCategories().enumerated().map { index, item in
+            Category(kind: .income, name: item.name, builtInKey: item.key, icon: item.icon, sortOrder: index)
         }
         accounts = [
-            Account(name: "现金", type: .cash, balance: .zero(currencyCode: currencyCode)),
-            Account(name: "银行卡", type: .debitCard, balance: .zero(currencyCode: currencyCode))
+            Account(name: NumiLocalized.string( "account.default.cash"), builtInKey: "account.default.cash", type: .cash, balance: .zero(currencyCode: currencyCode)),
+            Account(name: NumiLocalized.string( "account.default.bankCard"), builtInKey: "account.default.bankCard", type: .debitCard, balance: .zero(currencyCode: currencyCode))
         ]
     }
 
@@ -253,56 +268,15 @@ public final class InMemoryBookkeepingStore {
         }
     }
 
-    private static let defaultExpenseCategories: [(name: String, icon: String)] = [
-        ("餐饮", "acai-bowl"),
-        ("交通", "articulated-bus"),
-        ("购物", "bag-of-groceries"),
-        ("住房", "apartment-building"),
-        ("水电燃气", "digital-billboard"),
-        ("通讯", "cell-phone-cleaning-kit"),
-        ("医疗", "medicine-capsule"),
-        ("运动", "ab-bench"),
-        ("学习", "book"),
-        ("娱乐", "cinema-clapperboard"),
-        ("旅行", "airplane"),
-        ("游戏", "game-controller"),
-        ("数码", "desktop-computer"),
-        ("美容", "lipstick"),
-        ("服饰", "button-down-shirt"),
-        ("美发", "barber"),
-        ("人情", "gift-box"),
-        ("育儿", "baby"),
-        ("宠物", "cat"),
-        ("家居", "armchair"),
-        ("维修", "computer-technician"),
-        ("办公", "desk"),
-        ("保险", "insurance"),
-        ("税费", "cash-register"),
-        ("慈善", "charity-ball"),
-        ("订阅", "digital-certificate"),
-        ("车辆", "black-car"),
-        ("其他", "coins")
-    ]
+    private static func defaultExpenseCategories() -> [(key: String, name: String, icon: String)] {
+        NumiBuiltInCatalog.defaultExpenseCategories.map { item in
+            (key: item.key, name: NumiLocalized.string(item.key), icon: item.icon)
+        }
+    }
 
-    private static let defaultIncomeCategories: [(name: String, icon: String)] = [
-        ("工资", "cash"),
-        ("奖金", "trophy"),
-        ("加班补贴", "digital-alarm-clock"),
-        ("投资收益", "stock-trading-candlestick"),
-        ("利息分红", "coin-jar"),
-        ("租金收入", "farmhouse"),
-        ("副业", "briefcase"),
-        ("创作稿费", "calligraphy-practice-book"),
-        ("咨询服务", "accountant"),
-        ("报销", "checkbook"),
-        ("退款", "atm-cash-machine"),
-        ("赔偿理赔", "health-insurance-card"),
-        ("礼金", "unboxing-gift"),
-        ("中奖", "bingo-ball"),
-        ("借款收回", "coin-purse"),
-        ("闲置出售", "flea-market"),
-        ("政府补贴", "award-ceremony"),
-        ("继承赠与", "golden-heart"),
-        ("其他", "money")
-    ]
+    private static func defaultIncomeCategories() -> [(key: String, name: String, icon: String)] {
+        NumiBuiltInCatalog.defaultIncomeCategories.map { item in
+            (key: item.key, name: NumiLocalized.string(item.key), icon: item.icon)
+        }
+    }
 }

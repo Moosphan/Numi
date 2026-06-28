@@ -7,8 +7,9 @@ public enum NumiPreviewData {
         try? store.seedDefaultsIfNeeded()
         let accountID = store.accounts.first?.id
         let ledgerID = store.ledgers.first?.id ?? UUID()
-        let foodID = store.categories.first { $0.name == "餐饮" }?.id
-        let transportID = store.categories.first { $0.name == "交通" }?.id
+        let foodID = store.categories.first { $0.builtInKey == "category.default.expense.dining" }?.id
+        let transportID = store.categories.first { $0.builtInKey == "category.default.expense.transport" }?.id
+        let salaryID = store.categories.first { $0.builtInKey == "category.default.income.salary" }?.id
         if let accountID {
             _ = try? store.createTransaction(
                 type: .expense,
@@ -29,7 +30,7 @@ public enum NumiPreviewData {
             _ = try? store.createTransaction(
                 type: .income,
                 amount: Money(decimalString: "5000", currencyCode: "CNY"),
-                categoryID: store.categories.first { $0.name == "工资" }?.id,
+                categoryID: salaryID,
                 accountID: accountID,
                 ledgerID: ledgerID,
                 note: "工资"
@@ -44,7 +45,11 @@ public enum NumiPreviewData {
             ?? TransactionSummary(expense: .zero(currencyCode: "CNY"), income: .zero(currencyCode: "CNY"), balance: .zero(currencyCode: "CNY"), recordCount: 0)
         let rows = store.visibleTransactions.map { transaction in
             let category = store.categories.first { $0.id == transaction.categoryID }
-            return (transaction, category?.name ?? "其他", category?.icon ?? "ellipsis.circle")
+            return (
+                transaction,
+                category?.localizedDisplayName ?? NumiLocalized.string("other.fallback"),
+                category?.icon ?? "ellipsis.circle"
+            )
         }
         return (summary, rows)
     }

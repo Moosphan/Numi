@@ -12,6 +12,7 @@ final class AIBillRecordingE2ETests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
         app.launchEnvironment["NUMI_UI_TEST_STORE_ID"] = "e2e-\(UUID().uuidString)"
+        app.launchEnvironment["NUMI_UI_TEST_APP_LANGUAGE"] = "zh-Hans"
         app.launch()
     }
 

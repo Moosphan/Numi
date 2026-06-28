@@ -2,14 +2,14 @@ import SwiftUI
 import NumiCore
 
 public struct NumiAccountPickerRow: View {
-    private let title: String
+    private let title: String?
     private let accounts: [Account]
     @Binding private var selectedAccountID: UUID?
     private let excludedAccountID: UUID?
     private let accessibilityIdentifier: String
 
     public init(
-        title: String = "账户",
+        title: String? = nil,
         accounts: [Account],
         selectedAccountID: Binding<UUID?>,
         excludedAccountID: UUID? = nil,
@@ -28,9 +28,9 @@ public struct NumiAccountPickerRow: View {
                 Button {
                     selectedAccountID = account.id
                 } label: {
-                    Label(account.name, systemImage: iconName(for: account.type))
+                    Label(account.localizedDisplayName, systemImage: iconName(for: account.type))
                 }
-                .accessibilityIdentifier("account.\(account.name)")
+                .accessibilityIdentifier("account.\(account.id.uuidString)")
             }
         } label: {
             HStack(spacing: NumiSpacing.s3) {
@@ -38,11 +38,11 @@ public struct NumiAccountPickerRow: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(NumiColor.textTertiary)
                     .frame(width: 24)
-                Text(title)
+                Text(title ?? NumiLocalized.string("record.account"))
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textSecondary)
                 Spacer()
-                Text(selectedAccount?.name ?? "未选择")
+                Text(selectedAccount?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection"))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
                     .lineLimit(1)

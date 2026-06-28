@@ -76,7 +76,7 @@ public struct NumiBottomNavigationBar: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    .accessibilityIdentifier("tab.\(item.title)")
+                    .accessibilityIdentifier("tab.\(item.id)")
                 }
             }
         }

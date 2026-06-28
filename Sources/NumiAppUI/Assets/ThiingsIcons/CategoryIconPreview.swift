@@ -1,24 +1,33 @@
 import SwiftUI
+import NumiCore
 
 /// 分类图标预览视图
 struct CategoryIconPreviewView: View {
     var body: some View {
         NavigationView {
             List {
-                Section("支出分类 (\(CategoryIcon.expenseIcons.count)个)") {
+                Section(sectionTitle(for: "category.expense", count: CategoryIcon.expenseIcons.count)) {
                     ForEach(CategoryIcon.expenseIcons, id: \.self) { icon in
                         CategoryIconRow(icon: icon)
                     }
                 }
 
-                Section("收入分类 (\(CategoryIcon.incomeIcons.count)个)") {
+                Section(sectionTitle(for: "category.income", count: CategoryIcon.incomeIcons.count)) {
                     ForEach(CategoryIcon.incomeIcons, id: \.self) { icon in
                         CategoryIconRow(icon: icon)
                     }
                 }
             }
-            .navigationTitle("Numi 分类图标")
+            .navigationTitle("preview.icon.title")
         }
+    }
+
+    private func sectionTitle(for categoryKey: String, count: Int) -> String {
+        NumiLocalized.string(
+            "preview.icon.section.count",
+            NumiLocalized.string(categoryKey),
+            String(count)
+        )
     }
 }
 
@@ -49,7 +58,7 @@ struct CategoryIconRow: View {
             Spacer()
 
             // 分类标签
-            Text(icon.category == .expense ? "支出" : "收入")
+            Text(NumiLocalized.string(icon.category == .expense ? "preview.icon.badge.expense" : "preview.icon.badge.income"))
                 .font(.caption2)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -112,14 +121,14 @@ struct CategoryIconDetailView: View {
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
 
-                Text("文件名: \(icon.iconName).png")
+                Text(NumiLocalized.string("preview.icon.fileName", "\(icon.iconName).png"))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
 
             // 分类标签
             HStack {
-                Label(icon.category == .expense ? "支出分类" : "收入分类",
+                Label(NumiLocalized.string(icon.category == .expense ? "category.expense" : "category.income"),
                       systemImage: icon.category == .expense ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
                     .foregroundColor(icon.category == .expense ? .red : .green)
             }

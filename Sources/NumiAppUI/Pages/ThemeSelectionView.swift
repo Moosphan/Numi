@@ -24,7 +24,7 @@ public struct ThemeSelectionView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.themeSelection")
         .background(NumiColor.surfacePage)
-        .navigationTitle("主题")
+        .navigationTitle(Text("theme.title"))
         .modifier(LargeTitleNavigationChrome())
     }
 
@@ -32,7 +32,7 @@ public struct ThemeSelectionView: View {
 
     private var appearanceSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-            Text("外观模式")
+            Text("theme.appearance.mode")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -72,7 +72,7 @@ public struct ThemeSelectionView: View {
 
     private var themeSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("主题风格")
+            Text("theme.style")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -119,7 +119,7 @@ public struct ThemeSelectionView: View {
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
 
-            Text("切换后会同步更新基础控件、工具栏、输入面板和弹窗配色。")
+            Text("theme.switch.desc")
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
                 .padding(.horizontal, NumiSpacing.s1)
@@ -143,9 +143,9 @@ public struct ThemeSelectionView: View {
     private func description(for theme: NumiTheme) -> String {
         switch theme.id {
         case NumiTheme.brandWarm.id:
-            return "暖杏主色、奶油底色和更柔和的工具栏强调色。"
+            return NumiLocalized.string( "theme.warm.desc")
         default:
-            return "保留当前清爽浅色基调，适合作为默认工作主题。"
+            return NumiLocalized.string( "theme.default.desc")
         }
     }
 

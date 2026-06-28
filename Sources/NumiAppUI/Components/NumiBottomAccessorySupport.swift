@@ -1,5 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 @MainActor
 public final class NumiBottomAccessoryController: ObservableObject {
@@ -84,6 +86,7 @@ public extension View {
     }
 }
 
+#if canImport(UIKit)
 private struct NumiNavigationDepthObserver: UIViewControllerRepresentable {
     let onDepthChange: (Int) -> Void
 
@@ -152,6 +155,13 @@ extension NumiNavigationDepthObserver.ObserverViewController: UINavigationContro
         )
     }
 }
+#else
+// MARK: - macOS stub (navigation depth tracking not available)
+private struct NumiNavigationDepthObserver: View {
+    let onDepthChange: (Int) -> Void
+    var body: some View { Color.clear.frame(width: 0, height: 0) }
+}
+#endif
 
 public struct NumiBottomAccessoryTrackingScrollView<Content: View>: View {
     @EnvironmentObject private var controller: NumiBottomAccessoryController
@@ -231,6 +241,7 @@ public struct NumiBottomAccessoryTrackingScrollView<Content: View>: View {
     }
 }
 
+#if canImport(UIKit)
 private struct NumiScrollViewOffsetObserver: UIViewRepresentable {
     let onOffsetChange: (CGFloat) -> Void
 
@@ -300,3 +311,10 @@ private extension UIView {
         return nil
     }
 }
+#else
+// MARK: - macOS stub (scroll offset observer not available)
+private struct NumiScrollViewOffsetObserver: View {
+    let onOffsetChange: (CGFloat) -> Void
+    var body: some View { Color.clear.frame(width: 0, height: 0) }
+}
+#endif

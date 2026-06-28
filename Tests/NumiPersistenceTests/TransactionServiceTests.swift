@@ -5,6 +5,23 @@ import SwiftData
 
 @MainActor
 final class TransactionServiceTests: XCTestCase {
+    private let languageKey = "app.language"
+    private var originalLanguage: String?
+
+    override func setUp() {
+        super.setUp()
+        originalLanguage = UserDefaults.standard.string(forKey: languageKey)
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+    }
+
+    override func tearDown() {
+        if let originalLanguage {
+            UserDefaults.standard.set(originalLanguage, forKey: languageKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: languageKey)
+        }
+        super.tearDown()
+    }
 
     // MARK: - Category Name Lookup
 
@@ -20,6 +37,44 @@ final class TransactionServiceTests: XCTestCase {
         XCTAssertTrue(names.contains("购物"))
     }
 
+    func testLocalizedCategoryNamesTrackRuntimeLanguage() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+        XCTAssertTrue(store.categories.localizedCategoryNames().contains("餐饮"))
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertTrue(store.categories.localizedCategoryNames().contains("Dining"))
+    }
+
+    func testResolveLocalizedCategoryCanMatchBuiltInAliasesAcrossLanguages() {
+        let category = Category(
+            kind: .expense,
+            name: "__legacy_dining__",
+            builtInKey: "category.default.expense.dining",
+            icon: "acai-bowl",
+            sortOrder: 0
+        )
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual([category].resolveLocalizedCategory(named: "Dining")?.id, category.id)
+        XCTAssertEqual([category].resolveLocalizedCategory(named: "餐饮")?.id, category.id)
+    }
+
+    func testResolveLocalizedAccountCanMatchBuiltInAliasesAcrossLanguages() {
+        let account = Account(
+            name: "__legacy_cash__",
+            builtInKey: "account.default.cash",
+            type: .cash,
+            balance: .zero(currencyCode: "CNY")
+        )
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual([account].resolveLocalizedAccount(named: "Cash")?.id, account.id)
+        XCTAssertEqual([account].resolveLocalizedAccount(named: "现金")?.id, account.id)
+    }
+
     func testCategoryCount() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
@@ -29,6 +84,27 @@ final class TransactionServiceTests: XCTestCase {
 
         XCTAssertGreaterThan(expenseCategories.count, 20)
         XCTAssertGreaterThan(incomeCategories.count, 10)
+    }
+
+    func testSeedDefaultsUseRuntimeLanguageForLedgerAndAccounts() throws {
+        UserDefaults.standard.set("en", forKey: languageKey)
+
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+
+        XCTAssertEqual(store.ledgers.first?.name, "Default Ledger")
+        XCTAssertEqual(store.accounts.first(where: { $0.type == .cash })?.name, "Cash")
+        XCTAssertEqual(store.accounts.first(where: { $0.type == .debitCard })?.name, "Bank Card")
+    }
+
+    func testTransactionServiceErrorsTrackRuntimeLanguage() {
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+        XCTAssertEqual(TransactionServiceError.noAccount.errorDescription, "没有可用账户")
+        XCTAssertEqual(TransactionServiceError.noLedger.errorDescription, "没有可用账本")
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(TransactionServiceError.noAccount.errorDescription, "No available account")
+        XCTAssertEqual(TransactionServiceError.noLedger.errorDescription, "No available ledger")
     }
 
     // MARK: - Transaction Creation via Store

@@ -10,10 +10,10 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
 
     public var displayName: String {
         switch self {
-        case .daily: return "每天"
-        case .weekly: return "每周"
-        case .monthly: return "每月"
-        case .yearly: return "每年"
+        case .daily: return NumiLocalized.string( "subscription.cycle.daily")
+        case .weekly: return NumiLocalized.string( "subscription.cycle.weekly")
+        case .monthly: return NumiLocalized.string( "subscription.cycle.monthly")
+        case .yearly: return NumiLocalized.string( "subscription.cycle.yearly")
         }
     }
 }

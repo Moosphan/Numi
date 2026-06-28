@@ -15,6 +15,7 @@ final class ParsedTransactionTests: XCTestCase {
         XCTAssertEqual(tx.amount, 35)
         XCTAssertEqual(tx.categoryName, "餐饮")
         XCTAssertNil(tx.accountName)
+        XCTAssertNil(tx.targetAccountName)
         XCTAssertEqual(tx.note, "")
     }
 
@@ -25,6 +26,7 @@ final class ParsedTransactionTests: XCTestCase {
             amount: 8000,
             categoryName: "工资",
             accountName: "银行卡",
+            targetAccountName: "现金",
             occurredAt: date,
             note: "6月薪资"
         )
@@ -32,6 +34,7 @@ final class ParsedTransactionTests: XCTestCase {
         XCTAssertEqual(tx.amount, 8000)
         XCTAssertEqual(tx.categoryName, "工资")
         XCTAssertEqual(tx.accountName, "银行卡")
+        XCTAssertEqual(tx.targetAccountName, "现金")
         XCTAssertEqual(tx.occurredAt, date)
         XCTAssertEqual(tx.note, "6月薪资")
     }
@@ -45,6 +48,7 @@ final class ParsedTransactionTests: XCTestCase {
             amount: 123.45,
             categoryName: "交通",
             accountName: "微信",
+            targetAccountName: "银行卡",
             occurredAt: date,
             note: "打车"
         )
@@ -56,6 +60,7 @@ final class ParsedTransactionTests: XCTestCase {
         XCTAssertEqual(decoded.amount, 123.45)
         XCTAssertEqual(decoded.categoryName, "交通")
         XCTAssertEqual(decoded.accountName, "微信")
+        XCTAssertEqual(decoded.targetAccountName, "银行卡")
         XCTAssertEqual(decoded.note, "打车")
     }
 
@@ -71,6 +76,7 @@ final class ParsedTransactionTests: XCTestCase {
 
         XCTAssertEqual(decoded.type, .transfer)
         XCTAssertNil(decoded.accountName)
+        XCTAssertNil(decoded.targetAccountName)
         XCTAssertEqual(decoded.note, "")
     }
 

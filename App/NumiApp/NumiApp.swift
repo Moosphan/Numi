@@ -5,12 +5,16 @@ import NumiAppUI
 
 @main
 struct NumiApp: App {
+    private static let appLanguageKey = "app.language"
     @AppStorage("app.theme.id") private var themeID = NumiTheme.default.id
     @AppStorage("app.colorSchemeMode") private var colorSchemeMode: ColorSchemeMode = .system
+    @AppStorage("app.language") private var languageCode: String = "system"
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var appearanceBridge = UIKitAppearanceBridge()
 
     init() {
+        applyLaunchOverrides()
+        NumiAppUILocalization.registerBundle()
         applyColorScheme(colorSchemeMode)
     }
 
@@ -25,6 +29,8 @@ struct NumiApp: App {
                         )
                     }
             }
+            .id(languageCode)
+            .environment(\.locale, resolvedLocale)
             .preferredColorScheme(colorSchemeMode.swiftUIScheme)
             .task {
                 appearanceBridge.start()
@@ -37,6 +43,23 @@ struct NumiApp: App {
                 applyColorScheme(colorSchemeMode)
             }
         }
+    }
+
+    private var resolvedLocale: Locale {
+        if languageCode == "system" {
+            return .autoupdatingCurrent
+        }
+        return Locale(identifier: languageCode)
+    }
+
+    private func applyLaunchOverrides() {
+        let environment = ProcessInfo.processInfo.environment
+        guard let languageOverride = environment["NUMI_UI_TEST_APP_LANGUAGE"]?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !languageOverride.isEmpty else {
+            return
+        }
+
+        UserDefaults.standard.set(languageOverride, forKey: Self.appLanguageKey)
     }
 
     /// 通过 UIKit 层设置外观，确保系统弹窗（Menu、confirmationDialog）也能适配

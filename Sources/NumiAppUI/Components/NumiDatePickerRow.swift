@@ -1,14 +1,15 @@
 import SwiftUI
+import NumiCore
 
 public struct NumiDatePickerRow: View {
-    private let title: String
+    private let title: String?
     @Binding private var selectedDate: Date
     @State private var isCustomDatePresented = false
     private let accessibilityIdentifier: String
     private let calendar: Calendar
 
     public init(
-        title: String = "日期",
+        title: String? = nil,
         selectedDate: Binding<Date>,
         accessibilityIdentifier: String,
         calendar: Calendar = .current
@@ -21,22 +22,34 @@ public struct NumiDatePickerRow: View {
 
     public var body: some View {
         Menu {
-            shortcutButton(title: "今天", dayOffset: 0)
-            shortcutButton(title: "昨天", dayOffset: -1)
-            shortcutButton(title: "前天", dayOffset: -2)
+            shortcutButton(
+                accessibilityKey: "today",
+                title: NumiLocalized.string("date.today"),
+                dayOffset: 0
+            )
+            shortcutButton(
+                accessibilityKey: "yesterday",
+                title: NumiLocalized.string("date.yesterday"),
+                dayOffset: -1
+            )
+            shortcutButton(
+                accessibilityKey: "dayBeforeYesterday",
+                title: NumiLocalized.string("date.dayBeforeYesterday"),
+                dayOffset: -2
+            )
             Button {
                 isCustomDatePresented = true
             } label: {
-                Label("自定义日期", systemImage: "calendar")
+                Label("addRecordFlow.datePicker.title", systemImage: "calendar")
             }
-            .accessibilityIdentifier("dateShortcut.自定义日期")
+            .accessibilityIdentifier("dateShortcut.custom")
         } label: {
             HStack(spacing: NumiSpacing.s3) {
                 Image(systemName: "calendar")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(NumiColor.textTertiary)
                     .frame(width: 24)
-                Text(title)
+                Text(title ?? NumiLocalized.string("record.date"))
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textSecondary)
                 Spacer()
@@ -57,13 +70,13 @@ public struct NumiDatePickerRow: View {
         .accessibilityIdentifier(accessibilityIdentifier)
         .sheet(isPresented: $isCustomDatePresented) {
             NavigationStack {
-                DatePicker("日期", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
+                DatePicker("record.date", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(.graphical)
                     .padding(NumiSpacing.s5)
-                    .navigationTitle("选择日期")
+                    .navigationTitle("addRecordFlow.datePicker.title")
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
-                            Button("完成") {
+                            Button("common.done") {
                                 isCustomDatePresented = false
                             }
                         }
@@ -85,29 +98,29 @@ public struct NumiDatePickerRow: View {
         includesTime: Bool
     ) -> String {
         if calendar.isDateInToday(date) {
-            return "今天"
+            return NumiLocalized.string("date.today")
         }
         if calendar.isDateInYesterday(date) {
-            return "昨天"
+            return NumiLocalized.string("date.yesterday")
         }
         if let dayBeforeYesterday = calendar.date(byAdding: .day, value: -2, to: Date()),
            calendar.isDate(date, inSameDayAs: dayBeforeYesterday) {
-            return "前天"
+            return NumiLocalized.string("date.dayBeforeYesterday")
         }
 
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = includesTime ? "M月d日 HH:mm" : "M月d日"
+        formatter.locale = NumiLocalized.currentLocale
+        formatter.setLocalizedDateFormatFromTemplate(includesTime ? "MMMdjm" : "MMMd")
         return formatter.string(from: date)
     }
 
-    private func shortcutButton(title: String, dayOffset: Int) -> some View {
+    private func shortcutButton(accessibilityKey: String, title: String, dayOffset: Int) -> some View {
         Button {
             selectedDate = date(dayOffset: dayOffset)
         } label: {
             Label(title, systemImage: dayOffset == 0 ? "calendar.badge.clock" : "calendar")
         }
-        .accessibilityIdentifier("dateShortcut.\(title)")
+        .accessibilityIdentifier("dateShortcut.\(accessibilityKey)")
     }
 
     private func date(dayOffset: Int) -> Date {

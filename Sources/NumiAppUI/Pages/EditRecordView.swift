@@ -52,27 +52,28 @@ public struct EditRecordView: View {
                 .padding(NumiSpacing.s5)
                 .padding(.bottom, 24)
             }
+            .accessibilityIdentifier("page.editRecord")
             .background(NumiColor.surfacePage)
-            .navigationTitle("编辑账单")
+            .navigationTitle("record.edit")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
+                    Button("common.cancel") {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
+                    Button("common.save") {
                         save()
                     }
                     .disabled(!canSave)
                     .accessibilityIdentifier("action.submitRecord")
                 }
                 ToolbarItemGroup(placement: .keyboard) {
-                    Button("收起") {
+                    Button(NumiLocalized.string( "common.collapse")) {
                         isNoteFocused = false
                     }
                     Spacer()
-                    Button("保存") {
+                    Button("common.save") {
                         saveAndDismiss()
                     }
                     .disabled(!canSave)
@@ -103,10 +104,10 @@ public struct EditRecordView: View {
 
     private var typeCard: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s4) {
-            Picker("类型", selection: $selectedType) {
-                Text("支出").tag(TransactionType.expense).accessibilityIdentifier("transactionType.支出")
-                Text("收入").tag(TransactionType.income).accessibilityIdentifier("transactionType.收入")
-                Text("转账").tag(TransactionType.transfer).accessibilityIdentifier("transactionType.转账")
+            Picker("record.type", selection: $selectedType) {
+                Text("record.expense").tag(TransactionType.expense).accessibilityIdentifier("transactionType.expense")
+                Text("record.income").tag(TransactionType.income).accessibilityIdentifier("transactionType.income")
+                Text("record.transfer").tag(TransactionType.transfer).accessibilityIdentifier("transactionType.transfer")
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("picker.transactionType")
@@ -120,10 +121,10 @@ public struct EditRecordView: View {
                         .background(NumiColor.surfaceCardSubtle)
                         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("账户转账")
+                        Text("record.transfer.title")
                             .font(NumiFont.bodyStrong)
                             .foregroundStyle(NumiColor.textPrimary)
-                        Text("编辑转出、转入账户与金额。")
+                        Text("editRecord.transfer.subtitle")
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -145,22 +146,22 @@ public struct EditRecordView: View {
                     selectedCategoryID = category.id
                 } label: {
                     Label {
-                        Text(category.name)
+                        Text(category.localizedDisplayName)
                     } icon: {
                         CategoryIconView(category: category, size: 20)
                     }
                 }
-                .accessibilityIdentifier("category.\(category.name)")
+                .accessibilityIdentifier("category.\(category.id.uuidString)")
             }
         } label: {
             HStack(spacing: NumiSpacing.s3) {
                 CategoryIconView(iconName: selectedCategory?.icon ?? "ellipsis.circle", size: 24)
                     .foregroundStyle(NumiColor.textTertiary)
-                Text("分类")
+                Text("record.category")
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textSecondary)
                 Spacer()
-                Text(selectedCategory?.name ?? "未选择")
+                Text(selectedCategory?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection"))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
                 Image(systemName: "chevron.up.chevron.down")
@@ -183,6 +184,7 @@ public struct EditRecordView: View {
             NumiAmountKeypad(
                 state: $inputState,
                 dateShortcutTitle: currentDateShortcutTitle,
+                dateShortcutAccessibilityKey: currentDateShortcutAccessibilityKey,
                 dateAccessorySystemImage: "calendar.badge.clock",
                 onDateShortcut: presentDatePicker
             )
@@ -196,7 +198,7 @@ public struct EditRecordView: View {
 
     private var amountHeader: some View {
         HStack(alignment: .firstTextBaseline, spacing: NumiSpacing.s3) {
-            Text("金额")
+            Text("record.amount")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textTertiary)
             Spacer(minLength: NumiSpacing.s2)
@@ -239,15 +241,15 @@ public struct EditRecordView: View {
             if selectedType == .transfer {
                 HStack(spacing: NumiSpacing.s2) {
                     inlineAccountMenu(
-                        title: "转出",
-                        selectedName: selectedAccount?.name ?? "未选择",
+                        title: NumiLocalized.string( "record.transfer.from"),
+                        selectedName: selectedAccount?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection"),
                         accessibilityIdentifier: "picker.transferSourceAccount",
                         accounts: visibleAccounts,
                         selectedID: $selectedAccountID
                     )
                     inlineAccountMenu(
-                        title: "转入",
-                        selectedName: selectedTargetAccount?.name ?? "未选择",
+                        title: NumiLocalized.string( "record.transfer.to"),
+                        selectedName: selectedTargetAccount?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection"),
                         accessibilityIdentifier: "picker.transferTargetAccount",
                         accounts: targetAccounts,
                         selectedID: $selectedTargetAccountID
@@ -257,8 +259,8 @@ public struct EditRecordView: View {
             } else {
                 HStack(spacing: NumiSpacing.s2) {
                     inlineAccountMenu(
-                        title: "账户",
-                        selectedName: selectedAccount?.name ?? "未选择",
+                        title: NumiLocalized.string( "record.account"),
+                        selectedName: selectedAccount?.localizedDisplayName ?? NumiLocalized.string( "empty.no.selection"),
                         accessibilityIdentifier: "picker.editRecordAccount",
                         accounts: visibleAccounts,
                         selectedID: $selectedAccountID
@@ -274,7 +276,7 @@ public struct EditRecordView: View {
             Image(systemName: "note.text")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(NumiColor.textTertiary)
-            TextField("备注", text: $note)
+            TextField("record.note", text: $note)
                 .autocorrectionDisabled()
                 .submitLabel(.done)
                 .focused($isNoteFocused)
@@ -327,11 +329,11 @@ public struct EditRecordView: View {
 
     private var currencyOptions: [NumiCurrencyOption] {
         [
-            NumiCurrencyOption(code: "CNY", title: "人民币", symbol: "¥"),
-            NumiCurrencyOption(code: "USD", title: "美元", symbol: "$"),
-            NumiCurrencyOption(code: "EUR", title: "欧元", symbol: "€"),
-            NumiCurrencyOption(code: "JPY", title: "日元", symbol: "¥"),
-            NumiCurrencyOption(code: "HKD", title: "港币", symbol: "HK$")
+            NumiCurrencyOption(code: "CNY", title: NumiLocalized.string( "currency.name.CNY"), symbol: "¥"),
+            NumiCurrencyOption(code: "USD", title: NumiLocalized.string( "currency.name.USD"), symbol: "$"),
+            NumiCurrencyOption(code: "EUR", title: NumiLocalized.string( "currency.name.EUR"), symbol: "€"),
+            NumiCurrencyOption(code: "JPY", title: NumiLocalized.string( "currency.name.JPY"), symbol: "¥"),
+            NumiCurrencyOption(code: "HKD", title: NumiLocalized.string( "currency.name.HKD"), symbol: "HK$")
         ]
     }
 
@@ -341,6 +343,20 @@ public struct EditRecordView: View {
 
     private var currentDateShortcutTitle: String {
         NumiDatePickerRow.displayText(for: selectedDate, includesTime: false)
+    }
+
+    private var currentDateShortcutAccessibilityKey: String {
+        if Calendar.current.isDateInToday(selectedDate) {
+            return "today"
+        }
+        if Calendar.current.isDateInYesterday(selectedDate) {
+            return "yesterday"
+        }
+        if let dayBeforeYesterday = Calendar.current.date(byAdding: .day, value: -2, to: Date()),
+           Calendar.current.isDate(selectedDate, inSameDayAs: dayBeforeYesterday) {
+            return "dayBeforeYesterday"
+        }
+        return "custom"
     }
 
     private var canSave: Bool {
@@ -397,13 +413,13 @@ public struct EditRecordView: View {
 
     private var datePickerSheet: some View {
         NumiBottomSheet(
-            title: "选择日期",
+            title: NumiLocalized.string( "addRecordFlow.datePicker.title"),
             contentMode: .fit,
             accessibilityPrefix: "sheet.datePicker",
             dismissAccessibilitySuffix: "cancel",
             confirmAccessibilitySuffix: "confirm",
-            dismissTitle: "取消",
-            confirmTitle: "完成",
+            dismissTitle: NumiLocalized.string( "common.cancel"),
+            confirmTitle: NumiLocalized.string( "common.done"),
             onDismiss: {
                 isDatePickerPresented = false
             },
@@ -413,7 +429,7 @@ public struct EditRecordView: View {
             }
         ) {
             DatePicker(
-                "日期",
+                "record.date",
                 selection: $pendingDate,
                 displayedComponents: [.date]
             )
@@ -456,9 +472,9 @@ public struct EditRecordView: View {
                 Button {
                     selectedID.wrappedValue = account.id
                 } label: {
-                    Label(account.name, systemImage: "circle")
+                    Label(account.localizedDisplayName, systemImage: "circle")
                 }
-                .accessibilityIdentifier("account.\(account.name)")
+                .accessibilityIdentifier("account.\(account.id.uuidString)")
             }
         } label: {
             HStack(spacing: 6) {

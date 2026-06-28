@@ -38,7 +38,7 @@ public struct AccountManagementView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text("总资产")
+                    Text("account.total.asset")
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textSecondary)
                     Text(totalAssets.formatted())
@@ -46,7 +46,7 @@ public struct AccountManagementView: View {
                         .foregroundStyle(NumiColor.textPrimary)
                         .monospacedDigit()
 
-                    Text("仅统计已开启\u{201C}计入资产\u{201D}的账户；隐藏账户不会出现在记账页账户选择器中，历史记录仍保留原账户。")
+                    Text("account.info.desc")
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                         .padding(.top, NumiSpacing.s1)
@@ -58,7 +58,7 @@ public struct AccountManagementView: View {
                 .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
 
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text("账户")
+                    Text("account.section")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(NumiColor.textSecondary)
 
@@ -91,7 +91,7 @@ public struct AccountManagementView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.accountManagement")
         .background(NumiColor.surfacePage)
-        .navigationTitle("账户管理")
+        .navigationTitle("account.title")
         .modifier(LargeTitleNavigationChrome())
         .tint(NumiColor.accentDeep)
         .toolbar {
@@ -101,7 +101,7 @@ public struct AccountManagementView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("新增账户")
+                .accessibilityLabel("account.add")
                 .accessibilityIdentifier("action.addAccount")
             }
         }
@@ -111,7 +111,7 @@ public struct AccountManagementView: View {
             }
         }
         .confirmationDialog(
-            "删除这个账户？",
+            "record.delete.confirm",
             isPresented: Binding(
                 get: { pendingDelete != nil },
                 set: { if !$0 { pendingDelete = nil } }
@@ -119,15 +119,15 @@ public struct AccountManagementView: View {
             titleVisibility: .visible,
             presenting: pendingDelete
         ) { account in
-            Button("删除", role: .destructive) {
+            Button("common.delete", role: .destructive) {
                 onDelete?(account)
                 pendingDelete = nil
             }
-            Button("取消", role: .cancel) {
+            Button("common.cancel", role: .cancel) {
                 pendingDelete = nil
             }
         } message: { account in
-            Text("删除「\(account.name)」后不可恢复，关联的历史账单仍会保留该账户信息。")
+            Text(NumiLocalized.string( "record.deleted.msg"))
         }
         .onChange(of: accounts) { _, newValue in
             localAccounts = newValue
@@ -135,13 +135,7 @@ public struct AccountManagementView: View {
     }
 
     private var visibleRows: [Account] {
-        localAccounts.sorted { lhs, rhs in
-            if lhs.isHidden == rhs.isHidden {
-                lhs.name < rhs.name
-            } else {
-                !lhs.isHidden && rhs.isHidden
-            }
-        }
+        localAccounts.sortedForLocalizedDisplay()
     }
 
     private var totalAssets: Money {
@@ -165,12 +159,12 @@ public struct AccountManagementView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: NumiSpacing.s1) {
-                    Text(account.name)
+                    Text(account.localizedDisplayName)
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
 
                     if isAccountHidden(account.id) {
-                        Text("已隐藏")
+                        Text("account.hidden")
                             .font(NumiFont.caption)
                             .foregroundStyle(NumiColor.textTertiary)
                             .padding(.horizontal, 6)
@@ -183,8 +177,9 @@ public struct AccountManagementView: View {
                 HStack(spacing: NumiSpacing.s1) {
                     Text(typeName(for: account.type))
                     Text("·")
-                    Text(account.isIncludedInAssets ? "计入资产" : "不计入资产")
-                        .accessibilityIdentifier("account.includedStatus.\(account.name)")
+                    Text(account.isIncludedInAssets ? NumiLocalized.string( "account.count.asset") : NumiLocalized.string( "account.not.count.asset"))
+                        .accessibilityIdentifier("account.includedStatus.\(account.id.uuidString)")
+                        .accessibilityValue(account.isIncludedInAssets ? "included" : "excluded")
                 }
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
@@ -193,7 +188,7 @@ public struct AccountManagementView: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text("余额")
+                Text("account.balance")
                     .font(NumiFont.caption)
                     .foregroundStyle(NumiColor.textTertiary)
                 Text(account.balance.formatted())
@@ -211,7 +206,7 @@ public struct AccountManagementView: View {
             Button {
                 editingDraft = .existing(account)
             } label: {
-                Label("编辑", systemImage: "square.and.pencil")
+                Label("common.edit", systemImage: "square.and.pencil")
             }
 
             Button {
@@ -219,7 +214,7 @@ public struct AccountManagementView: View {
                 setAccountHidden(account, isHidden: nextHidden)
                 onVisibilityChange(account, nextHidden)
             } label: {
-                Label(isAccountHidden(account.id) ? "显示" : "隐藏",
+                Label(isAccountHidden(account.id) ? NumiLocalized.string( "category.show") : NumiLocalized.string( "category.hide"),
                       systemImage: isAccountHidden(account.id) ? "eye" : "eye.slash")
             }
 
@@ -228,10 +223,10 @@ public struct AccountManagementView: View {
             Button(role: .destructive) {
                 pendingDelete = account
             } label: {
-                Label("删除", systemImage: "trash")
+                Label("common.delete", systemImage: "trash")
             }
         }
-        .accessibilityIdentifier("account.\(account.name)")
+        .accessibilityIdentifier("account.\(account.id.uuidString)")
     }
 
     private func transactionsForAccount(_ account: Account) -> [NumiCore.Transaction] {
@@ -293,14 +288,14 @@ public struct AccountManagementView: View {
 
     private func typeName(for type: AccountType) -> String {
         switch type {
-        case .cash: "现金"
-        case .debitCard: "储蓄卡"
-        case .creditCard: "信用卡"
-        case .wechat: "微信"
-        case .alipay: "支付宝"
-        case .virtual: "虚拟账户"
-        case .liability: "负债"
-        case .other: "其他"
+        case .cash: NumiLocalized.string( "account.type.cash")
+        case .debitCard: NumiLocalized.string( "account.type.debitCard")
+        case .creditCard: NumiLocalized.string( "account.type.creditCard")
+        case .wechat: NumiLocalized.string( "account.type.wechat")
+        case .alipay: NumiLocalized.string( "account.type.alipay")
+        case .virtual: NumiLocalized.string( "account.type.virtual")
+        case .liability: NumiLocalized.string( "account.type.liability")
+        case .other: NumiLocalized.string( "account.type.other")
         }
     }
 }
@@ -398,14 +393,14 @@ private struct AccountFormView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("账户名称", text: $draft.name)
+                    TextField("account.name", text: $draft.name)
                         #if os(iOS)
                         .textInputAutocapitalization(.never)
                         #endif
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("input.accountName")
 
-                    Picker("账户类型", selection: $draft.type) {
+                    Picker("account.type", selection: $draft.type) {
                         ForEach(accountTypes, id: \.self) { type in
                             Label(typeName(for: type), systemImage: iconName(for: type))
                                 .tag(type)
@@ -413,11 +408,11 @@ private struct AccountFormView: View {
                     }
                     .accessibilityIdentifier("picker.accountType")
                 } header: {
-                    Text("账户信息")
+                    Text("account.info")
                 }
 
                 Section {
-                    TextField("当前余额", text: $draft.balanceText)
+                    TextField("account.current.balance", text: $draft.balanceText)
                         #if os(iOS)
                         .keyboardType(.decimalPad)
                         #endif
@@ -425,35 +420,35 @@ private struct AccountFormView: View {
                         .accessibilityIdentifier("input.accountBalance")
 
                     toggleRow(
-                        title: "计入总资产",
-                        subtitle: "关闭后不参与总资产汇总",
+                        title: NumiLocalized.string( "account.count.total"),
+                        subtitle: NumiLocalized.string( "account.info.desc"),
                         isOn: $draft.isIncludedInAssets,
                         accessibilityIdentifier: "toggle.accountIncludedInAssets"
                     )
 
                     toggleRow(
-                        title: "隐藏账户",
-                        subtitle: "隐藏后不出现在记账页账户选择器",
+                        title: NumiLocalized.string( "account.hide"),
+                        subtitle: NumiLocalized.string( "account.info.desc"),
                         isOn: $draft.isHidden,
                         accessibilityIdentifier: "toggle.accountHidden"
                     )
                 } header: {
-                    Text("余额")
+                    Text("account.balance")
                 } footer: {
-                    Text("调整余额会直接更新账户当前余额；已有账单仍保留在明细中。")
+                    Text("account.balance.adjust.desc")
                 }
             }
             .scrollContentBackground(.hidden)
             .background(NumiColor.surfacePage)
-            .navigationTitle(draft.sourceAccount == nil ? "新增账户" : "编辑账户")
+            .navigationTitle(draft.sourceAccount == nil ? Text("account.add") : Text("account.edit"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
+                    Button("common.cancel") {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
+                    Button("common.save") {
                         onSave(draft)
                     }
                     .disabled(!canSave)
@@ -514,14 +509,14 @@ private struct AccountFormView: View {
 
     private func typeName(for type: AccountType) -> String {
         switch type {
-        case .cash: "现金"
-        case .debitCard: "储蓄卡"
-        case .creditCard: "信用卡"
-        case .wechat: "微信"
-        case .alipay: "支付宝"
-        case .virtual: "虚拟账户"
-        case .liability: "负债"
-        case .other: "其他"
+        case .cash: NumiLocalized.string( "account.type.cash")
+        case .debitCard: NumiLocalized.string( "account.type.debitCard")
+        case .creditCard: NumiLocalized.string( "account.type.creditCard")
+        case .wechat: NumiLocalized.string( "account.type.wechat")
+        case .alipay: NumiLocalized.string( "account.type.alipay")
+        case .virtual: NumiLocalized.string( "account.type.virtual")
+        case .liability: NumiLocalized.string( "account.type.liability")
+        case .other: NumiLocalized.string( "account.type.other")
         }
     }
 }
@@ -605,7 +600,7 @@ struct AccountDetailView: View {
                             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(account.name)
+                            Text(account.localizedDisplayName)
                                 .font(NumiFont.title)
                                 .foregroundStyle(NumiColor.textPrimary)
                             Text(typeName)
@@ -615,7 +610,7 @@ struct AccountDetailView: View {
                     }
 
                     VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                        Text("当前余额")
+                        Text("account.current.balance")
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
                         Text(account.balance.formatted())
@@ -628,7 +623,7 @@ struct AccountDetailView: View {
 
                     HStack(spacing: NumiSpacing.s4) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("初始金额")
+                            Text("account.initial.amount")
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
                             Text(initialBalance.formatted())
@@ -640,7 +635,7 @@ struct AccountDetailView: View {
                         Spacer()
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("累计支出")
+                            Text("account.total.expense")
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
                             Text(expenseTotal.formatted())
@@ -652,7 +647,7 @@ struct AccountDetailView: View {
                         Spacer()
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("累计收入")
+                            Text("account.total.income")
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
                             Text(incomeTotal.formatted())
@@ -664,7 +659,7 @@ struct AccountDetailView: View {
 
                     HStack(spacing: NumiSpacing.s4) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("交易笔数")
+                            Text("account.transaction.count")
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
                             Text("\(transactions.count)")
@@ -683,7 +678,7 @@ struct AccountDetailView: View {
                 // 最近交易记录
                 if !transactions.isEmpty {
                     VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                        Text("最近交易")
+                        Text("account.recent.transactions")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(NumiColor.textSecondary)
 
@@ -708,7 +703,7 @@ struct AccountDetailView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.accountDetail")
         .background(NumiColor.surfacePage)
-        .navigationTitle("账户详情")
+        .navigationTitle("account.detail")
         .modifier(LargeTitleNavigationChrome())
     }
 
@@ -725,7 +720,7 @@ struct AccountDetailView: View {
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(category?.name ?? (tx.type == .transfer ? "转账" : "其他"))
+                Text(category?.localizedDisplayName ?? (tx.type == .transfer ? NumiLocalized.string( "record.transfer") : NumiLocalized.string( "other.fallback")))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
                 HStack(spacing: NumiSpacing.s1) {
@@ -748,7 +743,7 @@ struct AccountDetailView: View {
                     .foregroundStyle(NumiColor.textPrimary)
                     .monospacedDigit()
                 if let balance {
-                    Text("余额 \(balance.formatted())")
+                    Text("\(NumiLocalized.string( "account.balance")) \(balance.formatted())")
                         .font(NumiFont.caption)
                         .foregroundStyle(NumiColor.textTertiary)
                         .monospacedDigit()
@@ -774,21 +769,21 @@ struct AccountDetailView: View {
 
     private var typeName: String {
         switch account.type {
-        case .cash: "现金"
-        case .debitCard: "储蓄卡"
-        case .creditCard: "信用卡"
-        case .wechat: "微信"
-        case .alipay: "支付宝"
-        case .virtual: "虚拟账户"
-        case .liability: "负债"
-        case .other: "其他"
+        case .cash: NumiLocalized.string( "account.type.cash")
+        case .debitCard: NumiLocalized.string( "account.type.debitCard")
+        case .creditCard: NumiLocalized.string( "account.type.creditCard")
+        case .wechat: NumiLocalized.string( "account.type.wechat")
+        case .alipay: NumiLocalized.string( "account.type.alipay")
+        case .virtual: NumiLocalized.string( "account.type.virtual")
+        case .liability: NumiLocalized.string( "account.type.liability")
+        case .other: NumiLocalized.string( "account.type.other")
         }
     }
 
     private var dateFormatter: DateFormatter {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_CN")
-        f.dateFormat = "M月d日 HH:mm"
+        f.locale = NumiLocalized.currentLocale
+        f.setLocalizedDateFormatFromTemplate("MMMdjm")
         return f
     }
 }

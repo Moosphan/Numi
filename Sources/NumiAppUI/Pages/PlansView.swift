@@ -99,7 +99,7 @@ public struct PlansView: View {
             .padding(.bottom, 96)
         }
         .background(NumiColor.surfacePage)
-        .navigationTitle("计划")
+        .navigationTitle("tab.plans")
         .modifier(LargeTitleNavigationChrome())
         .navigationDestination(item: $selectedSubscription) { sub in
             SubscriptionDetailView(
@@ -137,17 +137,17 @@ public struct PlansView: View {
             )
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 Menu {
                     Button {
                         showAddSubscription = true
                     } label: {
-                        Label("添加订阅", systemImage: "repeat")
+                        Label("subscription.add", systemImage: "repeat")
                     }
                     Button {
                         showAddInstallment = true
                     } label: {
-                        Label("添加分期", systemImage: "creditcard")
+                        Label("installment.add", systemImage: "creditcard")
                     }
                 } label: {
                     Image(systemName: "plus")
@@ -211,8 +211,8 @@ public struct PlansView: View {
     private var budgetOverviewSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
             PlanSectionHeader(
-                title: "预算总览",
-                trailingText: secondaryBudgets.isEmpty ? "暂无其他预算" : "\(secondaryBudgets.count) 个预算",
+                title: NumiLocalized.string( "budget.title"),
+                trailingText: secondaryBudgets.isEmpty ? NumiLocalized.string("budget.no.other") : NumiLocalized.string("budget.count", secondaryBudgets.count),
                 accessibilityIdentifier: "plans.section.budgetOverview"
             )
 
@@ -227,16 +227,16 @@ public struct PlansView: View {
     private var subscriptionsSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
             PlanSectionHeader(
-                title: "订阅",
-                trailingText: subscriptions.isEmpty ? "暂无订阅" : "\(subscriptions.count) 个订阅",
+                title: NumiLocalized.string( "subscription.title"),
+                trailingText: subscriptions.isEmpty ? NumiLocalized.string("subscription.no") : NumiLocalized.string("subscription.count", subscriptions.count),
                 accessibilityIdentifier: "plans.section.subscriptions"
             )
 
             if subscriptions.isEmpty {
                 PlanEmptyStateCard(
                     iconName: "repeat",
-                    title: "当前没有订阅项目",
-                    message: "新增后会在这里显示下一次扣费时间与金额。",
+                    title: NumiLocalized.string( "subscription.empty.title"),
+                    message: NumiLocalized.string( "subscription.add.desc"),
                     accessibilityIdentifier: "plans.empty.subscriptions"
                 )
             } else {
@@ -271,10 +271,10 @@ public struct PlansView: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("下次扣费")
+                    Text("subscription.next.billing")
                         .font(NumiFont.caption)
                         .foregroundStyle(NumiColor.textTertiary)
-                    Text(sub.nextBillingDate.formatted(.dateTime.month().day()))
+                    Text(sub.nextBillingDate.numiFormatted(.dateTime.month().day()))
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textPrimary)
                 }
@@ -289,19 +289,21 @@ public struct PlansView: View {
             Button {
                 selectedSubscription = sub
             } label: {
-                Label("查看详情", systemImage: "info.circle")
+                Label("subscription.detail", systemImage: "info.circle")
             }
 
             Button {
                 editingSubscription = sub
             } label: {
-                Label("编辑", systemImage: "square.and.pencil")
+                Label("common.edit", systemImage: "square.and.pencil")
             }
 
             Button {
+#if canImport(UIKit)
                 UIPasteboard.general.string = shareText(sub)
+#endif
             } label: {
-                Label("分享", systemImage: "square.and.arrow.up")
+                Label("common.share", systemImage: "square.and.arrow.up")
             }
 
             Divider()
@@ -309,42 +311,42 @@ public struct PlansView: View {
             Button(role: .destructive) {
                 pendingDeleteSubscription = sub
             } label: {
-                Label("删除", systemImage: "trash")
+                Label("common.delete", systemImage: "trash")
             }
         }
         .confirmationDialog(
-            "删除「\(sub.name)」？",
+            NumiLocalized.string("subscription.delete.confirm", sub.name),
             isPresented: Binding(
                 get: { pendingDeleteSubscription?.id == sub.id },
                 set: { if !$0 { pendingDeleteSubscription = nil } }
             ),
             titleVisibility: .visible
         ) {
-            Button("删除订阅", role: .destructive) {
+            Button("subscription.delete.title", role: .destructive) {
                 onDeleteSubscription(sub.id)
                 pendingDeleteSubscription = nil
             }
-            Button("取消", role: .cancel) {
+            Button("common.cancel", role: .cancel) {
                 pendingDeleteSubscription = nil
             }
         } message: {
-            Text("删除后不可恢复。")
+            Text("subscription.delete.msg")
         }
     }
 
     private var installmentsSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
             PlanSectionHeader(
-                title: "分期进度",
-                trailingText: installmentPlans.isEmpty ? "暂无分期" : "\(installmentPlans.count) 个分期",
+                title: NumiLocalized.string( "installment.title"),
+                trailingText: installmentPlans.isEmpty ? NumiLocalized.string("installment.no") : NumiLocalized.string("installment.count", installmentPlans.count),
                 accessibilityIdentifier: "plans.section.installments"
             )
 
             if installmentPlans.isEmpty {
                 PlanEmptyStateCard(
                     iconName: "creditcard",
-                    title: "当前没有分期项目",
-                    message: "新增后会在这里显示剩余期数与每月应付金额。",
+                    title: NumiLocalized.string( "installment.empty.title"),
+                    message: NumiLocalized.string( "installment.empty.desc"),
                     accessibilityIdentifier: "plans.empty.installments"
                 )
             } else {
@@ -376,7 +378,7 @@ public struct PlansView: View {
                         Text(plan.name)
                             .font(NumiFont.bodyStrong)
                             .foregroundStyle(NumiColor.textPrimary)
-                        Text("每期 \(plan.amountPerPeriod.formatted())")
+                        Text(NumiLocalized.string("installment.per.period", plan.amountPerPeriod.formatted()))
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
                     }
@@ -384,10 +386,10 @@ public struct PlansView: View {
                     Spacer()
 
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text("\(paidCount)/\(plan.periodCount) 期")
+                        Text(NumiLocalized.string("installment.progress.n", paidCount, plan.periodCount))
                             .font(NumiFont.bodyStrong)
                             .foregroundStyle(NumiColor.textPrimary)
-                        Text("剩余 \(plan.periodCount - paidCount) 期")
+                        Text(NumiLocalized.string("installment.remaining", plan.periodCount - paidCount))
                             .font(NumiFont.caption)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -414,19 +416,21 @@ public struct PlansView: View {
             Button {
                 selectedInstallmentPlan = plan
             } label: {
-                Label("查看详情", systemImage: "info.circle")
+                Label("subscription.detail", systemImage: "info.circle")
             }
 
             Button {
                 editingInstallment = plan
             } label: {
-                Label("编辑", systemImage: "square.and.pencil")
+                Label("common.edit", systemImage: "square.and.pencil")
             }
 
             Button {
+#if canImport(UIKit)
                 UIPasteboard.general.string = shareText(plan)
+#endif
             } label: {
-                Label("分享", systemImage: "square.and.arrow.up")
+                Label("common.share", systemImage: "square.and.arrow.up")
             }
 
             Divider()
@@ -434,26 +438,26 @@ public struct PlansView: View {
             Button(role: .destructive) {
                 pendingDeleteInstallment = plan
             } label: {
-                Label("删除", systemImage: "trash")
+                Label("common.delete", systemImage: "trash")
             }
         }
         .confirmationDialog(
-            "删除「\(plan.name)」？",
+            NumiLocalized.string("installment.delete.confirm", plan.name),
             isPresented: Binding(
                 get: { pendingDeleteInstallment?.id == plan.id },
                 set: { if !$0 { pendingDeleteInstallment = nil } }
             ),
             titleVisibility: .visible
         ) {
-            Button("删除分期", role: .destructive) {
+            Button("installment.delete.title", role: .destructive) {
                 onDeleteInstallmentPlan(plan.id)
                 pendingDeleteInstallment = nil
             }
-            Button("取消", role: .cancel) {
+            Button("common.cancel", role: .cancel) {
                 pendingDeleteInstallment = nil
             }
         } message: {
-            Text("删除后不可恢复，所有期次记录将一并删除。")
+            Text("installment.delete.msg")
         }
     }
 
@@ -461,10 +465,10 @@ public struct PlansView: View {
 
     private func shareText(_ sub: Subscription) -> String {
         """
-        【订阅】\(sub.name)
-        金额：\(sub.amount.formatted())
-        周期：\(sub.cycle.displayName)
-        下次扣费：\(sub.nextBillingDate.formatted(.dateTime.year().month().day()))
+        \(NumiLocalized.string( "share.note"))【\(NumiLocalized.string( "subscription.title"))】\(sub.name)
+        \(NumiLocalized.string( "record.amount"))：\(sub.amount.formatted())
+        \(NumiLocalized.string( "subscription.cycle"))：\(sub.cycle.displayName)
+        \(NumiLocalized.string( "subscription.next.billing"))：\(sub.nextBillingDate.numiFormatted(.dateTime.year().month().day()))
         """
     }
 
@@ -472,10 +476,10 @@ public struct PlansView: View {
         let periods = installmentPeriods.filter { $0.planID == plan.id }
         let paid = periods.filter { $0.isPaid }.count
         return """
-        【分期】\(plan.name)
-        总金额：\(plan.totalAmount.formatted())
-        每期：\(plan.amountPerPeriod.formatted())
-        进度：\(paid)/\(plan.periodCount) 期
+        \(NumiLocalized.string( "share.note"))【\(NumiLocalized.string( "installment.title"))】\(plan.name)
+        \(NumiLocalized.string( "installment.total"))：\(plan.totalAmount.formatted())
+        \(NumiLocalized.string("installment.per.period", plan.amountPerPeriod.formatted()))
+        \(NumiLocalized.string("installment.progress.n", paid, plan.periodCount))
         """
     }
 
@@ -605,7 +609,7 @@ private struct BudgetProgressCard: View {
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("编辑\(title)")
+            .accessibilityLabel(NumiLocalized.string( "common.edit") + title)
             .accessibilityIdentifier("action.editBudget.\(model.period.rawValue)")
         }
     }
@@ -630,7 +634,7 @@ private struct BudgetProgressCard: View {
                         .minimumScaleFactor(0.8)
                         .accessibilityIdentifier("budget.\(model.period.rawValue).amount")
                 }
-                Text("已用 / 预算")
+                Text("budget.used.budget")
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
             }
@@ -678,15 +682,15 @@ private struct BudgetProgressCard: View {
 
     private var title: String {
         switch model.period {
-        case .week: "周预算"
-        case .month: "月预算"
+        case .week: NumiLocalized.string( "budget.weekly")
+        case .month: NumiLocalized.string( "budget.monthly")
         }
     }
 
     private var subtitle: String {
         switch model.period {
-        case .week: "本周支出"
-        case .month: "本月支出"
+        case .week: NumiLocalized.string( "budget.this.week.expense")
+        case .month: NumiLocalized.string( "budget.this.month.expense")
         }
     }
 
@@ -721,14 +725,14 @@ private struct BudgetProgressCard: View {
     }
 
     private var remainingLabel: String {
-        model.status.isOverBudget ? "已超出" : "剩余"
+        model.status.isOverBudget ? NumiLocalized.string( "budget.exceeded") : NumiLocalized.string( "budget.remaining")
     }
 
     private var progressSummary: String {
         if model.status.isOverBudget {
-            return "超出 \(overBudgetAmount.formatted())"
+            return NumiLocalized.string("budget.exceeded.amount", overBudgetAmount.formatted())
         }
-        return "已用 \(usedPercent)%"
+        return NumiLocalized.string("budget.used.percent", usedPercent)
     }
 
     private var usedPercent: Int {
@@ -739,9 +743,9 @@ private struct BudgetProgressCard: View {
 
     private var stateLabel: String {
         if !model.isEnabled {
-            return "已关闭"
+            return NumiLocalized.string( "budget.disabled")
         }
-        return model.status.isOverBudget ? "超支" : "正常"
+        return model.status.isOverBudget ? NumiLocalized.string( "budget.over") : NumiLocalized.string( "budget.normal")
     }
 
     private var statusBadge: some View {
@@ -776,7 +780,7 @@ private struct PlanEmptyStateCard: View {
     let iconName: String
     let title: String
     let message: String
-    var accessibilityIdentifier: String?
+    let accessibilityIdentifier: String
 
     var body: some View {
         HStack(alignment: .top, spacing: NumiSpacing.s3) {
@@ -807,7 +811,7 @@ private struct PlanEmptyStateCard: View {
                 .stroke(NumiColor.textPrimary.opacity(0.04), lineWidth: 1)
         }
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(accessibilityIdentifier ?? title)
+        .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
 
@@ -853,7 +857,7 @@ private struct BudgetFormView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("预算金额", text: $draft.amountText)
+                    TextField("budget.amount", text: $draft.amountText)
                         #if os(iOS)
                         .keyboardType(.decimalPad)
                         #endif
@@ -865,13 +869,13 @@ private struct BudgetFormView: View {
                     } label: {
                         HStack(spacing: NumiSpacing.s3) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("启用预算")
-                                Text("关闭后仍保留金额，计划页不计入提醒")
+                                Text("budget.enable")
+                                Text("budget.enable.desc")
                                     .font(NumiFont.footnote)
                                     .foregroundStyle(NumiColor.textTertiary)
                             }
                             Spacer()
-                            Toggle("启用预算", isOn: $draft.isEnabled)
+                            Toggle(NumiLocalized.string( "budget.enable"), isOn: $draft.isEnabled)
                                 .labelsHidden()
                                 .allowsHitTesting(false)
                         }
@@ -882,18 +886,18 @@ private struct BudgetFormView: View {
                 } header: {
                     Text(title)
                 } footer: {
-                    Text("预算仅保存在本机，按自然周和自然月统计支出。")
+                    Text("budget.local.desc")
                 }
             }
-            .navigationTitle("编辑预算")
+            .navigationTitle("budget.edit")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
+                    Button("common.cancel") {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
+                    Button("common.save") {
                         onSave(draft)
                     }
                     .disabled(!canSave)
@@ -905,8 +909,8 @@ private struct BudgetFormView: View {
 
     private var title: String {
         switch draft.period {
-        case .week: "周预算"
-        case .month: "月预算"
+        case .week: NumiLocalized.string( "budget.weekly")
+        case .month: NumiLocalized.string( "budget.monthly")
         }
     }
 
@@ -955,41 +959,41 @@ private struct SubscriptionFormView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("订阅名称", text: $name)
+                    TextField("subscription.name", text: $name)
                         .accessibilityIdentifier("input.subscriptionName")
-                    TextField("每期金额", text: $amountText)
+                    TextField("subscription.amount", text: $amountText)
                         #if os(iOS)
                         .keyboardType(.decimalPad)
                         #endif
                         .monospacedDigit()
                         .accessibilityIdentifier("input.subscriptionAmount")
                 } header: {
-                    Text("订阅信息")
+                    Text("subscription.info")
                 }
 
                 Section {
-                    Picker("扣费周期", selection: $cycle) {
+                    Picker("subscription.cycle", selection: $cycle) {
                         ForEach(SubscriptionCycle.allCases, id: \.self) { c in
                             Text(c.displayName).tag(c)
                         }
                     }
                     .accessibilityIdentifier("picker.subscriptionCycle")
 
-                    DatePicker("下次扣费", selection: $nextBillingDate, displayedComponents: .date)
+                    DatePicker("subscription.next.billing", selection: $nextBillingDate, displayedComponents: .date)
                         .accessibilityIdentifier("picker.subscriptionNextDate")
                 } header: {
-                    Text("扣费设置")
+                    Text("subscription.billing.setting")
                 } footer: {
-                    Text("订阅记录保存在本地，到期后可手动记录为支出。")
+                    Text("subscription.local.desc")
                 }
             }
-            .navigationTitle(existing == nil ? "添加订阅" : "编辑订阅")
+            .navigationTitle(existing == nil ? Text("subscription.add") : Text("subscription.edit"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button("common.cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(existing == nil ? "添加" : "保存") {
+                    Button(existing == nil ? NumiLocalized.string( "common.add") : NumiLocalized.string( "common.save")) {
                         guard let amount = try? Money(decimalString: amountText, currencyCode: "CNY") else { return }
                         let sub = Subscription(
                             id: existing?.id ?? UUID(),
@@ -1064,45 +1068,45 @@ private struct InstallmentFormView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("分期名称", text: $name)
+                    TextField("installment.name", text: $name)
                         .accessibilityIdentifier("input.installmentName")
-                    TextField("总金额", text: $totalAmountText)
+                    TextField("installment.total", text: $totalAmountText)
                         #if os(iOS)
                         .keyboardType(.decimalPad)
                         #endif
                         .monospacedDigit()
                         .accessibilityIdentifier("input.installmentTotal")
                 } header: {
-                    Text("分期信息")
+                    Text("installment.info")
                 }
 
                 Section {
-                    TextField("期数", text: $periodCountText)
+                    TextField("installment.periods", text: $periodCountText)
                         #if os(iOS)
                         .keyboardType(.numberPad)
                         #endif
                         .accessibilityIdentifier("input.installmentPeriods")
-                    TextField("每期手续费", text: $feePerPeriodText)
+                    TextField("installment.fee", text: $feePerPeriodText)
                         #if os(iOS)
                         .keyboardType(.decimalPad)
                         #endif
                         .monospacedDigit()
                         .accessibilityIdentifier("input.installmentFee")
-                    DatePicker("首期日期", selection: $firstPaymentDate, displayedComponents: .date)
+                    DatePicker("installment.first.date", selection: $firstPaymentDate, displayedComponents: .date)
                         .accessibilityIdentifier("picker.installmentFirstDate")
                 } header: {
-                    Text("分期设置")
+                    Text("installment.setting")
                 } footer: {
-                    Text("每期应付 = 总金额 ÷ 期数 + 手续费。系统会自动生成每期记录。")
+                    Text("installment.calc.desc")
                 }
             }
-            .navigationTitle(existing == nil ? "添加分期" : "编辑分期")
+            .navigationTitle(existing == nil ? Text("installment.add") : Text("installment.edit"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button("common.cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(existing == nil ? "添加" : "保存") {
+                    Button(existing == nil ? NumiLocalized.string( "common.add") : NumiLocalized.string( "common.save")) {
                         guard let total = try? Money(decimalString: totalAmountText, currencyCode: "CNY"),
                               let count = Int(periodCountText), count > 0 else { return }
                         let fee = (try? Money(decimalString: feePerPeriodText.isEmpty ? "0" : feePerPeriodText, currencyCode: "CNY")) ?? .zero(currencyCode: "CNY")
@@ -1172,7 +1176,7 @@ private struct SubscriptionDetailView: View {
                             Text(subscription.name)
                                 .font(NumiFont.title)
                                 .foregroundStyle(NumiColor.textPrimary)
-                            Text(subscription.isEnabled ? "启用中" : "已暂停")
+                            Text(subscription.isEnabled ? NumiLocalized.string( "budget.normal") : NumiLocalized.string( "budget.disabled"))
                                 .font(NumiFont.bodySmall)
                                 .foregroundStyle(subscription.isEnabled ? NumiColor.positiveText : NumiColor.textTertiary)
                         }
@@ -1180,18 +1184,18 @@ private struct SubscriptionDetailView: View {
 
                     Divider()
 
-                    detailRow("每期金额", value: subscription.amount.formatted())
-                    detailRow("扣费周期", value: subscription.cycle.displayName)
-                    detailRow("下次扣费", value: subscription.nextBillingDate.formatted(.dateTime.year().month().day()))
+                    detailRow(NumiLocalized.string( "subscription.amount"), value: subscription.amount.formatted())
+                    detailRow(NumiLocalized.string( "subscription.cycle"), value: subscription.cycle.displayName)
+                    detailRow(NumiLocalized.string( "subscription.next.billing"), value: subscription.nextBillingDate.numiFormatted(.dateTime.year().month().day()))
 
                     if let cat = categories.first(where: { $0.id == subscription.categoryID }) {
-                        detailRow("分类", value: cat.name)
+                        detailRow(NumiLocalized.string( "record.category"), value: cat.localizedDisplayName)
                     }
                     if let acc = accounts.first(where: { $0.id == subscription.accountID }) {
-                        detailRow("扣费账户", value: acc.name)
+                        detailRow(NumiLocalized.string( "record.account"), value: acc.localizedDisplayName)
                     }
                     if !subscription.note.isEmpty {
-                        detailRow("备注", value: subscription.note)
+                        detailRow(NumiLocalized.string( "record.note"), value: subscription.note)
                     }
                 }
                 .padding(NumiSpacing.s5)
@@ -1205,7 +1209,7 @@ private struct SubscriptionDetailView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text("删除订阅")
+                        Text("subscription.delete.title")
                             .font(NumiFont.bodyStrong)
                             .foregroundStyle(NumiColor.negativeText)
                         Spacer()
@@ -1222,16 +1226,16 @@ private struct SubscriptionDetailView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.subscriptionDetail")
         .background(NumiColor.surfacePage)
-        .navigationTitle("订阅详情")
-        .confirmationDialog("删除「\(subscription.name)」？", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-            Button("删除订阅", role: .destructive) { onDelete() }
-            Button("取消", role: .cancel) {}
+        .navigationTitle("subscription.detail")
+        .confirmationDialog(NumiLocalized.string("subscription.delete.confirm", subscription.name), isPresented: $showDeleteConfirm, titleVisibility: .visible) {
+            Button("subscription.delete.title", role: .destructive) { onDelete() }
+            Button("common.cancel", role: .cancel) {}
         } message: {
-            Text("删除后不可恢复。")
+            Text("subscription.delete.msg")
         }
         .modifier(LargeTitleNavigationChrome())
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 HStack(spacing: NumiSpacing.s3) {
                     Button {
                         onEdit()
@@ -1253,10 +1257,10 @@ private struct SubscriptionDetailView: View {
 
     private var shareText: String {
         """
-        【订阅】\(subscription.name)
-        金额：\(subscription.amount.formatted())
-        周期：\(subscription.cycle.displayName)
-        下次扣费：\(subscription.nextBillingDate.formatted(.dateTime.year().month().day()))
+        【\(NumiLocalized.string( "subscription.title"))】\(subscription.name)
+        \(NumiLocalized.string( "record.amount"))：\(subscription.amount.formatted())
+        \(NumiLocalized.string( "subscription.cycle"))：\(subscription.cycle.displayName)
+        \(NumiLocalized.string( "subscription.next.billing"))：\(subscription.nextBillingDate.numiFormatted(.dateTime.year().month().day()))
         """
     }
 
@@ -1310,7 +1314,7 @@ private struct InstallmentDetailView: View {
                             Text(plan.name)
                                 .font(NumiFont.title)
                                 .foregroundStyle(NumiColor.textPrimary)
-                            Text("\(paidCount)/\(plan.periodCount) 期")
+                            Text(NumiLocalized.string("installment.progress.n", paidCount, plan.periodCount))
                                 .font(NumiFont.bodySmall)
                                 .foregroundStyle(NumiColor.textTertiary)
                         }
@@ -1318,25 +1322,25 @@ private struct InstallmentDetailView: View {
 
                     Divider()
 
-                    detailRow("总金额", value: plan.totalAmount.formatted())
-                    detailRow("每期金额", value: plan.amountPerPeriod.formatted())
-                    detailRow("期数", value: "\(plan.periodCount) 期")
+                    detailRow(NumiLocalized.string( "installment.total"), value: plan.totalAmount.formatted())
+                    detailRow(NumiLocalized.string( "subscription.amount"), value: plan.amountPerPeriod.formatted())
+                    detailRow(NumiLocalized.string("installment.periods"), value: NumiLocalized.string("installment.progress.n", plan.periodCount, plan.periodCount))
                     if plan.feePerPeriod.minorUnits > 0 {
-                        detailRow("每期手续费", value: plan.feePerPeriod.formatted())
+                        detailRow(NumiLocalized.string( "installment.fee"), value: plan.feePerPeriod.formatted())
                     }
-                    detailRow("首期日期", value: plan.firstPaymentDate.formatted(.dateTime.year().month().day()))
+                    detailRow(NumiLocalized.string( "installment.first.date"), value: plan.firstPaymentDate.numiFormatted(.dateTime.year().month().day()))
 
                     if let cat = categories.first(where: { $0.id == plan.categoryID }) {
-                        detailRow("分类", value: cat.name)
+                        detailRow(NumiLocalized.string( "record.category"), value: cat.localizedDisplayName)
                     }
                     if !plan.note.isEmpty {
-                        detailRow("备注", value: plan.note)
+                        detailRow(NumiLocalized.string( "record.note"), value: plan.note)
                     }
 
                     // Progress
                     let progress = plan.periodCount > 0 ? CGFloat(paidCount) / CGFloat(plan.periodCount) : 0
                     VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                        Text("还款进度")
+                        Text("installment.progress")
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
                         GeometryReader { proxy in
@@ -1356,24 +1360,24 @@ private struct InstallmentDetailView: View {
 
                 // Periods list
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text("分期明细")
+                    Text("installment.details")
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
 
                     VStack(spacing: 0) {
                         ForEach(Array(sortedPeriods.enumerated()), id: \.element.id) { index, period in
                             HStack(spacing: NumiSpacing.s3) {
-                                Text("第 \(period.periodIndex + 1) 期")
+                                Text(NumiLocalized.string("installment.period.n", period.periodIndex + 1))
                                     .font(NumiFont.bodyStrong)
                                     .foregroundStyle(period.isPaid ? NumiColor.textTertiary : NumiColor.textPrimary)
 
                                 Spacer()
 
-                                Text(period.dueDate.formatted(.dateTime.year().month().day()))
+                                Text(period.dueDate.numiFormatted(.dateTime.year().month().day()))
                                     .font(NumiFont.bodySmall)
                                     .foregroundStyle(NumiColor.textTertiary)
 
-                                Text(period.isPaid ? "已还" : "待还")
+                                Text(period.isPaid ? NumiLocalized.string( "installment.paid") : NumiLocalized.string( "installment.pending"))
                                     .font(NumiFont.caption)
                                     .foregroundStyle(period.isPaid ? NumiColor.positiveText : NumiColor.textTertiary)
                                     .padding(.horizontal, 8)
@@ -1400,7 +1404,7 @@ private struct InstallmentDetailView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text("删除分期")
+                        Text("installment.delete.title")
                             .font(NumiFont.bodyStrong)
                             .foregroundStyle(NumiColor.negativeText)
                         Spacer()
@@ -1417,16 +1421,16 @@ private struct InstallmentDetailView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.installmentDetail")
         .background(NumiColor.surfacePage)
-        .navigationTitle("分期详情")
+        .navigationTitle("installment.detail")
         .modifier(LargeTitleNavigationChrome())
-        .confirmationDialog("删除「\(plan.name)」？", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-            Button("删除分期", role: .destructive) { onDelete() }
-            Button("取消", role: .cancel) {}
+        .confirmationDialog(NumiLocalized.string("installment.delete.confirm", plan.name), isPresented: $showDeleteConfirm, titleVisibility: .visible) {
+            Button("installment.delete.title", role: .destructive) { onDelete() }
+            Button("common.cancel", role: .cancel) {}
         } message: {
-            Text("删除后不可恢复，所有期次记录将一并删除。")
+            Text("installment.delete.msg")
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 HStack(spacing: NumiSpacing.s3) {
                     Button {
                         onEdit()
@@ -1448,10 +1452,10 @@ private struct InstallmentDetailView: View {
 
     private var shareText: String {
         """
-        【分期】\(plan.name)
-        总金额：\(plan.totalAmount.formatted())
-        每期：\(plan.amountPerPeriod.formatted())
-        进度：\(paidCount)/\(plan.periodCount) 期
+        【\(NumiLocalized.string( "installment.title"))】\(plan.name)
+        \(NumiLocalized.string( "installment.total"))：\(plan.totalAmount.formatted())
+        \(NumiLocalized.string("installment.per.period", plan.amountPerPeriod.formatted()))
+        \(NumiLocalized.string("installment.progress.n", paidCount, plan.periodCount))
         """
     }
 

@@ -44,6 +44,19 @@ final class DeepSeekTransactionParserTests: XCTestCase {
         XCTAssertEqual(result.accountName, "支付宝")
     }
 
+    func testParseTransferWithTargetAccount() async throws {
+        MockURLProtocol.mockResponse = (makeDSJSON("""
+        {"type":"transfer","amount":200,"category":"转账","account":"现金","targetAccount":"银行卡","date":"2026-06-20","note":"转到卡里"}
+        """), HTTPURLResponse(url: URL(string: "https://test")!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+
+        let result = try await parser.parseTransaction("现金转账200到银行卡", categories: ["转账"], accounts: ["现金", "银行卡"])
+
+        XCTAssertEqual(result.type, .transfer)
+        XCTAssertEqual(result.amount, 200)
+        XCTAssertEqual(result.accountName, "现金")
+        XCTAssertEqual(result.targetAccountName, "银行卡")
+    }
+
     func testHTTPError401() async {
         MockURLProtocol.mockResponse = (Data(), HTTPURLResponse(url: URL(string: "https://test")!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
 

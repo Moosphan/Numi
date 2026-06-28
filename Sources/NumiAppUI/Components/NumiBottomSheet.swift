@@ -1,4 +1,5 @@
 import SwiftUI
+import NumiCore
 
 public enum NumiSheetContentMode {
     case fit
@@ -26,7 +27,7 @@ public struct NumiBottomSheet<Content: View>: View {
     private let dismissAccessibilitySuffix: String
     private let titleAccessibilitySuffix: String
     private let confirmAccessibilitySuffix: String
-    private let dismissTitle: String
+    private let dismissTitle: String?
     private let confirmTitle: String?
     private let onDismiss: () -> Void
     private let onConfirm: (() -> Void)?
@@ -43,7 +44,7 @@ public struct NumiBottomSheet<Content: View>: View {
         dismissAccessibilitySuffix: String = "close",
         titleAccessibilitySuffix: String = "title",
         confirmAccessibilitySuffix: String = "confirm",
-        dismissTitle: String = "关闭",
+        dismissTitle: String? = nil,
         confirmTitle: String? = nil,
         onDismiss: @escaping () -> Void,
         onConfirm: (() -> Void)? = nil,
@@ -75,7 +76,7 @@ public struct NumiBottomSheet<Content: View>: View {
             grabberBottomPadding: grabberBottomPadding,
             headerBottomPadding: headerBottomPadding,
             accessibilityPrefix: accessibilityPrefix,
-            dismissTitle: dismissTitle,
+            dismissTitle: dismissTitle ?? NumiLocalized.string("common.close"),
             dismissAccessibilityID: accessibilityID(dismissAccessibilitySuffix),
             onDismiss: onDismiss,
             confirmTitle: confirmTitle,

@@ -5,12 +5,29 @@ import CryptoKit
 
 public enum BackupResult {
     case success(URL)
-    case failure(String)
+    case failure(BackupOperationFailure)
 }
 
 public enum RestoreResult {
     case success
-    case failure(String)
+    case failure(BackupOperationFailure)
+}
+
+public enum BackupOperationFailure: Equatable {
+    case createBackup(String)
+    case restoreBackup
+    case export(String)
+
+    public var displayMessage: String {
+        switch self {
+        case .createBackup(let description):
+            return NumiLocalized.string("error.backup.fail", description)
+        case .restoreBackup:
+            return NumiLocalized.string("error.backup.restore.fail")
+        case .export(let description):
+            return NumiLocalized.string("error.export.fail", description)
+        }
+    }
 }
 
 // MARK: - Backup Service
@@ -32,7 +49,7 @@ public final class BackupService: Sendable {
 
             return .success(url)
         } catch {
-            return .failure("备份失败：\(error.localizedDescription)")
+            return .failure(.createBackup(error.localizedDescription))
         }
     }
 
@@ -43,7 +60,7 @@ public final class BackupService: Sendable {
             _ = try decrypt(data: encrypted, password: password)
             return .success
         } catch {
-            return .failure("恢复失败：密码错误或文件损坏")
+            return .failure(.restoreBackup)
         }
     }
 
@@ -60,7 +77,7 @@ public final class BackupService: Sendable {
 
             return .success(url)
         } catch {
-            return .failure("导出失败：\(error.localizedDescription)")
+            return .failure(.export(error.localizedDescription))
         }
     }
 
@@ -88,7 +105,7 @@ public final class BackupService: Sendable {
             try csv.write(to: url, atomically: true, encoding: .utf8)
             return .success(url)
         } catch {
-            return .failure("导出失败：\(error.localizedDescription)")
+            return .failure(.export(error.localizedDescription))
         }
     }
 
@@ -150,8 +167,8 @@ public enum BackupError: Error, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .encryptionFailed: return "加密失败"
-        case .decryptionFailed: return "解密失败"
+        case .encryptionFailed: return NumiLocalized.string( "error.encryption.fail")
+        case .decryptionFailed: return NumiLocalized.string( "error.decryption.fail")
         }
     }
 }

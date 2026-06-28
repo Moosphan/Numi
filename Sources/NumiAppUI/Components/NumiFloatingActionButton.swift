@@ -1,11 +1,12 @@
 import SwiftUI
+import NumiCore
 
 public struct NumiFloatingActionButton: View {
-    private let title: String
+    private let title: String?
     private let systemImage: String
     private let action: () -> Void
 
-    public init(title: String = "记一笔", systemImage: String = "pencil", action: @escaping () -> Void) {
+    public init(title: String? = nil, systemImage: String = "pencil", action: @escaping () -> Void) {
         self.title = title
         self.systemImage = systemImage
         self.action = action
@@ -26,6 +27,6 @@ public struct NumiFloatingActionButton: View {
             .shadow(color: NumiColor.textPrimary.opacity(0.08), radius: 9, y: 4)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(title)
+        .accessibilityLabel(title ?? NumiLocalized.string("record.new"))
     }
 }

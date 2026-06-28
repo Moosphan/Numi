@@ -40,7 +40,7 @@ public struct DataManagementView: View {
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("scroll.dataManagement")
             .background(NumiColor.surfacePage)
-            .navigationTitle("导入与导出")
+            .navigationTitle("io.title")
             .modifier(LargeTitleNavigationChrome())
 
             // Toast
@@ -55,9 +55,11 @@ public struct DataManagementView: View {
             }
         }
         .sheet(item: $shareURL) { item in
+#if canImport(UIKit)
             NumiShareSheet(items: [item.url]) {
-                showToastMessage("已保存")
+                showToastMessage(NumiLocalized.string( "io.saved"))
             }
+#endif
         }
     }
 
@@ -65,7 +67,7 @@ public struct DataManagementView: View {
 
     private var exportSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("导出数据")
+            Text("io.export")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -76,8 +78,8 @@ public struct DataManagementView: View {
                 } label: {
                     exportRow(
                         icon: "doc.text",
-                        title: "导出完整数据 (JSON)",
-                        subtitle: "包含账户、分类、交易、预算、订阅等所有数据"
+                        title: NumiLocalized.string( "io.export.json"),
+                        subtitle: NumiLocalized.string( "io.export.json.desc")
                     )
                 }
                 .buttonStyle(.plain)
@@ -90,8 +92,8 @@ public struct DataManagementView: View {
                 } label: {
                     exportRow(
                         icon: "tablecells",
-                        title: "导出交易记录 (CSV)",
-                        subtitle: "仅导出交易记录，可用 Excel 打开"
+                        title: NumiLocalized.string( "io.export.csv"),
+                        subtitle: NumiLocalized.string( "io.export.csv.desc")
                     )
                 }
                 .buttonStyle(.plain)
@@ -106,7 +108,7 @@ public struct DataManagementView: View {
 
     private var importSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("导入数据")
+            Text("io.import")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -117,8 +119,8 @@ public struct DataManagementView: View {
                 } label: {
                     exportRow(
                         icon: "square.and.arrow.down",
-                        title: "从 JSON 导入",
-                        subtitle: "导入之前导出的完整数据备份"
+                        title: NumiLocalized.string( "io.import.json"),
+                        subtitle: NumiLocalized.string( "io.import.json.desc")
                     )
                 }
                 .buttonStyle(.plain)
@@ -133,7 +135,7 @@ public struct DataManagementView: View {
             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
             .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
 
-            Text("导入会覆盖当前数据，建议先导出备份。")
+            Text("io.import.warning")
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
         }
@@ -175,8 +177,8 @@ public struct DataManagementView: View {
         switch result {
         case .success(let url):
             shareURL = ShareableURL(url: url)
-        case .failure(let msg):
-            showToastMessage(msg)
+        case .failure(let error):
+            showToastMessage(error.displayMessage)
         }
     }
 
@@ -186,8 +188,8 @@ public struct DataManagementView: View {
         switch result {
         case .success(let url):
             shareURL = ShareableURL(url: url)
-        case .failure(let msg):
-            showToastMessage(msg)
+        case .failure(let error):
+            showToastMessage(error.displayMessage)
         }
     }
 
@@ -201,12 +203,12 @@ public struct DataManagementView: View {
 
                 let snapshot = try BackupService.shared.importJSON(from: url)
                 try importSnapshot(snapshot)
-                showToastMessage("导入成功，共 \(snapshot.transactions.count) 笔交易")
+                showToastMessage(NumiLocalized.string("io.import.success", snapshot.transactions.count))
             } catch {
-                showToastMessage("导入失败：\(error.localizedDescription)")
+                showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
             }
         case .failure(let error):
-            showToastMessage("选择文件失败：\(error.localizedDescription)")
+            showToastMessage(NumiLocalized.string("io.import.file.fail", error.localizedDescription))
         }
     }
 
@@ -253,7 +255,7 @@ public struct BackupView: View {
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("scroll.backupManagement")
             .background(NumiColor.surfacePage)
-            .navigationTitle("本地备份")
+            .navigationTitle("backup.title")
             .modifier(LargeTitleNavigationChrome())
 
             // Toast
@@ -268,7 +270,9 @@ public struct BackupView: View {
             }
         }
         .sheet(item: $shareURL) { item in
+#if canImport(UIKit)
             NumiShareSheet(items: [item.url])
+#endif
         }
     }
 
@@ -276,7 +280,7 @@ public struct BackupView: View {
 
     private var createBackupSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("创建备份")
+            Text("backup.create")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -290,10 +294,10 @@ public struct BackupView: View {
                     .foregroundStyle(NumiColor.accentPrimary)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("加密备份")
+                    Text("backup.encrypted")
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
-                    Text("使用 AES-GCM 加密，保护数据隐私")
+                    Text("backup.encrypted.desc")
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                 }
@@ -307,13 +311,13 @@ public struct BackupView: View {
 
             // Password input card
             HStack(spacing: NumiSpacing.s3) {
-                Text("备份密码")
+                Text("backup.password")
                     .font(NumiFont.body)
                     .foregroundStyle(NumiColor.textPrimary)
 
                 Spacer()
 
-                SecureField("设置密码", text: $backupPassword)
+                SecureField("backup.set.password", text: $backupPassword)
                     .font(NumiFont.body)
                     .multilineTextAlignment(.trailing)
             }
@@ -331,7 +335,7 @@ public struct BackupView: View {
                 let isEnabled = !backupPassword.isEmpty
                 HStack {
                     Spacer()
-                    Text("创建备份")
+                    Text("backup.create")
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(isEnabled ? .white : NumiColor.textTertiary)
                     Spacer()
@@ -339,7 +343,13 @@ public struct BackupView: View {
                 .padding(.vertical, 14)
                 .background(
                     RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous)
-                        .fill(isEnabled ? NumiColor.accentDeep : Color(.systemGray5))
+                        .fill(isEnabled ? NumiColor.accentDeep : {
+                            #if canImport(UIKit)
+                            Color(uiColor: .systemGray5)
+                            #else
+                            Color.gray.opacity(0.16)
+                            #endif
+                        }())
                 )
                 .animation(.easeInOut(duration: 0.2), value: isEnabled)
             }
@@ -352,7 +362,7 @@ public struct BackupView: View {
 
     private var restoreBackupSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("恢复备份")
+            Text("backup.restore")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -368,10 +378,10 @@ public struct BackupView: View {
                         .foregroundStyle(NumiColor.accentPrimary)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("从备份恢复")
+                        Text("backup.restore.from")
                             .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(NumiColor.textPrimary)
-                        Text("选择 .numibackup 文件并输入密码")
+                        Text("backup.restore.file.hint")
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -396,7 +406,7 @@ public struct BackupView: View {
                 handleRestore(result)
             }
 
-            Text("恢复会覆盖当前所有数据，请确保已备份当前数据。")
+            Text("backup.restore.warning")
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.negativeText)
         }
@@ -412,19 +422,19 @@ public struct BackupView: View {
             shareURL = ShareableURL(url: url)
             // 延迟显示 toast，避免与分享面板冲突
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                showToastMessage("备份创建成功")
+                showToastMessage(NumiLocalized.string( "backup.success"))
             }
-        case .failure(let msg):
-            showToastMessage(msg)
+        case .failure(let error):
+            showToastMessage(error.displayMessage)
         }
     }
 
     private func handleRestore(_ result: Result<URL, Error>) {
         switch result {
         case .success:
-            showToastMessage("请选择备份文件并输入密码")
+            showToastMessage(NumiLocalized.string( "backup.select.file"))
         case .failure(let error):
-            showToastMessage("选择文件失败：\(error.localizedDescription)")
+            showToastMessage(NumiLocalized.string("io.import.file.fail", error.localizedDescription))
         }
     }
 

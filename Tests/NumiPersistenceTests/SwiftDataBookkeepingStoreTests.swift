@@ -4,6 +4,24 @@ import NumiCore
 @testable import NumiPersistence
 
 final class SwiftDataBookkeepingStoreTests: XCTestCase {
+    private let languageKey = "app.language"
+    private var originalLanguage: String?
+
+    override func setUp() {
+        super.setUp()
+        originalLanguage = UserDefaults.standard.string(forKey: languageKey)
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+    }
+
+    override func tearDown() {
+        if let originalLanguage {
+            UserDefaults.standard.set(originalLanguage, forKey: languageKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: languageKey)
+        }
+        super.tearDown()
+    }
+
     @MainActor
     func testShowcaseSeedProfileCreatesRichDemoState() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
@@ -20,6 +38,29 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
         XCTAssertEqual(store.budgetSettings.first { $0.period == .week }?.amount.formatted(), "¥500.00")
         XCTAssertEqual(store.budgetSettings.first { $0.period == .month }?.amount.formatted(), "¥4,800.00")
         XCTAssertFalse(store.visibleTransactions.contains { $0.note.contains("__numi_demo_") })
+    }
+
+    @MainActor
+    func testShowcaseSeedProfileUsesBuiltInDefaultsAcrossLanguages() throws {
+        UserDefaults.standard.set("en", forKey: languageKey)
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+
+        try DemoDataSeeder.seed(profile: .showcase, into: store, resetBeforeSeeding: false)
+
+        XCTAssertEqual(store.defaultLedger()?.name, "Default Ledger")
+        XCTAssertEqual(store.accounts.first(where: { $0.type == .cash })?.name, "Cash")
+        XCTAssertEqual(store.accounts.first(where: { $0.type == .debitCard })?.name, "招商银行卡")
+        XCTAssertNotNil(store.categories.first {
+            $0.kind == .expense &&
+            $0.icon == "acai-bowl" &&
+            $0.name == "Dining"
+        })
+        XCTAssertNotNil(store.categories.first {
+            $0.kind == .income &&
+            $0.icon == "cash" &&
+            $0.name == "Salary"
+        })
+        XCTAssertNotNil(store.visibleTransactions.first { $0.note.contains("咖啡") })
     }
 
     @MainActor
@@ -104,6 +145,46 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
         XCTAssertEqual(store.categories.filter { $0.kind == .expense }.count, 28)
         XCTAssertEqual(store.categories.filter { $0.kind == .income }.count, 19)
         XCTAssertEqual(store.accounts.count, 2)
+        XCTAssertEqual(store.defaultLedger()?.builtInKey, "ledger.default.name")
+        XCTAssertEqual(store.accounts.first { $0.type == .cash }?.builtInKey, "account.default.cash")
+        XCTAssertEqual(
+            store.categories.first { $0.kind == .expense && $0.icon == "acai-bowl" }?.builtInKey,
+            "category.default.expense.dining"
+        )
+    }
+
+    @MainActor
+    func testSeedDefaultsBackfillsBuiltInKeysForLegacySnapshotData() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        let legacySnapshot = BookkeepingSnapshot(
+            ledgers: [Ledger(name: "默认账本", currencyCode: "CNY")],
+            categories: [
+                Category(kind: .expense, name: "餐饮", icon: "acai-bowl", sortOrder: 0),
+                Category(kind: .income, name: "工资", icon: "cash", sortOrder: 0)
+            ],
+            accounts: [
+                Account(name: "现金", type: .cash, balance: .zero(currencyCode: "CNY")),
+                Account(name: "银行卡", type: .debitCard, balance: .zero(currencyCode: "CNY"))
+            ]
+        )
+
+        try store.importSnapshot(legacySnapshot)
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        try store.seedDefaultsIfNeeded()
+
+        XCTAssertEqual(store.defaultLedger()?.builtInKey, "ledger.default.name")
+        XCTAssertEqual(store.defaultLedger()?.localizedDisplayName, "Default Ledger")
+        XCTAssertEqual(store.accounts.first { $0.type == .cash }?.builtInKey, "account.default.cash")
+        XCTAssertEqual(store.accounts.first { $0.type == .cash }?.localizedDisplayName, "Cash")
+        XCTAssertEqual(
+            store.categories.first { $0.kind == .expense && $0.icon == "acai-bowl" }?.builtInKey,
+            "category.default.expense.dining"
+        )
+        XCTAssertEqual(
+            store.categories.first { $0.kind == .expense && $0.icon == "acai-bowl" }?.localizedDisplayName,
+            "Dining"
+        )
     }
 
     @MainActor
@@ -435,6 +516,63 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
         XCTAssertEqual(persisted.balance.formatted(), "-¥300.25")
         XCTAssertFalse(persisted.isIncludedInAssets)
         XCTAssertTrue(persisted.isHidden)
+    }
+
+    @MainActor
+    func testUpdatingDefaultAccountWithBuiltInNameKeepsBuiltInKey() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let cash = try XCTUnwrap(store.accounts.first { $0.type == .cash })
+
+        let updated = try store.updateAccount(
+            id: cash.id,
+            name: "现金",
+            type: .cash,
+            balance: .zero(currencyCode: "CNY"),
+            isIncludedInAssets: true,
+            isHidden: false
+        )
+
+        XCTAssertEqual(updated.builtInKey, "account.default.cash")
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(updated.localizedDisplayName, "Cash")
+    }
+
+    @MainActor
+    func testUpdatingDefaultAccountWithCustomNameClearsBuiltInKey() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let cash = try XCTUnwrap(store.accounts.first { $0.type == .cash })
+
+        let updated = try store.updateAccount(
+            id: cash.id,
+            name: "钱包现金",
+            type: .cash,
+            balance: .zero(currencyCode: "CNY"),
+            isIncludedInAssets: true,
+            isHidden: false
+        )
+
+        XCTAssertNil(updated.builtInKey)
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(updated.localizedDisplayName, "钱包现金")
+    }
+
+    @MainActor
+    func testUpdatingDefaultLedgerWithCustomNameClearsBuiltInKey() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let ledger = try XCTUnwrap(store.defaultLedger())
+
+        let updated = try store.updateLedger(
+            id: ledger.id,
+            name: "家庭总账本",
+            currencyCode: "CNY"
+        )
+
+        XCTAssertNil(updated.builtInKey)
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(updated.localizedDisplayName, "家庭总账本")
     }
 
     @MainActor

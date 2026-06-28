@@ -27,15 +27,19 @@ public struct CategoryManagementView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
-                Picker("分类类型", selection: $selectedKind) {
-                    Text("支出").tag(CategoryKind.expense)
-                    Text("收入").tag(CategoryKind.income)
+                Picker("category.type", selection: $selectedKind) {
+                    Text("record.expense")
+                        .tag(CategoryKind.expense)
+                        .accessibilityIdentifier("categoryKind.expense")
+                    Text("record.income")
+                        .tag(CategoryKind.income)
+                        .accessibilityIdentifier("categoryKind.income")
                 }
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("picker.categoryKind")
 
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text(selectedKind == .expense ? "支出分类" : "收入分类")
+                    Text(selectedKind == .expense ? NumiLocalized.string( "category.expense") : NumiLocalized.string( "category.income"))
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(NumiColor.textSecondary)
 
@@ -51,7 +55,7 @@ public struct CategoryManagementView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                     .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
 
-                    Text("关闭后，该分类不会出现在新增和编辑账单的分类网格中，历史账单仍会保留原分类。")
+                    Text(NumiLocalized.string( "category.hide.desc"))
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                         .padding(.horizontal, NumiSpacing.s1)
@@ -64,11 +68,11 @@ public struct CategoryManagementView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.categoryManagement")
         .background(NumiColor.surfacePage)
-        .navigationTitle("分类管理")
+        .navigationTitle("category.title")
         .modifier(LargeTitleNavigationChrome())
         .tint(NumiColor.accentDeep)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .trailingBar) {
                 Button {
                     showAddSheet = true
                 } label: {
@@ -101,13 +105,7 @@ public struct CategoryManagementView: View {
     private var visibleRows: [NumiCore.Category] {
         localCategories
             .filter { $0.kind == selectedKind }
-            .sorted { lhs, rhs in
-                if lhs.sortOrder == rhs.sortOrder {
-                    lhs.name < rhs.name
-                } else {
-                    lhs.sortOrder < rhs.sortOrder
-                }
-            }
+            .sortedForLocalizedDisplay()
     }
 
     private func categoryRow(_ category: NumiCore.Category) -> some View {
@@ -118,10 +116,10 @@ public struct CategoryManagementView: View {
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(category.name)
+                Text(category.localizedDisplayName)
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
-                Text(isCategoryHidden(category.id) ? "已隐藏" : "记账页显示")
+                Text(isCategoryHidden(category.id) ? NumiLocalized.string( "category.hidden") : NumiLocalized.string( "category.show.in.record"))
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
             }
@@ -129,7 +127,7 @@ public struct CategoryManagementView: View {
             Spacer()
 
             Toggle(
-                "显示分类",
+                NumiLocalized.string( "category.show"),
                 isOn: Binding(
                     get: { !isCategoryHidden(category.id) },
                     set: { isVisible in
@@ -152,7 +150,7 @@ public struct CategoryManagementView: View {
                 setCategoryHidden(category, isHidden: nextHidden)
                 onVisibilityChange(category, nextHidden)
             } label: {
-                Label(isCategoryHidden(category.id) ? "显示" : "隐藏",
+                Label(isCategoryHidden(category.id) ? NumiLocalized.string( "category.show") : NumiLocalized.string( "category.hide"),
                       systemImage: isCategoryHidden(category.id) ? "eye" : "eye.slash")
             }
 
@@ -160,11 +158,11 @@ public struct CategoryManagementView: View {
                 Button(role: .destructive) {
                     onCategoryDelete?(category)
                 } label: {
-                    Label("删除", systemImage: "trash")
+                    Label("common.delete", systemImage: "trash")
                 }
             }
         }
-        .accessibilityIdentifier("toggle.category.\(category.name)")
+        .accessibilityIdentifier("toggle.category.\(category.id.uuidString)")
     }
 
     private func isCategoryHidden(_ categoryID: UUID) -> Bool {
@@ -188,38 +186,43 @@ private struct AddCategorySheet: View {
 
     @State private var name = ""
     @State private var selectedIcon = "money"
-    @State private var selectedCategory = "全部"
+    @State private var selectedCategory = Self.allCategoryKey
 
-    /// 英文分类 key → 中文显示名
-    private static let categoryDisplayName: [String: String] = [
-        "全部": "全部",
-        "food-drink": "美食饮品",
-        "animals": "动物",
-        "vehicles-transport": "交通出行",
-        "entertainment-leisure": "娱乐休闲",
-        "everyday-life": "日常生活",
-        "fashion-style": "时尚穿搭",
-        "health-wellness": "健康医疗",
-        "technology-media": "科技数码",
-        "sports": "运动健身",
-        "hobbies": "兴趣爱好",
-        "nature-outdoors": "自然户外",
-        "places-structures": "建筑地标",
-        "professions": "职业",
-        "work-industry": "办公文教",
-        "space-science": "天文科学",
-        "fantasy-imagination": "奇幻想象",
-        "countries": "国家地区",
-        "flags": "旗帜",
-        "interface-symbols": "界面符号",
-        "historical-figures": "历史人物",
-        "history-culture": "历史文化",
-        "events": "活动事件",
-        "其他": "其他"
-    ]
+    private static let allCategoryKey = "__all__"
+    private static let fallbackCategoryKey = "__other__"
+
+    /// 英文分类 key → 本地化显示名
+    private var categoryDisplayName: [String: String] {
+        [
+            Self.allCategoryKey: NumiLocalized.string( "icon.category.all"),
+            "food-drink": NumiLocalized.string( "icon.category.food-drink"),
+            "animals": NumiLocalized.string( "icon.category.animals"),
+            "vehicles-transport": NumiLocalized.string( "icon.category.vehicles-transport"),
+            "entertainment-leisure": NumiLocalized.string( "icon.category.entertainment-leisure"),
+            "everyday-life": NumiLocalized.string( "icon.category.everyday-life"),
+            "fashion-style": NumiLocalized.string( "icon.category.fashion-style"),
+            "health-wellness": NumiLocalized.string( "icon.category.health-wellness"),
+            "technology-media": NumiLocalized.string( "icon.category.technology-media"),
+            "sports": NumiLocalized.string( "icon.category.sports"),
+            "hobbies": NumiLocalized.string( "icon.category.hobbies"),
+            "nature-outdoors": NumiLocalized.string( "icon.category.nature-outdoors"),
+            "places-structures": NumiLocalized.string( "icon.category.places-structures"),
+            "professions": NumiLocalized.string( "icon.category.professions"),
+            "work-industry": NumiLocalized.string( "icon.category.work-industry"),
+            "space-science": NumiLocalized.string( "icon.category.space-science"),
+            "fantasy-imagination": NumiLocalized.string( "icon.category.fantasy-imagination"),
+            "countries": NumiLocalized.string( "icon.category.countries"),
+            "flags": NumiLocalized.string( "icon.category.flags"),
+            "interface-symbols": NumiLocalized.string( "icon.category.interface-symbols"),
+            "historical-figures": NumiLocalized.string( "icon.category.historical-figures"),
+            "history-culture": NumiLocalized.string( "icon.category.history-culture"),
+            "events": NumiLocalized.string( "icon.category.events"),
+            Self.fallbackCategoryKey: NumiLocalized.string( "other.fallback")
+        ]
+    }
 
     private static let iconCategories: [String: [String]] = {
-        var mapping: [String: [String]] = ["全部": []]
+        var mapping: [String: [String]] = [Self.allCategoryKey: []]
 
         // SPM .copy() 将文件直接放到 bundle 根目录
         if let url = Bundle.module.url(forResource: "manifest", withExtension: "json"),
@@ -227,40 +230,51 @@ private struct AddCategorySheet: View {
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: [String]] {
             for (category, icons) in json {
                 mapping[category] = icons.sorted()
-                mapping["全部", default: []].append(contentsOf: icons)
+                mapping[Self.allCategoryKey, default: []].append(contentsOf: icons)
             }
         }
 
         // 补充未在 manifest 中的图标
         if let iconsURL = Bundle.module.url(forResource: "Icons", withExtension: nil),
            let files = try? FileManager.default.contentsOfDirectory(atPath: iconsURL.path) {
-            let allInManifest = Set(mapping["全部"] ?? [])
+            let allInManifest = Set(mapping[Self.allCategoryKey] ?? [])
             for file in files where file.hasSuffix(".png") {
                 let slug = String(file.dropLast(4))
                 if !allInManifest.contains(slug) {
-                    mapping["其他", default: []].append(slug)
-                    mapping["全部", default: []].append(slug)
+                    mapping[Self.fallbackCategoryKey, default: []].append(slug)
+                    mapping[Self.allCategoryKey, default: []].append(slug)
                 }
             }
         }
 
-        mapping["全部"] = (mapping["全部"] ?? []).sorted()
-        mapping["其他"] = (mapping["其他"] ?? []).sorted()
+        mapping[Self.allCategoryKey] = (mapping[Self.allCategoryKey] ?? []).sorted()
+        mapping[Self.fallbackCategoryKey] = (mapping[Self.fallbackCategoryKey] ?? []).sorted()
         return mapping
     }()
 
     private var categoryNames: [String] {
         Self.iconCategories.keys.sorted { a, b in
-            if a == "全部" { return true }
-            if b == "全部" { return false }
-            if a == "其他" { return false }
-            if b == "其他" { return true }
+            if a == Self.allCategoryKey { return true }
+            if b == Self.allCategoryKey { return false }
+            if a == Self.fallbackCategoryKey { return false }
+            if b == Self.fallbackCategoryKey { return true }
+            let left = displayName(for: a)
+            let right = displayName(for: b)
+            let comparison = left.compare(
+                right,
+                options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive],
+                range: nil,
+                locale: NumiLocalized.currentLocale
+            )
+            if comparison != .orderedSame {
+                return comparison == .orderedAscending
+            }
             return a < b
         }
     }
 
     private func displayName(for key: String) -> String {
-        Self.categoryDisplayName[key] ?? key
+        categoryDisplayName[key] ?? key
     }
 
     private var filteredIcons: [String] {
@@ -272,21 +286,23 @@ private struct AddCategorySheet: View {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // 分类名称
                 VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                    Text("分类名称")
+                    Text("category.name.label")
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textSecondary)
 
                     VStack(spacing: 0) {
                         HStack(spacing: NumiSpacing.s3) {
-                            Text("名称")
+                            Text("category.name.label")
                                 .font(NumiFont.body)
                                 .foregroundStyle(NumiColor.textPrimary)
                             Spacer()
-                            TextField("例如：餐饮、交通", text: $name)
+                            TextField("category.name.placeholder", text: $name)
                                 .font(NumiFont.body)
                                 .multilineTextAlignment(.trailing)
                                 .autocorrectionDisabled()
+#if os(iOS)
                                 .textInputAutocapitalization(.never)
+#endif
                         }
                         .padding(.horizontal, NumiSpacing.s4)
                         .frame(minHeight: 48)
@@ -298,7 +314,7 @@ private struct AddCategorySheet: View {
 
                 // 图标选择
                 VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                    Text("选择图标")
+                    Text("category.select.icon")
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textSecondary)
 
@@ -353,15 +369,15 @@ private struct AddCategorySheet: View {
             .padding(.bottom, 120)
         }
         .background(NumiColor.surfacePage)
-        .navigationTitle("添加分类")
+        .navigationTitle("category.add")
         .modifier(LargeTitleNavigationChrome())
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("取消") { onDismiss() }
+                Button("common.cancel") { onDismiss() }
                     .foregroundStyle(NumiColor.toolbarIcon)
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("添加") { onCreate(name, selectedIcon) }
+                Button("common.add") { onCreate(name, selectedIcon) }
                     .disabled(name.isEmpty)
                     .foregroundStyle(name.isEmpty ? NumiColor.textTertiary : NumiColor.accentDeep)
             }

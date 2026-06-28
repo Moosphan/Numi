@@ -8,6 +8,7 @@ public struct CurrencyManagementView: View {
     @State private var searchText = ""
     @State private var isRefreshing = false
     @State private var toastMessage: String?
+    @State private var toastIsError = false
     @State private var showToast = false
     @FocusState private var isSearchFocused: Bool
 
@@ -41,7 +42,7 @@ public struct CurrencyManagementView: View {
         .onTapGesture {
             isSearchFocused = false
         }
-        .navigationTitle("多货币管理")
+        .navigationTitle("currency.title")
         .modifier(LargeTitleNavigationChrome())
         .task {
             if isAutoUpdateEnabled {
@@ -55,7 +56,7 @@ public struct CurrencyManagementView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, NumiSpacing.s4)
                     .padding(.vertical, 10)
-                    .background(message.contains("失败") || message.contains("错误") ? Color.red.opacity(0.9) : Color.green.opacity(0.9))
+                    .background(toastIsError ? Color.red.opacity(0.9) : Color.green.opacity(0.9))
                     .clipShape(Capsule())
                     .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
                     .padding(.bottom, 100)
@@ -71,7 +72,7 @@ public struct CurrencyManagementView: View {
         let currency = CurrencyDefinition.find(defaultCurrencyCode) ?? .cny
 
         return VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-            Text("默认货币")
+            Text("currency.default")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -137,10 +138,10 @@ public struct CurrencyManagementView: View {
                     .foregroundStyle(NumiColor.accentPrimary)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("自动更新汇率")
+                    Text("currency.auto.update")
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
-                    Text("每天首次打开应用时自动更新")
+                    Text("currency.auto.update.desc")
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                 }
@@ -165,9 +166,9 @@ public struct CurrencyManagementView: View {
                     isRefreshing = false
                     switch result {
                     case .success:
-                        showToast("汇率更新成功")
-                    case .failure(let message):
-                        showToast("刷新失败：\(message)")
+                        showToast(NumiLocalized.string( "currency.update.success"))
+                    case .failure(let error):
+                        showToast(NumiLocalized.string("currency.update.fail", error.displayMessage), isError: true)
                     }
                 }
             } label: {
@@ -185,12 +186,12 @@ public struct CurrencyManagementView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("手动刷新汇率")
+                        Text("currency.manual.refresh")
                             .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(NumiColor.textPrimary)
 
                         if let lastUpdated = rateService.rateData?.lastUpdated {
-                            Text("最后更新：\(lastUpdated.formatted(date: .abbreviated, time: .shortened))")
+                            Text(NumiLocalized.string("currency.last.update", Self.lastUpdatedText(for: lastUpdated)))
                                 .font(NumiFont.footnote)
                                 .foregroundStyle(NumiColor.textTertiary)
                         }
@@ -202,7 +203,7 @@ public struct CurrencyManagementView: View {
                         ProgressView()
                             .scaleEffect(0.8)
                     } else {
-                        Text("刷新")
+                        Text("common.refresh")
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.accentDeep)
                     }
@@ -227,7 +228,7 @@ public struct CurrencyManagementView: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(NumiColor.textTertiary)
 
-            TextField("搜索货币", text: $searchText)
+            TextField("currency.search", text: $searchText)
                 .font(NumiFont.body)
                 .foregroundStyle(NumiColor.textPrimary)
                 .focused($isSearchFocused)
@@ -253,7 +254,7 @@ public struct CurrencyManagementView: View {
 
     private var currencyListSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("全部货币")
+            Text("currency.all")
                 .font(NumiFont.bodyStrong)
                 .foregroundStyle(NumiColor.textPrimary)
 
@@ -286,13 +287,13 @@ public struct CurrencyManagementView: View {
 
                             // Exchange rate
                             if !isDefault, let rate = rateService.rate(from: defaultCurrencyCode, to: currency.code) {
-                                Text(formatRate(rate, to: currency))
+                                Text(Self.rateText(for: rate))
                                     .font(NumiFont.bodySmall)
                                     .foregroundStyle(NumiColor.textSecondary)
                             }
 
                             if isDefault {
-                                Text("默认")
+                                Text("currency.default.badge")
                                     .font(NumiFont.caption)
                                     .foregroundStyle(NumiColor.accentDeep)
                                     .padding(.horizontal, 8)
@@ -327,7 +328,7 @@ public struct CurrencyManagementView: View {
                 .font(.system(size: 14))
                 .foregroundStyle(NumiColor.textTertiary)
 
-            Text("汇率数据来源：Frankfurter API")
+            Text("currency.source")
                 .font(NumiFont.caption)
                 .foregroundStyle(NumiColor.textTertiary)
         }
@@ -351,18 +352,40 @@ public struct CurrencyManagementView: View {
             || currency.symbol.lowercased().contains(query)
     }
 
-    private func formatRate(_ rate: Double, to currency: CurrencyDefinition) -> String {
-        if rate >= 100 {
-            return String(format: "1:%.0f", rate)
-        } else if rate >= 1 {
-            return String(format: "1:%.2f", rate)
-        } else {
-            return String(format: "1:%.4f", rate)
-        }
+    static func lastUpdatedText(for date: Date, locale: Locale = NumiLocalized.currentLocale) -> String {
+        date.formatted(
+            Date.FormatStyle.dateTime
+                .month(.abbreviated)
+                .day()
+                .hour()
+                .minute()
+                .locale(locale)
+        )
     }
 
-    private func showToast(_ message: String) {
+    static func rateText(for rate: Double, locale: Locale = NumiLocalized.currentLocale) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+
+        if rate >= 100 {
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 0
+        } else if rate >= 1 {
+            formatter.minimumFractionDigits = 2
+            formatter.maximumFractionDigits = 2
+        } else {
+            formatter.minimumFractionDigits = 4
+            formatter.maximumFractionDigits = 4
+        }
+
+        let value = formatter.string(from: NSNumber(value: rate)) ?? String(rate)
+        return "1:\(value)"
+    }
+
+    private func showToast(_ message: String, isError: Bool = false) {
         toastMessage = message
+        toastIsError = isError
         withAnimation {
             showToast = true
         }

@@ -1,5 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 import NumiCore
 
 /// Renders a category icon from either the Thiings asset catalog or SF Symbols.
@@ -26,8 +28,8 @@ public struct CategoryIconView: View {
                 Image(systemName: iconName)
                     .font(.system(size: size * 0.5, weight: .medium))
                     .frame(width: size, height: size)
-            } else if let uiImage = loadIconImage() {
-                Image(uiImage: uiImage)
+            } else if let image = loadPlatformImage() {
+                platformImage(image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: size * iconScale, height: size * iconScale)
@@ -42,19 +44,56 @@ public struct CategoryIconView: View {
         }
     }
 
+    #if canImport(UIKit)
+    @ViewBuilder
+    private func platformImage(_ image: UIImage) -> Image {
+        Image(uiImage: image)
+    }
+    #elseif canImport(AppKit)
+    @ViewBuilder
+    private func platformImage(_ image: NSImage) -> Image {
+        Image(nsImage: image)
+    }
+    #else
+    @ViewBuilder
+    private func platformImage(_ image: Any) -> some View {
+        Image(systemName: "questionmark.circle")
+    }
+    #endif
+
     private var isSystemIcon: Bool {
         iconName.contains(".")
     }
 
-    private func loadIconImage() -> UIImage? {
+    #if canImport(UIKit)
+    private typealias PlatformImage = UIImage
+    #elseif canImport(AppKit)
+    private typealias PlatformImage = NSImage
+    #endif
+
+    #if canImport(UIKit) || canImport(AppKit)
+    private func loadPlatformImage() -> PlatformImage? {
         // 优先从 bundle 的 Icons 目录加载（SPM .copy 资源）
         if let url = Bundle.module.url(forResource: iconName, withExtension: "png", subdirectory: "Icons"),
            let data = try? Data(contentsOf: url) {
+            #if canImport(UIKit)
             return UIImage(data: data)
+            #elseif canImport(AppKit)
+            return NSImage(data: data)
+            #endif
         }
         // 回退到 asset catalog
+        #if canImport(UIKit)
         return UIImage(named: iconName, in: Bundle.module, compatibleWith: nil)
+        #elseif canImport(AppKit)
+        return Bundle.module.image(forResource: iconName)
+        #endif
     }
+    #else
+    private func loadPlatformImage() -> Any? {
+        return nil
+    }
+    #endif
 }
 
 // MARK: - Convenience initializers

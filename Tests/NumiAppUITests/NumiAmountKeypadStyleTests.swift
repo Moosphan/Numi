@@ -1,15 +1,26 @@
 import XCTest
+import NumiCore
 @testable import NumiAppUI
 
 final class NumiAmountKeypadStyleTests: XCTestCase {
     func testConcreteDateHidesDateAccessoryIcon() {
         let keypad = NumiAmountKeypad(
             state: .constant(MoneyInputState(currencyCode: "CNY")),
-            dateShortcutTitle: "6月12日"
+            dateShortcutTitle: "6月12日",
+            dateShortcutAccessibilityKey: "custom"
         )
 
         XCTAssertFalse(keypad.showsDateAccessoryIcon(for: "6月12日"))
-        XCTAssertTrue(keypad.showsDateAccessoryIcon(for: "今天"))
+    }
+
+    func testNamedDateShortcutShowsDateAccessoryIconByStableShortcutKey() {
+        let keypad = NumiAmountKeypad(
+            state: .constant(MoneyInputState(currencyCode: "CNY")),
+            dateShortcutTitle: "Today",
+            dateShortcutAccessibilityKey: "today"
+        )
+
+        XCTAssertTrue(keypad.showsDateAccessoryIcon(for: "Today"))
     }
 
     func testDateDisplayWithoutTimeUsesMonthAndDayOnly() {
@@ -26,21 +37,33 @@ final class NumiAmountKeypadStyleTests: XCTestCase {
     func testDateShortcutUsesDateAccentStyle() {
         let keypad = NumiAmountKeypad(
             state: .constant(MoneyInputState(currencyCode: "CNY")),
-            dateShortcutTitle: "今天"
+            dateShortcutTitle: "Today",
+            dateShortcutAccessibilityKey: "today"
         )
 
-        XCTAssertEqual(keypad.keyStyle(for: "今天"), .dateAccent)
+        XCTAssertEqual(keypad.keyStyle(for: "Today"), .dateAccent)
     }
 
     func testDigitsAndOperatorsUseNeutralStyle() {
         let keypad = NumiAmountKeypad(
             state: .constant(MoneyInputState(currencyCode: "CNY")),
-            dateShortcutTitle: "今天"
+            dateShortcutTitle: "Today",
+            dateShortcutAccessibilityKey: "today"
         )
 
         XCTAssertEqual(keypad.keyStyle(for: "8"), .neutral)
         XCTAssertEqual(keypad.keyStyle(for: "delete.left"), .neutral)
         XCTAssertEqual(keypad.keyStyle(for: "+"), .neutral)
         XCTAssertEqual(keypad.keyStyle(for: "="), .neutral)
+    }
+
+    func testCustomShortcutAccessibilityKeyRemainsStableWithoutLocalizedComparison() {
+        let keypad = NumiAmountKeypad(
+            state: .constant(MoneyInputState(currencyCode: "CNY")),
+            dateShortcutTitle: "Jun 12",
+            dateShortcutAccessibilityKey: "custom"
+        )
+
+        XCTAssertEqual(keypad.resolvedDateShortcutAccessibilityKey, "custom")
     }
 }

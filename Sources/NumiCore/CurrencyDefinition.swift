@@ -19,45 +19,49 @@ public struct CurrencyDefinition: Identifiable, Equatable, Hashable {
 extension CurrencyDefinition {
     // MARK: - All Supported Currencies
 
-    public static let all: [CurrencyDefinition] = [
-        .cny, .usd, .eur, .gbp, .jpy, .krw,
-        .hkd, .sgd, .aud, .cad, .chf, .thb,
-        .twd, .rub, .inr, .brl, .mxn, .myr,
-        .idr, .tur, .nok, .nzd, .pln, .zar
-    ]
+    public static var all: [CurrencyDefinition] {
+        [
+            .cny, .usd, .eur, .gbp, .jpy, .krw,
+            .hkd, .sgd, .aud, .cad, .chf, .thb,
+            .twd, .rub, .inr, .brl, .mxn, .myr,
+            .idr, .tur, .nok, .nzd, .pln, .zar
+        ]
+    }
 
     // MARK: - Common Currencies
 
-    public static let common: [CurrencyDefinition] = [
-        .cny, .usd, .eur, .gbp, .jpy, .hkd
-    ]
+    public static var common: [CurrencyDefinition] {
+        [
+            .cny, .usd, .eur, .gbp, .jpy, .hkd
+        ]
+    }
 
     // MARK: - Definitions
 
-    public static let cny = CurrencyDefinition(code: "CNY", name: "人民币", symbol: "¥", flag: "🇨🇳")
-    public static let usd = CurrencyDefinition(code: "USD", name: "美元", symbol: "$", flag: "🇺🇸")
-    public static let eur = CurrencyDefinition(code: "EUR", name: "欧元", symbol: "€", flag: "🇪🇺")
-    public static let gbp = CurrencyDefinition(code: "GBP", name: "英镑", symbol: "£", flag: "🇬🇧")
-    public static let jpy = CurrencyDefinition(code: "JPY", name: "日元", symbol: "¥", flag: "🇯🇵")
-    public static let krw = CurrencyDefinition(code: "KRW", name: "韩元", symbol: "₩", flag: "🇰🇷")
-    public static let hkd = CurrencyDefinition(code: "HKD", name: "港币", symbol: "HK$", flag: "🇭🇰")
-    public static let sgd = CurrencyDefinition(code: "SGD", name: "新加坡元", symbol: "S$", flag: "🇸🇬")
-    public static let aud = CurrencyDefinition(code: "AUD", name: "澳元", symbol: "A$", flag: "🇦🇺")
-    public static let cad = CurrencyDefinition(code: "CAD", name: "加元", symbol: "C$", flag: "🇨🇦")
-    public static let chf = CurrencyDefinition(code: "CHF", name: "瑞士法郎", symbol: "CHF", flag: "🇨🇭")
-    public static let thb = CurrencyDefinition(code: "THB", name: "泰铢", symbol: "฿", flag: "🇹🇭")
-    public static let twd = CurrencyDefinition(code: "TWD", name: "新台币", symbol: "NT$", flag: "🇹🇼")
-    public static let rub = CurrencyDefinition(code: "RUB", name: "卢布", symbol: "₽", flag: "🇷🇺")
-    public static let inr = CurrencyDefinition(code: "INR", name: "印度卢比", symbol: "₹", flag: "🇮🇳")
-    public static let brl = CurrencyDefinition(code: "BRL", name: "巴西雷亚尔", symbol: "R$", flag: "🇧🇷")
-    public static let mxn = CurrencyDefinition(code: "MXN", name: "墨西哥比索", symbol: "MX$", flag: "🇲🇽")
-    public static let myr = CurrencyDefinition(code: "MYR", name: "马来西亚林吉特", symbol: "RM", flag: "🇲🇾")
-    public static let idr = CurrencyDefinition(code: "IDR", name: "印尼盾", symbol: "Rp", flag: "🇮🇩")
-    public static let tur = CurrencyDefinition(code: "TRY", name: "土耳其里拉", symbol: "₺", flag: "🇹🇷")
-    public static let nok = CurrencyDefinition(code: "NOK", name: "挪威克朗", symbol: "kr", flag: "🇳🇴")
-    public static let nzd = CurrencyDefinition(code: "NZD", name: "新西兰元", symbol: "NZ$", flag: "🇳🇿")
-    public static let pln = CurrencyDefinition(code: "PLN", name: "波兰兹罗提", symbol: "zł", flag: "🇵🇱")
-    public static let zar = CurrencyDefinition(code: "ZAR", name: "南非兰特", symbol: "R", flag: "🇿🇦")
+    public static var cny: CurrencyDefinition { CurrencyDefinition(code: "CNY", name: NumiLocalized.string( "currency.name.CNY"), symbol: "¥", flag: "🇨🇳") }
+    public static var usd: CurrencyDefinition { CurrencyDefinition(code: "USD", name: NumiLocalized.string( "currency.name.USD"), symbol: "$", flag: "🇺🇸") }
+    public static var eur: CurrencyDefinition { CurrencyDefinition(code: "EUR", name: NumiLocalized.string( "currency.name.EUR"), symbol: "€", flag: "🇪🇺") }
+    public static var gbp: CurrencyDefinition { CurrencyDefinition(code: "GBP", name: NumiLocalized.string( "currency.name.GBP"), symbol: "£", flag: "🇬🇧") }
+    public static var jpy: CurrencyDefinition { CurrencyDefinition(code: "JPY", name: NumiLocalized.string( "currency.name.JPY"), symbol: "¥", flag: "🇯🇵") }
+    public static var krw: CurrencyDefinition { CurrencyDefinition(code: "KRW", name: NumiLocalized.string( "currency.name.KRW"), symbol: "₩", flag: "🇰🇷") }
+    public static var hkd: CurrencyDefinition { CurrencyDefinition(code: "HKD", name: NumiLocalized.string( "currency.name.HKD"), symbol: "HK$", flag: "🇭🇰") }
+    public static var sgd: CurrencyDefinition { CurrencyDefinition(code: "SGD", name: NumiLocalized.string( "currency.name.SGD"), symbol: "S$", flag: "🇸🇬") }
+    public static var aud: CurrencyDefinition { CurrencyDefinition(code: "AUD", name: NumiLocalized.string( "currency.name.AUD"), symbol: "A$", flag: "🇦🇺") }
+    public static var cad: CurrencyDefinition { CurrencyDefinition(code: "CAD", name: NumiLocalized.string( "currency.name.CAD"), symbol: "C$", flag: "🇨🇦") }
+    public static var chf: CurrencyDefinition { CurrencyDefinition(code: "CHF", name: NumiLocalized.string( "currency.name.CHF"), symbol: "CHF", flag: "🇨🇭") }
+    public static var thb: CurrencyDefinition { CurrencyDefinition(code: "THB", name: NumiLocalized.string( "currency.name.THB"), symbol: "฿", flag: "🇹🇭") }
+    public static var twd: CurrencyDefinition { CurrencyDefinition(code: "TWD", name: NumiLocalized.string( "currency.name.TWD"), symbol: "NT$", flag: "🇹🇼") }
+    public static var rub: CurrencyDefinition { CurrencyDefinition(code: "RUB", name: NumiLocalized.string( "currency.name.RUB"), symbol: "₽", flag: "🇷🇺") }
+    public static var inr: CurrencyDefinition { CurrencyDefinition(code: "INR", name: NumiLocalized.string( "currency.name.INR"), symbol: "₹", flag: "🇮🇳") }
+    public static var brl: CurrencyDefinition { CurrencyDefinition(code: "BRL", name: NumiLocalized.string( "currency.name.BRL"), symbol: "R$", flag: "🇧🇷") }
+    public static var mxn: CurrencyDefinition { CurrencyDefinition(code: "MXN", name: NumiLocalized.string( "currency.name.MXN"), symbol: "MX$", flag: "🇲🇽") }
+    public static var myr: CurrencyDefinition { CurrencyDefinition(code: "MYR", name: NumiLocalized.string( "currency.name.MYR"), symbol: "RM", flag: "🇲🇾") }
+    public static var idr: CurrencyDefinition { CurrencyDefinition(code: "IDR", name: NumiLocalized.string( "currency.name.IDR"), symbol: "Rp", flag: "🇮🇩") }
+    public static var tur: CurrencyDefinition { CurrencyDefinition(code: "TRY", name: NumiLocalized.string( "currency.name.TRY"), symbol: "₺", flag: "🇹🇷") }
+    public static var nok: CurrencyDefinition { CurrencyDefinition(code: "NOK", name: NumiLocalized.string( "currency.name.NOK"), symbol: "kr", flag: "🇳🇴") }
+    public static var nzd: CurrencyDefinition { CurrencyDefinition(code: "NZD", name: NumiLocalized.string( "currency.name.NZD"), symbol: "NZ$", flag: "🇳🇿") }
+    public static var pln: CurrencyDefinition { CurrencyDefinition(code: "PLN", name: NumiLocalized.string( "currency.name.PLN"), symbol: "zł", flag: "🇵🇱") }
+    public static var zar: CurrencyDefinition { CurrencyDefinition(code: "ZAR", name: NumiLocalized.string( "currency.name.ZAR"), symbol: "R", flag: "🇿🇦") }
 
     // MARK: - Lookup
 

@@ -12,19 +12,25 @@ public struct NumiRecordRow: View {
     private let iconName: String
     private let subtitle: String?
     private let style: Style
+    private let accessibilityIdentifier: String
+    private let amountAccessibilityIdentifier: String
 
     public init(
         transaction: NumiCore.Transaction,
         categoryName: String,
         iconName: String,
         subtitle: String? = nil,
-        style: Style = .card
+        style: Style = .card,
+        accessibilityIdentifier: String? = nil,
+        amountAccessibilityIdentifier: String? = nil
     ) {
         self.transaction = transaction
         self.categoryName = categoryName
         self.iconName = iconName
         self.subtitle = subtitle
         self.style = style
+        self.accessibilityIdentifier = accessibilityIdentifier ?? "record.\(transaction.id.uuidString)"
+        self.amountAccessibilityIdentifier = amountAccessibilityIdentifier ?? "record.amount.\(transaction.id.uuidString)"
     }
 
     public var body: some View {
@@ -52,7 +58,7 @@ public struct NumiRecordRow: View {
                 .foregroundStyle(amountColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
-                .accessibilityIdentifier("record.amount.\(categoryName)")
+                .accessibilityIdentifier(amountAccessibilityIdentifier)
         }
         .padding(.horizontal, style == .grouped ? NumiGroupedListMetrics.rowHorizontalPadding : 14)
         .padding(.vertical, style == .grouped ? 12 : 14)
@@ -60,7 +66,7 @@ public struct NumiRecordRow: View {
         .background(rowBackground)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilitySummary)
-        .accessibilityIdentifier("record.\(categoryName)")
+        .accessibilityIdentifier(accessibilityIdentifier)
     }
 
     @ViewBuilder
@@ -89,7 +95,7 @@ public struct NumiRecordRow: View {
     }
 
     private var secondaryText: String? {
-        let timeText = Self.timeFormatter.string(from: transaction.occurredAt)
+        let timeText = transaction.occurredAt.numiTimeText()
         if let subtitle, !subtitle.isEmpty {
             if transaction.note.isEmpty {
                 return "\(timeText) · \(subtitle)"
@@ -117,12 +123,6 @@ public struct NumiRecordRow: View {
         return "\(categoryName)，\(amountText)"
     }
 
-    private static var timeFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "HH:mm"
-        return formatter
-    }
 }
 
 extension NumiRecordRow.Style {

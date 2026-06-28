@@ -53,7 +53,7 @@ public struct NumiOptionSheet: View {
             title: title,
             contentMode: .scroll,
             accessibilityPrefix: "sheet.optionSheet",
-            dismissTitle: "取消",
+            dismissTitle: NumiLocalized.string( "common.cancel"),
             onDismiss: onDismiss
         ) {
             VStack(spacing: NumiSpacing.s2) {

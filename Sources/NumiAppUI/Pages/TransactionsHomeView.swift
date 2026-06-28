@@ -2,32 +2,41 @@ import SwiftUI
 import NumiCore
 
 public enum HomePeriod: String, CaseIterable, Identifiable {
-    case week = "周"
-    case month = "月"
-    case quarter = "季度"
-    case year = "年"
+    case week
+    case month
+    case quarter
+    case year
 
     public var id: String { rawValue }
+
+    public var displayName: String {
+        switch self {
+        case .week: NumiLocalized.string("insight.dim.week")
+        case .month: NumiLocalized.string("insight.dim.month")
+        case .quarter: NumiLocalized.string("insight.dim.quarter")
+        case .year: NumiLocalized.string("insight.dim.year")
+        }
+    }
 }
 
 public struct TransactionHomeRow: Identifiable {
     public let transaction: NumiCore.Transaction
-    public let categoryName: String
-    public let iconName: String
-    public let subtitle: String?
+    public let fallbackCategoryName: String
+    public let fallbackIconName: String
+    public let fallbackSubtitle: String?
 
     public var id: UUID { transaction.id }
 
     public init(
         transaction: NumiCore.Transaction,
-        categoryName: String,
-        iconName: String,
-        subtitle: String?
+        fallbackCategoryName: String,
+        fallbackIconName: String,
+        fallbackSubtitle: String?
     ) {
         self.transaction = transaction
-        self.categoryName = categoryName
-        self.iconName = iconName
-        self.subtitle = subtitle
+        self.fallbackCategoryName = fallbackCategoryName
+        self.fallbackIconName = fallbackIconName
+        self.fallbackSubtitle = fallbackSubtitle
     }
 }
 
@@ -53,6 +62,8 @@ public struct TransactionsHomeView: View {
     private let selectedPeriod: HomePeriod
     private let isNextPeriodEnabled: Bool
     private let sections: [TransactionHomeSection]
+    private let categories: [NumiCore.Category]
+    private let accounts: [Account]
     private let currentLedger: Ledger?
     private let ledgers: [Ledger]
     private let onPreviousPeriod: () -> Void
@@ -77,6 +88,8 @@ public struct TransactionsHomeView: View {
         selectedPeriod: HomePeriod,
         isNextPeriodEnabled: Bool,
         sections: [TransactionHomeSection],
+        categories: [NumiCore.Category] = [],
+        accounts: [Account] = [],
         currentLedger: Ledger? = nil,
         ledgers: [Ledger] = [],
         onPreviousPeriod: @escaping () -> Void = {},
@@ -96,6 +109,8 @@ public struct TransactionsHomeView: View {
         self.selectedPeriod = selectedPeriod
         self.isNextPeriodEnabled = isNextPeriodEnabled
         self.sections = sections
+        self.categories = categories
+        self.accounts = accounts
         self.currentLedger = currentLedger
         self.ledgers = ledgers
         self.onPreviousPeriod = onPreviousPeriod
@@ -117,12 +132,12 @@ public struct TransactionsHomeView: View {
                 .background(NumiColor.surfacePage)
                 .modifier(HomeToolbarChrome(periodToolbarControl: periodToolbarControl, searchToolbarButton: searchToolbarButton))
                 .confirmationDialog(
-                    "删除这笔记录？",
+                    Text("record.delete.confirm"),
                     isPresented: deleteConfirmationBinding,
                     titleVisibility: .visible,
                     presenting: pendingDelete
                 ) { transaction in
-                    Button("删除", role: .destructive) {
+                    Button("common.delete", role: .destructive) {
                         onDelete(transaction)
                         showsUndo = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
@@ -133,9 +148,9 @@ public struct TransactionsHomeView: View {
                     }
                     .accessibilityIdentifier("action.confirmDeleteRecord")
 
-                    Button("取消", role: .cancel) {}
+                    Button("common.cancel", role: .cancel) {}
                 } message: { _ in
-                    Text("删除后可立即撤销。")
+                    Text("record.deleted.msg")
                 }
 
             if showsUndo {
@@ -206,8 +221,8 @@ public struct TransactionsHomeView: View {
 
     private var summaryGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: NumiSpacing.s3) {
-            NumiSummaryTile(title: "支出", value: summary.expense.formatted(), systemImage: "cart", variant: .expense)
-            NumiSummaryTile(title: "收入", value: summary.income.formatted(), systemImage: "creditcard", variant: .income)
+            NumiSummaryTile(title: NumiLocalized.string( "record.expense"), value: summary.expense.formatted(), systemImage: "cart", variant: .expense, accessibilityKey: "home.expense")
+            NumiSummaryTile(title: NumiLocalized.string( "record.income"), value: summary.income.formatted(), systemImage: "creditcard", variant: .income, accessibilityKey: "home.income")
         }
     }
 
@@ -256,9 +271,9 @@ public struct TransactionsHomeView: View {
                         PressableRow(onSelect: { onSelect(row.transaction) }) {
                             NumiRecordRow(
                                 transaction: row.transaction,
-                                categoryName: row.categoryName,
-                                iconName: row.iconName,
-                                subtitle: row.subtitle,
+                                categoryName: resolvedCategoryName(for: row),
+                                iconName: resolvedIconName(for: row),
+                                subtitle: resolvedSubtitle(for: row),
                                 style: .grouped
                             )
                         }
@@ -266,21 +281,21 @@ public struct TransactionsHomeView: View {
                             Button {
                                 onEdit(row.transaction)
                             } label: {
-                                Label("编辑", systemImage: "square.and.pencil")
+                                Label("common.edit", systemImage: "square.and.pencil")
                             }
                             .accessibilityIdentifier("action.context.editRecord")
 
                             Button {
                                 pendingDelete = row.transaction
                             } label: {
-                                Label("删除", systemImage: "trash")
+                                Label("common.delete", systemImage: "trash")
                             }
                             .accessibilityIdentifier("action.context.deleteRecord")
 
                             Button {
                                 onShare(row.transaction)
                             } label: {
-                                Label("分享", systemImage: "square.and.arrow.up")
+                                Label("common.share", systemImage: "square.and.arrow.up")
                             }
                             .accessibilityIdentifier("action.context.shareRecord")
                         }
@@ -336,7 +351,7 @@ public struct TransactionsHomeView: View {
 
     private var undoBar: some View {
         HStack(spacing: NumiSpacing.s3) {
-            Text("已删除记录")
+            Text("record.deleted")
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textPrimary)
             Spacer()
@@ -344,7 +359,7 @@ public struct TransactionsHomeView: View {
                 onUndoDelete()
                 showsUndo = false
             } label: {
-                Text("撤销")
+                Text("record.undo")
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.accentDeep)
                     .frame(minWidth: 72, minHeight: 44)
@@ -384,11 +399,11 @@ public struct TransactionsHomeView: View {
                 .font(.system(size: 44, weight: .regular))
                 .foregroundStyle(NumiColor.textTertiary)
             VStack(spacing: NumiSpacing.s2) {
-                Text("开始记录你的第一笔账单")
+                Text("empty.home.title")
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
                     .accessibilityIdentifier("home.empty.title")
-                Text("点击右下角记录账单，这里会按日期整理最近的流水。")
+                Text("empty.home.desc")
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textTertiary)
                     .multilineTextAlignment(.center)
@@ -434,7 +449,7 @@ public struct TransactionsHomeView: View {
                 HStack(spacing: NumiSpacing.s1) {
                     Image(systemName: "book.fill")
                         .font(.system(size: 12, weight: .medium))
-                    Text(ledger.name)
+                    Text(ledger.localizedDisplayName)
                         .font(.system(size: 13, weight: .medium))
                         .lineLimit(1)
                     Image(systemName: "chevron.down")
@@ -454,10 +469,10 @@ public struct TransactionsHomeView: View {
 
     private var ledgerPickerSheet: some View {
         NumiBottomSheet(
-            title: "切换账本",
+            title: NumiLocalized.string( "ledger.switch.title"),
             contentMode: .scroll,
             accessibilityPrefix: "sheet.ledgerPicker",
-            dismissTitle: "关闭",
+            dismissTitle: NumiLocalized.string( "common.close"),
             onDismiss: {
                 showsLedgerPicker = false
             }
@@ -478,7 +493,7 @@ public struct TransactionsHomeView: View {
                                     .foregroundStyle(ledger.id == currentLedger?.id ? NumiColor.accentDeep : NumiColor.textTertiary)
                             }
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(ledger.name)
+                                Text(ledger.localizedDisplayName)
                                     .font(NumiFont.bodyStrong)
                                     .foregroundStyle(NumiColor.textPrimary)
                                 Text(ledger.currencyCode)
@@ -513,10 +528,10 @@ public struct TransactionsHomeView: View {
 
     private var homePeriodPickerSheet: some View {
         NumiBottomSheet(
-            title: "时间范围",
+            title: NumiLocalized.string( "home.timeRange"),
             contentMode: .scroll,
             accessibilityPrefix: "sheet.homePeriodPicker",
-            dismissTitle: "关闭",
+            dismissTitle: NumiLocalized.string( "common.close"),
             onDismiss: {
                 showsPeriodPicker = false
             }
@@ -565,26 +580,26 @@ public struct TransactionsHomeView: View {
     private func periodTitle(for period: HomePeriod) -> String {
         switch period {
         case .week:
-            return "按周查看"
+            return NumiLocalized.string( "home.period.week")
         case .month:
-            return "按月查看"
+            return NumiLocalized.string( "home.period.month")
         case .quarter:
-            return "按季度查看"
+            return NumiLocalized.string( "home.period.quarter")
         case .year:
-            return "按年查看"
+            return NumiLocalized.string( "home.period.year")
         }
     }
 
     private func periodDescription(for period: HomePeriod) -> String {
         switch period {
         case .week:
-            return "适合查看近一周的支出与节奏"
+            return NumiLocalized.string( "home.period.desc.week")
         case .month:
-            return "适合日常复盘和月度对比"
+            return NumiLocalized.string( "home.period.desc.month")
         case .quarter:
-            return "适合阶段性趋势观察"
+            return NumiLocalized.string( "home.period.desc.quarter")
         case .year:
-            return "适合年度汇总和长期变化"
+            return NumiLocalized.string( "home.period.desc.year")
         }
     }
 
@@ -599,6 +614,30 @@ public struct TransactionsHomeView: View {
         case .year:
             return "year"
         }
+    }
+
+    private func resolvedCategoryName(for row: TransactionHomeRow) -> String {
+        RuntimeLocalizedDisplay.categoryName(
+            for: row.transaction,
+            categories: categories,
+            fallbackCategoryName: row.fallbackCategoryName
+        )
+    }
+
+    private func resolvedIconName(for row: TransactionHomeRow) -> String {
+        RuntimeLocalizedDisplay.categoryIconName(
+            for: row.transaction,
+            categories: categories,
+            fallbackCategoryIcon: row.fallbackIconName
+        )
+    }
+
+    private func resolvedSubtitle(for row: TransactionHomeRow) -> String? {
+        RuntimeLocalizedDisplay.transferSubtitle(
+            for: row.transaction,
+            accounts: accounts,
+            fallbackSubtitle: row.fallbackSubtitle
+        )
     }
 }
 
