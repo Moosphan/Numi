@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+        />
+        <title>Numi Pro Membership Design</title>
+        <style>
+            :root {
+                --bg: #faf8f2;
+                --page: #f5f3ec;
+                --surface: #fffdf8;
+                --surface-soft: #f2efe8;
+                --surface-soft-2: #ece8df;
+                --text: #202320;
+                --muted: #7a8078;
+                --line: rgba(41, 105, 86, 0.1);
+                --accent: #79d983;
+                --accent-deep: #296956;
+                --accent-pale: #dff3e4;
+                --mint-cloud: #eaf6ef;
+                --cyan-cloud: #edf5f4;
+                --shadow: 0 22px 48px rgba(38, 44, 39, 0.1);
+                --radius-xl: 34px;
+                --radius-lg: 26px;
+                --radius-md: 18px;
+                --radius-sm: 14px;
+                --font: ui-rounded, "SF Pro Display", "PingFang SC",
+                    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                font-family: var(--font);
+                background:
+                    radial-gradient(
+                        circle at top left,
+                        rgba(121, 217, 131, 0.14),
+                        transparent 22%
+                    ),
+                    linear-gradient(180deg, var(--bg) 0%, var(--page) 100%);
+                color: var(--text);
+            }
+
+            .page {
+                max-width: 1460px;
+                margin: 0 auto;
+                padding: 36px 22px 56px;
+            }
+
+            .intro {
+                margin-bottom: 26px;
+            }
+
+            .eyebrow {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 14px;
+                border-radius: 999px;
+                background: rgba(41, 105, 86, 0.08);
+                color: var(--accent-deep);
+                font-size: 13px;
+                font-weight: 800;
+                letter-spacing: 0.02em;
+            }
+
+            h1 {
+                margin: 14px 0 8px;
+                font-size: 38px;
+                line-height: 1.08;
+                letter-spacing: -0.035em;
+            }
+
+            .subtitle {
+                max-width: 920px;
+                color: var(--muted);
+                font-size: 16px;
+                line-height: 1.75;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(320px, 1fr));
+                gap: 24px;
+            }
+
+            .panel {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .panel-title {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                gap: 12px;
+            }
+
+            .panel-title strong {
+                font-size: 18px;
+            }
+
+            .panel-title span {
+                font-size: 13px;
+                color: var(--muted);
+            }
+
+            .phone {
+                min-height: 860px;
+                border-radius: 42px;
+                overflow: hidden;
+                box-shadow: var(--shadow);
+                background: linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.8),
+                    rgba(255, 255, 255, 0.92)
+                );
+                border: 1px solid rgba(255, 255, 255, 0.7);
+                position: relative;
+                backdrop-filter: blur(24px);
+            }
+
+            .screen {
+                padding: 26px 20px 0;
+            }
+
+            .statusbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 14px;
+                font-weight: 800;
+                margin-bottom: 18px;
+            }
+
+            .top-title {
+                text-align: center;
+                font-size: 27px;
+                font-weight: 800;
+                letter-spacing: -0.03em;
+                margin-bottom: 16px;
+            }
+
+            .card {
+                background: rgba(255, 255, 255, 0.76);
+                border: 1px solid var(--line);
+                box-shadow: 0 10px 24px rgba(38, 44, 39, 0.06);
+                backdrop-filter: blur(18px);
+            }
+
+            .status-card {
+                padding: 16px 18px;
+                border-radius: 24px;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+
+            .logo {
+                width: 46px;
+                height: 46px;
+                border-radius: 16px;
+                background:
+                    radial-gradient(
+                        circle at 28% 28%,
+                        rgba(255, 255, 255, 0.8),
+                        transparent 30%
+                    ),
+                    linear-gradient(160deg, var(--accent) 0%, #56bb64 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #15311f;
+                font-size: 20px;
+                font-weight: 900;
+                flex: 0 0 auto;
+            }
+
+            .status-main {
+                min-width: 0;
+                flex: 1;
+            }
+
+            .status-main strong {
+                display: block;
+                font-size: 18px;
+                letter-spacing: -0.02em;
+                margin-bottom: 4px;
+            }
+
+            .status-main p {
+                margin: 0;
+                color: var(--muted);
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .status-tag {
+                padding: 8px 12px;
+                border-radius: 999px;
+                background: rgba(41, 105, 86, 0.08);
+                color: var(--accent-deep);
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .section-stack {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                margin-top: 18px;
+            }
+
+            .settings-group {
+                border-radius: 28px;
+                padding: 18px;
+            }
+
+            .settings-group strong {
+                display: block;
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+
+            .settings-list {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .paywall-shell {
+                min-height: 860px;
+                background: linear-gradient(180deg, #f8f7f2 0%, #f4f1ea 100%);
+                position: relative;
+                padding-bottom: 140px;
+            }
+
+            .hero-stage {
+                border-radius: 34px 34px 28px 28px;
+                background:
+                    linear-gradient(
+                        145deg,
+                        rgba(225, 236, 240, 0.95) 0%,
+                        rgba(235, 244, 240, 0.88) 55%,
+                        rgba(244, 248, 242, 0.92) 100%
+                    );
+                padding: 20px 18px 18px;
+                position: relative;
+                overflow: hidden;
+                margin-bottom: 18px;
+            }
+
+            .hero-stage::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background:
+                    linear-gradient(
+                        52deg,
+                        rgba(188, 215, 236, 0.28) 0%,
+                        transparent 32%
+                    ),
+                    radial-gradient(
+                        circle at 18% 86%,
+                        rgba(121, 217, 131, 0.12),
+                        transparent 18%
+                    );
+                pointer-events: none;
+            }
+
+            .hero-close {
+                position: absolute;
+                right: 16px;
+                top: 16px;
+                width: 52px;
+                height: 52px;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.66);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                color: #4a4e4a;
+                z-index: 2;
+            }
+
+            .pager {
+                display: flex;
+                overflow: hidden;
+                gap: 12px;
+                position: relative;
+                z-index: 1;
+                padding-top: 36px;
+            }
+
+            .pager-track {
+                display: flex;
+                gap: 12px;
+                transform: translateX(-72px);
+            }
+
+            .benefit-slide {
+                width: 250px;
+                flex: 0 0 auto;
+                border-radius: 26px;
+                background: rgba(255, 250, 252, 0.76);
+                border: 1px solid rgba(255, 255, 255, 0.6);
+                box-shadow: 0 10px 18px rgba(38, 44, 39, 0.04);
+                padding: 16px;
+            }
+
+            .benefit-slide.emphasis {
+                width: 288px;
+                margin-top: 92px;
+            }
+
+            .benefit-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+            .benefit-top strong {
+                font-size: 17px;
+                line-height: 1.3;
+            }
+
+            .benefit-price {
+                font-size: 14px;
+                font-weight: 800;
+                color: var(--accent-deep);
+            }
+
+            .benefit-slide p {
+                margin: 0 0 14px;
+                color: var(--muted);
+                font-size: 13px;
+                line-height: 1.58;
+            }
+
+            .wave {
+                height: 8px;
+                border-radius: 999px;
+                background:
+                    radial-gradient(circle at 8px 8px, #7d6857 44%, transparent 45%)
+                        0 0 / 28px 8px repeat-x;
+                opacity: 0.88;
+            }
+
+            .pager-dots {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                margin-top: 18px;
+                position: relative;
+                z-index: 1;
+            }
+
+            .pager-dots span {
+                width: 10px;
+                height: 10px;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.56);
+            }
+
+            .pager-dots span.active {
+                width: 12px;
+                height: 12px;
+                background: rgba(255, 255, 255, 0.92);
+            }
+
+            .copy-block {
+                padding: 0 8px;
+                text-align: center;
+                margin-bottom: 18px;
+            }
+
+            .copy-block p {
+                margin: 0;
+                font-size: 16px;
+                line-height: 1.8;
+                letter-spacing: -0.01em;
+            }
+
+            .unlock-title {
+                margin-top: 14px;
+                font-size: 18px;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                display: inline-block;
+                position: relative;
+                padding: 0 8px 3px;
+            }
+
+            .unlock-title::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 12px;
+                background: rgba(121, 217, 131, 0.26);
+                z-index: -1;
+                border-radius: 999px;
+            }
+
+            .plan-row {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+                margin: 20px 0 10px;
+            }
+
+            .plan-card {
+                border-radius: 28px;
+                padding: 18px 12px;
+                background: rgba(255, 255, 255, 0.74);
+                border: 1px solid rgba(255, 255, 255, 0.76);
+                text-align: center;
+                min-height: 186px;
+            }
+
+            .plan-card.selected {
+                border: 3px solid rgba(68, 76, 80, 0.8);
+                box-shadow: 0 12px 24px rgba(38, 44, 39, 0.08);
+            }
+
+            .plan-term {
+                color: #6f746f;
+                font-size: 16px;
+                margin-bottom: 18px;
+            }
+
+            .plan-money {
+                font-size: 30px;
+                line-height: 1.1;
+                font-weight: 800;
+                color: var(--accent-deep);
+                letter-spacing: -0.04em;
+                margin-bottom: 8px;
+            }
+
+            .plan-sub {
+                font-size: 12px;
+                color: #aaa59c;
+                margin-bottom: 16px;
+                min-height: 18px;
+            }
+
+            .plan-desc {
+                font-size: 14px;
+                color: #545954;
+                line-height: 1.5;
+            }
+
+            .hint {
+                margin: 14px 0 18px;
+                text-align: center;
+                color: #a19f98;
+                font-size: 14px;
+                line-height: 1.7;
+            }
+
+            .table-card {
+                border-radius: 28px;
+                background: rgba(255, 255, 255, 0.74);
+                border: 1px solid rgba(255, 255, 255, 0.74);
+                overflow: hidden;
+                margin-bottom: 10px;
+            }
+
+            .table-header,
+            .table-row {
+                display: grid;
+                grid-template-columns: 1.8fr 0.9fr 0.9fr;
+                align-items: center;
+                gap: 8px;
+                padding: 16px 16px;
+            }
+
+            .table-header {
+                color: #7b807a;
+                font-size: 13px;
+                font-weight: 800;
+            }
+
+            .table-row {
+                border-top: 1px solid rgba(41, 105, 86, 0.06);
+                font-size: 15px;
+                background: rgba(255, 255, 255, 0.28);
+            }
+
+            .table-row:nth-child(odd) {
+                background: rgba(255, 255, 255, 0.4);
+            }
+
+            .tick {
+                width: 34px;
+                height: 34px;
+                border-radius: 999px;
+                background: rgba(121, 217, 131, 0.92);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                margin-left: auto;
+                margin-right: auto;
+                font-weight: 800;
+            }
+
+            .cross {
+                width: 34px;
+                height: 34px;
+                border-radius: 999px;
+                background: rgba(224, 228, 220, 0.85);
+                color: #8a9088;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                margin-left: auto;
+                margin-right: auto;
+                font-weight: 800;
+            }
+
+            .dock {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                padding: 14px 16px 18px;
+                background:
+                    linear-gradient(
+                        180deg,
+                        rgba(245, 243, 236, 0) 0%,
+                        rgba(245, 243, 236, 0.92) 18%,
+                        rgba(245, 243, 236, 0.98) 100%
+                    );
+                backdrop-filter: blur(14px);
+            }
+
+            .buy-btn {
+                min-height: 58px;
+                border-radius: 20px;
+                background: linear-gradient(180deg, #d3f2ec 0%, #bfeae1 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                margin-bottom: 12px;
+            }
+
+            .dock-meta {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+                color: #8d9089;
+                font-size: 13px;
+            }
+
+            .dock-meta span {
+                white-space: nowrap;
+            }
+
+            .legend {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                font-size: 13px;
+                color: var(--muted);
+                margin-top: 6px;
+            }
+
+            .mini-line {
+                width: 32px;
+                height: 4px;
+                border-radius: 999px;
+                background: rgba(41, 105, 86, 0.18);
+            }
+
+            @media (max-width: 1180px) {
+                .grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 760px) {
+                .page {
+                    padding: 22px 12px 40px;
+                }
+
+                h1 {
+                    font-size: 30px;
+                }
+
+                .plan-row {
+                    grid-template-columns: 1fr;
+                }
+
+                .table-header,
+                .table-row {
+                    grid-template-columns: 1.5fr 0.8fr 0.8fr;
+                }
+
+                .phone {
+                    min-height: 780px;
+                }
+
+                .pager-track {
+                    transform: translateX(-36px);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="page">
+            <div class="intro">
+                <div class="eyebrow">Numi Pro Membership Refresh</div>
+                <h1>Numi Pro 会员设计稿（Cookie 风格排版参考版）</h1>
+                <p class="subtitle">
+                    这版设计稿针对你提出的 3 个重点做了重构：个人页顶部改成简短状态卡并显示
+                    logo；订阅页顶部采用类似 ViewPager 的横向权益卡；下方使用长表格完整对比普通会员与
+                    Pro 会员权益，并将购买按钮与恢复购买固定在页面底部的常驻操作区中。
+                </p>
+            </div>
+
+            <div class="grid">
+                <div class="panel">
+                    <div class="panel-title">
+                        <strong>Screen A · 个人页顶部简短状态卡</strong>
+                        <span>短卡 + logo + 状态，不堆价值点</span>
+                    </div>
+                    <div class="phone">
+                        <div class="screen">
+                            <div class="statusbar">
+                                <span>20:46</span>
+                                <span>◦◦◦ 􀙇 100%</span>
+                            </div>
+                            <div class="top-title">我的</div>
+
+                            <div class="card status-card">
+                                <div class="logo">N</div>
+                                <div class="status-main">
+                                    <strong>Numi Pro</strong>
+                                    <p>无限账本、多货币、同步与高级洞悉已解锁</p>
+                                </div>
+                                <div class="status-tag">已激活</div>
+                            </div>
+
+                            <div class="section-stack">
+                                <div class="card settings-group">
+                                    <strong>数据</strong>
+                                    <div class="settings-list">
+                                        <div>账本管理</div>
+                                        <div>分类管理</div>
+                                        <div>账户管理</div>
+                                        <div>多货币管理</div>
+                                        <div>iCloud 云同步</div>
+                                        <div>本地备份</div>
+                                    </div>
+                                </div>
+
+                                <div class="card settings-group">
+                                    <strong>安全与外观</strong>
+                                    <div class="settings-list">
+                                        <div>隐私锁</div>
+                                        <div>后台模糊</div>
+                                        <div>主题</div>
+                                        <div>App Icon</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <strong>Screen B · 订阅页主结构</strong>
+                        <span>顶部轮播 + 方案卡 + 长权益表 + 常驻购买区</span>
+                    </div>
+                    <div class="phone">
+                        <div class="screen paywall-shell">
+                            <div class="statusbar">
+                                <span>00:15</span>
+                                <span>◦◦◦ 􀙇 94%</span>
+                            </div>
+
+                            <div class="hero-stage">
+                                <div class="hero-close">×</div>
+
+                                <div class="pager">
+                                    <div class="pager-track">
+                                        <div class="benefit-slide">
+                                            <div class="benefit-top">
+                                                <strong>AI / Siri 自动记账</strong>
+                                                <span class="benefit-price">¥89.00</span>
+                                            </div>
+                                            <p>
+                                                一句话生成账单、批量补录、结合快捷指令把高频记账压缩到最低成本。
+                                            </p>
+                                        </div>
+
+                                        <div class="benefit-slide">
+                                            <div class="benefit-top">
+                                                <strong>无限账本与账户</strong>
+                                                <span class="benefit-price">¥50.00</span>
+                                            </div>
+                                            <p>
+                                                把个人、家庭、旅行、报销拆开管理，同时保留完整洞悉与预算。
+                                            </p>
+                                        </div>
+
+                                        <div class="benefit-slide emphasis">
+                                            <div class="benefit-top">
+                                                <strong>高级洞悉与预算</strong>
+                                                <span class="benefit-price">¥1000.00</span>
+                                            </div>
+                                            <p>
+                                                支持分类预算、按账本预算、自定义时间范围和动态日均预算。
+                                            </p>
+                                            <div class="wave"></div>
+                                        </div>
+
+                                        <div class="benefit-slide">
+                                            <div class="benefit-top">
+                                                <strong>同步与加密备份</strong>
+                                                <span class="benefit-price">¥299.00</span>
+                                            </div>
+                                            <p>
+                                                iCloud 云同步、恢复点和本地加密备份，让换机与恢复更安心。
+                                            </p>
+                                        </div>
+
+                                        <div class="benefit-slide">
+                                            <div class="benefit-top">
+                                                <strong>多货币与自动汇率</strong>
+                                                <span class="benefit-price">¥88.00</span>
+                                            </div>
+                                            <p>
+                                                支持跨币种账户、汇率自动更新与统一主货币视图，适合跨境场景。
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pager-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span class="active"></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+
+                            <div class="copy-block">
+                                <p>解锁更完整的钱包系统：多账本、多货币、高级预算与同步备份能力。</p>
+                                <div style="margin: 12px 0 6px">👏</div>
+                                <div class="unlock-title">解锁 Numi Pro 会员</div>
+                            </div>
+
+                            <div class="plan-row">
+                                <div class="plan-card">
+                                    <div class="plan-term">1 个月</div>
+                                    <div class="plan-money">HK$8.00</div>
+                                    <div class="plan-sub">&nbsp;</div>
+                                    <div class="plan-desc">轻量订阅</div>
+                                </div>
+
+                                <div class="plan-card selected">
+                                    <div class="plan-term">12 个月</div>
+                                    <div class="plan-money">HK$33.00</div>
+                                    <div class="plan-sub">原价 HK$96.00</div>
+                                    <div class="plan-desc">最适合长期记账</div>
+                                </div>
+
+                                <div class="plan-card">
+                                    <div class="plan-term">终身会员</div>
+                                    <div class="plan-money">HK$88.00</div>
+                                    <div class="plan-sub">&nbsp;</div>
+                                    <div class="plan-desc">一次买断</div>
+                                </div>
+                            </div>
+
+                            <div class="hint">
+                                👍
+                                <br />
+                                上滑查看普通会员与 Pro 会员完整权益对比
+                            </div>
+
+                            <div class="table-card">
+                                <div class="table-header">
+                                    <div>权益</div>
+                                    <div style="text-align: center">普通会员</div>
+                                    <div style="text-align: center">高级会员</div>
+                                </div>
+
+                                <div class="table-row">
+                                    <div>基础记账主流程</div>
+                                    <div><div class="tick">✓</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>基础搜索 / 编辑 / 删除</div>
+                                    <div><div class="tick">✓</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>账本数量</div>
+                                    <div style="text-align: center">2 个</div>
+                                    <div style="text-align: center">无限</div>
+                                </div>
+                                <div class="table-row">
+                                    <div>账户数量</div>
+                                    <div style="text-align: center">20 个</div>
+                                    <div style="text-align: center">无限</div>
+                                </div>
+                                <div class="table-row">
+                                    <div>多货币账户</div>
+                                    <div><div class="cross">·</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>自动汇率</div>
+                                    <div><div class="cross">·</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>分类预算 / 动态预算</div>
+                                    <div><div class="cross">·</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>高级洞悉与自定义时间范围</div>
+                                    <div><div class="cross">·</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>订阅 / 分期 / 循环无限数量</div>
+                                    <div><div class="cross">·</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>iCloud 云同步</div>
+                                    <div><div class="cross">·</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>加密备份与恢复点</div>
+                                    <div><div class="cross">·</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>AI / Siri 自动记账</div>
+                                    <div><div class="cross">·</div></div>
+                                    <div><div class="tick">✓</div></div>
+                                </div>
+                                <div class="table-row">
+                                    <div>高级主题与图标风格</div>
+                                    <div style="text-align: center">1 套</div>
+                                    <div style="text-align: center">完整解锁</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dock">
+                            <div class="buy-btn">开始订阅</div>
+                            <div class="dock-meta">
+                                <span>用户协议｜隐私协议</span>
+                                <span>恢复购买</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
