@@ -8,8 +8,8 @@ public enum BackupResult {
     case failure(BackupOperationFailure)
 }
 
-public enum RestoreResult {
-    case success
+public enum RestoreResult: Equatable {
+    case success(BookkeepingSnapshot)
     case failure(BackupOperationFailure)
 }
 
@@ -57,8 +57,9 @@ public final class BackupService: Sendable {
     public func restoreBackup(from url: URL, password: String) -> RestoreResult {
         do {
             let encrypted = try Data(contentsOf: url)
-            _ = try decrypt(data: encrypted, password: password)
-            return .success
+            let decrypted = try decrypt(data: encrypted, password: password)
+            let snapshot = try JSONDecoder().decode(BookkeepingSnapshot.self, from: decrypted)
+            return .success(snapshot)
         } catch {
             return .failure(.restoreBackup)
         }

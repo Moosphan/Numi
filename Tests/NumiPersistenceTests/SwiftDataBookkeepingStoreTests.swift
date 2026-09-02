@@ -607,6 +607,38 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
         XCTAssertEqual(reopenedStore.budgetSettings.first { $0.period == .month }?.amount.formatted(), "¥3,000.00")
     }
 
+    @MainActor
+    func testImportSnapshotReplacesExistingSubscriptionsAndInstallmentData() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        try store.createSubscription(
+            Subscription(
+                name: "Stale subscription",
+                amount: Money(minorUnits: 999, currencyCode: "CNY"),
+                cycle: .monthly,
+                nextBillingDate: Date()
+            )
+        )
+        try store.createInstallmentPlan(
+            InstallmentPlan(
+                name: "Stale plan",
+                totalAmount: Money(minorUnits: 9_999, currencyCode: "CNY"),
+                feePerPeriod: Money(minorUnits: 0, currencyCode: "CNY"),
+                periodCount: 2,
+                firstPaymentDate: Date()
+            )
+        )
+        let snapshot = BookkeepingSnapshot(ledgers: [Ledger(name: "Restored", currencyCode: "USD")])
+
+        try store.importSnapshot(snapshot)
+
+        let restoredSnapshot = store.exportSnapshot()
+        XCTAssertEqual(restoredSnapshot.ledgers, snapshot.ledgers)
+        XCTAssertEqual(restoredSnapshot.subscriptions, snapshot.subscriptions)
+        XCTAssertEqual(restoredSnapshot.installmentPlans, snapshot.installmentPlans)
+        XCTAssertEqual(restoredSnapshot.installmentPeriods, snapshot.installmentPeriods)
+    }
+
     private func temporaryStoreURL() throws -> URL {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)

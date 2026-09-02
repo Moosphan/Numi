@@ -940,6 +940,19 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.buttons["settings.accounts"].waitForExistence(timeout: 5))
     }
 
+    func testBackupRestoreRequiresPasswordBeforeSelectingFile() {
+        let app = launchApp()
+        XCTAssertTrue(app.scrollViews["scroll.transactionsHome"].waitForExistence(timeout: 5))
+        let settingsTab = tabButton("我的", in: app)
+        XCTAssertTrue(settingsTab.waitForExistence(timeout: 5))
+        settingsTab.tap()
+        app.buttons["settings.backup"].tap()
+
+        let restoreButton = app.buttons["backup.restore.selectFile"]
+        XCTAssertTrue(restoreButton.waitForExistence(timeout: 5))
+        XCTAssertFalse(restoreButton.isEnabled)
+    }
+
     func testCaptureScreenshotShowcaseGallery() throws {
         let app = launchApp(seedProfile: "screenshot_showcase")
 

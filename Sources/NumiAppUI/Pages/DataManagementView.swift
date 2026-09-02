@@ -228,6 +228,7 @@ public struct BackupView: View {
     private let importSnapshot: (BookkeepingSnapshot) throws -> Void
 
     @State private var backupPassword = ""
+    @State private var restorePassword = ""
     @State private var showBackupFile = false
     @State private var showRestoreFile = false
     @State private var shareURL: ShareableURL?
@@ -366,6 +367,25 @@ public struct BackupView: View {
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
+            HStack(spacing: NumiSpacing.s3) {
+                Text("backup.password")
+                    .font(NumiFont.body)
+                    .foregroundStyle(NumiColor.textPrimary)
+
+                Spacer()
+
+                SecureField("backup.password", text: $restorePassword)
+                    .font(NumiFont.body)
+                    .multilineTextAlignment(.trailing)
+                    .accessibilityIdentifier("backup.restore.password")
+            }
+            .padding(.horizontal, NumiSpacing.s4)
+            .frame(minHeight: 48)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(NumiColor.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+            .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+
             Button {
                 showRestoreFile = true
             } label: {
@@ -399,6 +419,8 @@ public struct BackupView: View {
                 .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
             }
             .buttonStyle(.plain)
+            .disabled(restorePassword.isEmpty)
+            .accessibilityIdentifier("backup.restore.selectFile")
             .fileImporter(
                 isPresented: $showRestoreFile,
                 allowedContentTypes: [.data]
@@ -431,8 +453,21 @@ public struct BackupView: View {
 
     private func handleRestore(_ result: Result<URL, Error>) {
         switch result {
-        case .success:
-            showToastMessage(NumiLocalized.string( "backup.select.file"))
+        case .success(let url):
+            let accessing = url.startAccessingSecurityScopedResource()
+            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+
+            switch BackupService.shared.restoreBackup(from: url, password: restorePassword) {
+            case .success(let snapshot):
+                do {
+                    try importSnapshot(snapshot)
+                    showToastMessage(NumiLocalized.string("backup.restore.success", snapshot.transactions.count))
+                } catch {
+                    showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+                }
+            case .failure(let error):
+                showToastMessage(error.displayMessage)
+            }
         case .failure(let error):
             showToastMessage(NumiLocalized.string("io.import.file.fail", error.localizedDescription))
         }

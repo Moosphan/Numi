@@ -34,7 +34,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 
 | ID | Backlog | 当前状态 | 证据 | 下一步 | 验收 |
 | --- | --- | --- | --- | --- | --- |
-| P0B-01 | 加密备份恢复真正导入数据 | Partial | `BackupService.restoreBackup` 目前只 decrypt，不 decode snapshot；`BackupView.handleRestore` 只提示选择文件，未调用 restore/import | `RestoreResult` 返回 `BookkeepingSnapshot` 或直接导入闭包；恢复前校验密码、结构并创建恢复点 | 错误密码不改写现有数据；正确备份可在另一台模拟器恢复交易、账户、分类、预算、计划 |
+| P0B-01 | 加密备份恢复真正导入数据 | Done | 2026-09-02：加密备份可解密、解码并完整替换当前 SwiftData 快照；密码门槛和恢复入口 UI 测试通过 | P0B-02 补 JSON 导入前的持久恢复点与回滚 UX | 错误密码不改写现有数据；正确备份可恢复交易、账户、分类、预算、订阅与分期计划 |
 | P0B-02 | JSON 导入前恢复点 | Partial | `DataManagementView.handleImport` 可导入 JSON 并调用 `importSnapshot`，但未见导入前恢复点流程 | 导入前自动创建本地快照/备份，失败时可回滚；UI 明示覆盖风险 | 导入失败不破坏现有数据；用户能恢复导入前状态 |
 | P0B-03 | CSV 导入字段映射、预览与错误行 | Partial | `NumiCSVImporter` 只解析固定 header；`DataManagementView` 只有 JSON import，CSV UI 仅导出 | 增加 CSV 文件选择、字段映射、预览、错误行报告、分类/账户匹配 | 用户能导入第三方 CSV；错误行可见且不阻塞有效行预览 |
 | P0B-04 | 隐藏金额模式全局接线 | Partial | 设置与隐私锁/后台模糊已有基础；PRD 要求明细、洞悉、计划、资产区域统一隐藏 | 定义统一 `PrivacyAmountDisplayPolicy` 或等价环境状态；替换各页面直接金额展示 | 开启后首页、明细、洞悉、计划、设置资产相关区域均不露出真实金额 |

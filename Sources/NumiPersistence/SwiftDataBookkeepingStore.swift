@@ -728,6 +728,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
 
     public func resetAllData() throws {
         try delete(fetchTransactionEntities(includeDeleted: true))
+        try delete(fetchInstallmentPeriodEntities())
+        try delete(fetchInstallmentPlanEntities())
+        try delete(fetchSubscriptionEntities())
         try delete(fetchBudgetSettingEntities())
         try delete(fetchAccountEntities())
         try delete(fetchCategoryEntities())

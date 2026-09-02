@@ -7483,6 +7483,35 @@
         }
       }
     },
+    "backup.restore.success": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "成功恢复 %lld 笔交易"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restored %lld transactions"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "成功還原 %lld 筆交易"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 件の取引を復元しました"
+          }
+        }
+      }
+    },
     "backup.select.file": {
       "extractionState": "manual",
       "localizations": {
