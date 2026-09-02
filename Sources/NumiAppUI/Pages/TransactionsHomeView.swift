@@ -671,9 +671,11 @@ private struct PressableRow<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        content
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .onTapGesture(perform: onSelect)
+        Button(action: onSelect) {
+            content
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }

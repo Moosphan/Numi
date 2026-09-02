@@ -153,6 +153,14 @@ dependencies: [
 ./scripts/verify.sh
 ```
 
+脚本会按阶段输出 Swift Package 测试、本地化目录检查、Xcode 工程生成与构建、关键 UI 测试、设计/文档引用检查。定位问题时可只重跑指定阶段：
+
+```bash
+NUMI_VERIFY_STAGES=swift-test,localization ./scripts/verify.sh
+```
+
+可选阶段：`swift-test`、`localization`、`xcode-project`、`xcode-build`、`ui-tests`、`references`。可通过 `SIMULATOR_NAME` 指定模拟器，并通过 `NUMI_DERIVED_DATA_PATH` 覆盖默认的 `build/verify-derived-data` 构建目录。
+
 ### 运行带种子数据的应用 (`run_seeded_app.sh`)
 
 在模拟器中启动应用，并加载预设的种子数据：

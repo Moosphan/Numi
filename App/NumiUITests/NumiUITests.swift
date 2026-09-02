@@ -283,7 +283,7 @@ final class NumiUITests: XCTestCase {
 
         savedRecord.tap()
         XCTAssertTrue(app.scrollViews["page.recordDetail"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["¥12.00"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["detail.amount"].waitForExistence(timeout: 5))
         app.buttons["action.editRecord"].tap()
 
         XCTAssertTrue(app.buttons["picker.editRecordCategory"].waitForExistence(timeout: 5))

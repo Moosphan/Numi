@@ -1,8 +1,8 @@
 # Numi 当前优先级 Backlog
 
-日期：2026-08-03
+日期：2026-09-02
 范围：基于当前仓库实现、PRD、技术方案、既有 backlog 与本轮测试结果的项目进展同步
-验证基线：`swift test` 构建成功但测试失败，执行 171 个测试，跳过 15 个，失败 139 个
+验证基线：`swift test` 通过，执行 173 个测试，跳过 15 个需要外部 API key 的集成测试，失败 0 个
 
 ## 1. 状态图例
 
@@ -25,10 +25,10 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 
 | ID | Backlog | 当前状态 | 证据 | 下一步 | 验收 |
 | --- | --- | --- | --- | --- | --- |
-| P0A-01 | 恢复 `swift test` 绿灯 | Blocked | 本轮 `swift test`：171 executed / 15 skipped / 139 failures | 先分组修复：AppUI localization bundle、Runtime localization、SwiftData seed/default data、balance linkage | `swift test` 退出码 0；失败数 0；跳过项仅限需要外部 API key 的集成测试 |
-| P0A-02 | 修复 `builtInKey` / 默认名称跨语言链路 | Blocked | `BookkeepingStore`、`SwiftDataBookkeepingStore` 已有 `builtInKey`；测试仍出现 raw key 或 nil，例如 `account.default.cash`、`category.default.expense.dining` | 明确 SwiftPM/macOS 下 `.xcstrings` 加载策略；保证内置账本/账户/分类的稳定 key、展示名、别名匹配一致 | 内置默认数据在 `zh-Hans`、`en`、`zh-Hant`、`ja` 下展示正确；自定义名称不被翻译；旧数据迁移补 key |
-| P0A-03 | 修复 SwiftData 默认数据与余额链路失败 | Blocked | `SwiftDataBookkeepingStoreTests` 有默认数据缺失、`XCTUnwrap` nil、更新交易余额断言失败 | 复核 `seedDefaultsIfNeeded()`、默认账本/账户/分类创建、交易更新时旧余额反转和新余额应用 | 支出/收入/转账创建、编辑、删除、撤销后账户余额准确，重启后持久化一致 |
-| P0A-04 | 建立可信验证脚本基线 | Partial | `ios-swiftui-backlog.md` 要求 `scripts/verify.sh`；当前 `swift test` 已阻塞 | 将 `swift test`、本地化扫描、Xcode build、关键 UI Test 分阶段输出，避免只看到最终失败 | `scripts/verify.sh` 能稳定定位失败阶段，并成为合并前入口 |
+| P0A-01 | 恢复 `swift test` 绿灯 | Done | 2026-09-02：173 executed / 15 skipped / 0 failures | 后续改动持续以 `swift test` 守住基线 | `swift test` 退出码 0；跳过项仅限需要外部 API key 的集成测试 |
+| P0A-02 | 修复 `builtInKey` / 默认名称跨语言链路 | Done | SwiftPM 资源加载与运行时本地化测试通过；内置名称不再回退为 raw key | 新增语言或内置数据时补对应回归用例 | 内置默认数据在 `zh-Hans`、`en`、`zh-Hant`、`ja` 下展示正确；自定义名称不被翻译；旧数据迁移补 key |
+| P0A-03 | 修复 SwiftData 默认数据与余额链路失败 | Done | `SwiftDataBookkeepingStoreTests` 已纳入 173 个通过测试，覆盖默认数据与交易余额更新 | 后续持久化迁移继续覆盖创建、编辑、删除、撤销 | 支出/收入/转账创建、编辑、删除、撤销后账户余额准确，重启后持久化一致 |
+| P0A-04 | 建立可信验证脚本基线 | Done | 2026-09-02：`./scripts/verify.sh` 六阶段通过；关键 UI 流程 5/5 通过 | 以该脚本作为合并前入口；逐步清理本地化重复条目告警 | `scripts/verify.sh` 能稳定定位失败阶段，并成为合并前入口 |
 
 ## 4. P0B MVP 功能收口
 
@@ -46,7 +46,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 
 | ID | Backlog | 当前状态 | 证据 | 下一步 | 验收 |
 | --- | --- | --- | --- | --- | --- |
-| P0C-01 | P0 UI Test 稳定通过 | Partial | `App/NumiUITests/NumiUITests.swift` 已有大量用例，但本轮未跑 iOS simulator UI Test | 在单元测试绿灯后跑关键 iOS UI Test：首次启动、新增、编辑、删除撤销、导出 JSON、隐私锁 | 关键 UI Test 在固定模拟器可重复通过 |
+| P0C-01 | P0 UI Test 稳定通过 | Partial | 2026-09-02 iPhone 15 已通过首次启动、新增、编辑、删除撤销、运行时语言切换共 5 个关键 UI 流程 | 补跑并稳定导出 JSON、隐私锁等其余 P0 UI 流程 | 关键 UI Test 在固定模拟器可重复通过 |
 | P0C-02 | 视觉截图基线与非空校验 | Partial | UI Test 有截图 showcase seed profile；原 backlog 要求固定截图与非空校验 | 输出稳定截图目录、命名规则、空白/全黑/主要元素缺失检测 | 明细、记账、洞悉、计划、设置、数据管理、深色、大字体均有基线 |
 | P0C-03 | 性能压测 | Not Started | PRD 要求 10000 条 60fps、50000 条统计 1 秒或渐进加载；未见性能压测入口 | 增加 10k/50k seed profile、统计耗时度量、列表滚动基准 | 性能结果有记录；超时路径显示加载或降级策略 |
 | P0C-04 | README、隐私说明、数据格式说明 | Partial | 既有 PRD/技术方案较完整；面向新开发者和用户的数据格式说明仍需落地 | 更新运行、验证、架构、隐私、本地存储、JSON/CSV/备份格式文档 | 新开发者可按 README 启动；用户能理解数据保存位置和导出恢复方式 |
@@ -108,9 +108,9 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 
 | Epic | 原优先级 | 当前状态 | 说明 |
 | --- | --- | --- | --- |
-| E01 工程与架构骨架 | P0 | Partial | 工程和模块已存在；验证脚本/测试基线仍需收口 |
+| E01 工程与架构骨架 | P0 | Done | 工程、模块、SwiftPM 测试基线与六阶段验证入口均已可用 |
 | E02 Design System | P0 | Done | token、组件、主题基础已落地，后续以视觉回归守住 |
-| E03 SwiftData 数据模型与 Repository | P0 | Blocked | 实现丰富，但默认数据、内置 key、余额链路测试失败 |
+| E03 SwiftData 数据模型与 Repository | P0 | Done | 默认数据、内置 key 与余额链路测试已恢复通过；后续以迁移与性能回归守住 |
 | E04 App Shell、导航与预览数据 | P0 | Done | `RootShellView` 已集成 store、导航、主要页面 |
 | E05 明细与快速记账闭环 | P0 | Partial | 主路径已有，搜索筛选、默认币种、边界回归待补 |
 | E06 分类与账户管理 | P0 | Partial | 管理基础已有，跨语言默认名和自定义名边界待修 |
