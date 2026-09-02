@@ -29,9 +29,9 @@ public enum FetchRateFailure: Equatable {
     public var displayMessage: String {
         switch self {
         case .invalidURL:
-            return NumiLocalized.string("setting.ai.error.invalid.url")
+            return NumiLocalized.string("error.exchangeRate.invalidURL")
         case .httpStatus(let statusCode):
-            return NumiLocalized.string("setting.ai.test.fail", statusCode)
+            return NumiLocalized.string("error.exchangeRate.httpStatus", statusCode)
         case .network(let description):
             return description
         }

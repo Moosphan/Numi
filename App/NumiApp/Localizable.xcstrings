@@ -17169,35 +17169,6 @@
         }
       }
     },
-    "error.export.fail": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "导出失败：%@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Export failed: %@"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "匯出失敗：%@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "エクスポート失敗：%@"
-          }
-        }
-      }
-    },
     "error.missing.text": {
       "extractionState": "manual",
       "localizations": {

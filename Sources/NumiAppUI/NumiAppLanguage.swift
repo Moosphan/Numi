@@ -17,13 +17,13 @@ public enum NumiAppLanguage: String, CaseIterable, Identifiable {
         case .system:
             return NumiLocalized.string("language.system")
         case .zhHans:
-            return NumiLocalized.lookup("language.zh-Hans", locale: Locale(identifier: "zh-Hans"))
+            return NumiLocalized.string("language.zh-Hans")
         case .en:
-            return NumiLocalized.lookup("language.en", locale: Locale(identifier: "en"))
+            return NumiLocalized.string("language.en")
         case .zhHant:
-            return NumiLocalized.lookup("language.zh-Hant", locale: Locale(identifier: "zh-Hant"))
+            return NumiLocalized.string("language.zh-Hant")
         case .ja:
-            return NumiLocalized.lookup("language.ja", locale: Locale(identifier: "ja"))
+            return NumiLocalized.string("language.ja")
         }
     }
 

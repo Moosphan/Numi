@@ -126,8 +126,8 @@ public enum TransactionServiceError: Error, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .noAccount: return "没有可用账户"
-        case .noLedger: return "没有可用账本"
+        case .noAccount: return NumiLocalized.string("error.transaction.no.account")
+        case .noLedger: return NumiLocalized.string("error.transaction.no.ledger")
         }
     }
 }

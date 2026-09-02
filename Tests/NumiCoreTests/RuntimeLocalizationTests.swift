@@ -49,12 +49,34 @@ final class RuntimeLocalizationTests: XCTestCase {
         XCTAssertEqual(NumiLocalized.string("currency.name.USD"), "US Dollar")
     }
 
+    func testLookupReadsCoreStringCatalogFromSwiftPMResourceBundle() {
+        XCTAssertEqual(
+            NumiLocalized.lookup("currency.name.USD", locale: Locale(identifier: "en")),
+            "US Dollar"
+        )
+    }
+
     func testFormattedLookupUsesCatalogKeyAndArguments() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.string("error.backup.fail", "磁盘已满"), "备份失败：磁盘已满")
 
         UserDefaults.standard.set("en", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.string("error.backup.fail", "Disk full"), "Backup failed: Disk full")
+    }
+
+    func testCoreOwnedFailureKeysResolveFromCoreCatalog() {
+        XCTAssertEqual(
+            NumiLocalized.lookup("error.export.fail", locale: Locale(identifier: "en")),
+            "Export failed: %@"
+        )
+        XCTAssertEqual(
+            NumiLocalized.lookup("error.exchangeRate.invalidURL", locale: Locale(identifier: "en")),
+            "Invalid URL"
+        )
+        XCTAssertEqual(
+            NumiLocalized.lookup("error.exchangeRate.httpStatus", locale: Locale(identifier: "en")),
+            "Connection failed: %@"
+        )
     }
 
     func testBackupOperationFailureDisplayMessageTracksRuntimeLanguage() {
@@ -93,8 +115,8 @@ final class RuntimeLocalizationTests: XCTestCase {
         let bundleURL = temporaryLocalizationBundle(
             identifier: "ExtraLocalization.bundle",
             localizations: [
-                "zh-Hans": ["setting.data": "数据"],
-                "en": ["setting.data": "Data"]
+                "zh-Hans": ["runtime-test.registered-bundle": "数据"],
+                "en": ["runtime-test.registered-bundle": "Data"]
             ]
         )
         let bundle = try XCTUnwrap(Bundle(url: bundleURL))
@@ -102,17 +124,17 @@ final class RuntimeLocalizationTests: XCTestCase {
         NumiLocalized.register(bundle: bundle)
 
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
-        XCTAssertEqual(NumiLocalized.lookup("setting.data"), "数据")
+        XCTAssertEqual(NumiLocalized.lookup("runtime-test.registered-bundle"), "数据")
 
         UserDefaults.standard.set("en", forKey: languageKey)
-        XCTAssertEqual(NumiLocalized.lookup("setting.data"), "Data")
+        XCTAssertEqual(NumiLocalized.lookup("runtime-test.registered-bundle"), "Data")
     }
 
     func testLookupFallsBackFromUnderscoreLocaleIdentifierToLanguageCode() throws {
         let bundleURL = temporaryLocalizationBundle(
             identifier: "UnderscoreLocaleFallback.bundle",
             localizations: [
-                "en": ["setting.data": "Data"]
+                "en": ["runtime-test.underscore": "Data"]
             ]
         )
         let bundle = try XCTUnwrap(Bundle(url: bundleURL))
@@ -120,7 +142,7 @@ final class RuntimeLocalizationTests: XCTestCase {
         NumiLocalized.register(bundle: bundle)
 
         XCTAssertEqual(
-            NumiLocalized.lookup("setting.data", locale: Locale(identifier: "en_US")),
+            NumiLocalized.lookup("runtime-test.underscore", locale: Locale(identifier: "en_US")),
             "Data"
         )
     }
@@ -129,8 +151,8 @@ final class RuntimeLocalizationTests: XCTestCase {
         let bundleURL = temporaryLocalizationBundle(
             identifier: "ScriptRegionLocaleFallback.bundle",
             localizations: [
-                "zh-Hans": ["setting.data": "数据"],
-                "zh-Hant": ["setting.data": "資料"]
+                "zh-Hans": ["runtime-test.script-region": "数据"],
+                "zh-Hant": ["runtime-test.script-region": "資料"]
             ]
         )
         let bundle = try XCTUnwrap(Bundle(url: bundleURL))
@@ -138,11 +160,11 @@ final class RuntimeLocalizationTests: XCTestCase {
         NumiLocalized.register(bundle: bundle)
 
         XCTAssertEqual(
-            NumiLocalized.lookup("setting.data", locale: Locale(identifier: "zh-Hans-CN")),
+            NumiLocalized.lookup("runtime-test.script-region", locale: Locale(identifier: "zh-Hans-CN")),
             "数据"
         )
         XCTAssertEqual(
-            NumiLocalized.lookup("setting.data", locale: Locale(identifier: "zh_Hant_TW")),
+            NumiLocalized.lookup("runtime-test.script-region", locale: Locale(identifier: "zh_Hant_TW")),
             "資料"
         )
     }
@@ -151,8 +173,8 @@ final class RuntimeLocalizationTests: XCTestCase {
         let bundleURL = temporaryLocalizationBundle(
             identifier: "ChineseRegionInference.bundle",
             localizations: [
-                "zh-Hans": ["setting.data": "数据"],
-                "zh-Hant": ["setting.data": "資料"]
+                "zh-Hans": ["runtime-test.chinese-region": "数据"],
+                "zh-Hant": ["runtime-test.chinese-region": "資料"]
             ]
         )
         let bundle = try XCTUnwrap(Bundle(url: bundleURL))
@@ -160,11 +182,11 @@ final class RuntimeLocalizationTests: XCTestCase {
         NumiLocalized.register(bundle: bundle)
 
         XCTAssertEqual(
-            NumiLocalized.lookup("setting.data", locale: Locale(identifier: "zh_CN")),
+            NumiLocalized.lookup("runtime-test.chinese-region", locale: Locale(identifier: "zh_CN")),
             "数据"
         )
         XCTAssertEqual(
-            NumiLocalized.lookup("setting.data", locale: Locale(identifier: "zh_TW")),
+            NumiLocalized.lookup("runtime-test.chinese-region", locale: Locale(identifier: "zh_TW")),
             "資料"
         )
     }
@@ -449,7 +471,7 @@ final class RuntimeLocalizationTests: XCTestCase {
     func testTimeFormattingTracksRuntimeLanguage() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = Locale(identifier: "en_US_POSIX")
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        calendar.timeZone = .current
         let date = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 3, day: 5, hour: 21, minute: 30)))
 
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)

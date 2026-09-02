@@ -7,6 +7,25 @@ public enum NumiLocalized {
     private static let bundle: Bundle = .module
     private static let lock = NSLock()
     private nonisolated(unsafe) static var registeredBundles: [Bundle] = []
+    private nonisolated(unsafe) static var decodedCatalogs: [URL: XCStringsCatalog] = [:]
+    private nonisolated(unsafe) static var bundlesWithoutCatalog: Set<URL> = []
+
+    private struct XCStringsCatalog: Decodable {
+        let sourceLanguage: String
+        let strings: [String: XCStringsEntry]
+    }
+
+    private struct XCStringsEntry: Decodable {
+        let localizations: [String: XCStringsLocalization]
+    }
+
+    private struct XCStringsLocalization: Decodable {
+        let stringUnit: XCStringsUnit?
+    }
+
+    private struct XCStringsUnit: Decodable {
+        let value: String?
+    }
 
     /// 根据用户存储的语言偏好返回正确的 Locale
     public static var currentLocale: Locale {
@@ -66,6 +85,9 @@ public enum NumiLocalized {
             if let localization = searchBundle.localizedString(forKey: key, locale: effectiveLocale) {
                 return localization
             }
+            if let localization = catalogValue(forKey: key, locale: effectiveLocale, bundle: searchBundle) {
+                return localization
+            }
         }
         return key
     }
@@ -80,9 +102,56 @@ public enum NumiLocalized {
             result.append(candidate)
         }
     }
+
+    private static func catalogValue(forKey key: String, locale: Locale, bundle: Bundle) -> String? {
+        let bundleURL = bundle.bundleURL
+
+        lock.lock()
+        if let catalog = decodedCatalogs[bundleURL] {
+            lock.unlock()
+            return catalogValue(forKey: key, locale: locale, bundle: bundle, catalog: catalog)
+        }
+        if bundlesWithoutCatalog.contains(bundleURL) {
+            lock.unlock()
+            return nil
+        }
+        lock.unlock()
+
+        guard let catalogURL = bundle.url(forResource: "Localizable", withExtension: "xcstrings"),
+              let data = try? Data(contentsOf: catalogURL),
+              let catalog = try? JSONDecoder().decode(XCStringsCatalog.self, from: data)
+        else {
+            lock.lock()
+            bundlesWithoutCatalog.insert(bundleURL)
+            lock.unlock()
+            return nil
+        }
+
+        lock.lock()
+        decodedCatalogs[bundleURL] = catalog
+        lock.unlock()
+
+        return catalogValue(forKey: key, locale: locale, bundle: bundle, catalog: catalog)
+    }
+
+    private static func catalogValue(
+        forKey key: String,
+        locale: Locale,
+        bundle: Bundle,
+        catalog: XCStringsCatalog
+    ) -> String? {
+        guard let entry = catalog.strings[key] else { return nil }
+
+        for code in bundle.localizationCandidates(for: locale) + [catalog.sourceLanguage] {
+            if let value = entry.localizations[code]?.stringUnit?.value, !value.isEmpty {
+                return value
+            }
+        }
+        return nil
+    }
 }
 
-private extension Bundle {
+fileprivate extension Bundle {
     func localizedString(forKey key: String, locale: Locale) -> String? {
         for code in localizationCandidates(for: locale) {
             if let path = self.path(forResource: code, ofType: "lproj"),
@@ -98,7 +167,7 @@ private extension Bundle {
         return fallback == key ? nil : fallback
     }
 
-    private func localizationCandidates(for locale: Locale) -> [String] {
+    func localizationCandidates(for locale: Locale) -> [String] {
         let normalizedIdentifier = locale.identifier.replacingOccurrences(of: "_", with: "-")
         let subtags = normalizedIdentifier.split(separator: "-").map(String.init)
 

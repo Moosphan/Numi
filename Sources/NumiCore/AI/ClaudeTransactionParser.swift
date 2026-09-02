@@ -175,9 +175,15 @@ enum LLMMapper {
         return f
     }()
 
+    private static let dateOnlyFormatter: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withFullDate]
+        return f
+    }()
+
     static func parseDate(_ string: String?) -> Date {
         guard let string else { return Date() }
-        return formatter.date(from: string) ?? Date()
+        return formatter.date(from: string) ?? dateOnlyFormatter.date(from: string) ?? Date()
     }
 
     static func extractJSON(from text: String) -> String {

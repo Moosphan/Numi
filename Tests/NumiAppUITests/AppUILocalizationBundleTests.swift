@@ -39,10 +39,13 @@ final class AppUILocalizationBundleTests: XCTestCase {
 
     func testFormattedLookupUsesCatalogKeyAndArguments() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
-        XCTAssertEqual(NumiLocalized.string("period.quarter", 2026, 2), "2026年第2季度")
+        XCTAssertEqual(NumiLocalized.string("setting.ai.test.fail", 401), "连接失败：401")
 
         UserDefaults.standard.set("en", forKey: languageKey)
-        XCTAssertEqual(NumiLocalized.string("error.ai.record.success", "Dining", "+", "¥35.00"), "Recorded Dining +¥35.00")
+        XCTAssertEqual(
+            NumiLocalized.string("language.switch.success", "Simplified Chinese"),
+            "Switched to Simplified Chinese"
+        )
     }
 
     func testDatePickerDisplayTextUsesRuntimeLanguagePreference() throws {
