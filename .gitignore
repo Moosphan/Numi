@@ -1,5 +1,10 @@
 .build/
+build/
+.build-local/
+.codex-tmp/
 DerivedData/
+__pycache__/
+*.pyc
 *.xcuserstate
 xcuserdata/
 .DS_Store
