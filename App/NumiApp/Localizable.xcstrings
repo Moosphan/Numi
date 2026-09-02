@@ -7831,6 +7831,78 @@
         }
       }
     },
+    "io.import.restore.previous": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "恢复上次导入前的数据" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Restore pre-import data" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "還原上次匯入前的資料" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "インポート前のデータを復元" } }
+      }
+    },
+    "io.import.restore.previous.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每次导入前会自动保留一份本地恢复点" } },
+        "en": { "stringUnit": { "state": "translated", "value": "A local recovery point is saved before every import" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "每次匯入前都會自動保留一份本機復原點" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "インポート前にローカル復元ポイントが自動保存されます" } }
+      }
+    },
+    "io.import.restore.confirm.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "恢复导入前数据？" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Restore pre-import data?" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "還原匯入前資料？" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "インポート前のデータを復元しますか？" } }
+      }
+    },
+    "io.import.restore.confirm.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "当前数据将被上次导入前的快照覆盖。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Current data will be replaced by the pre-import snapshot." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "目前資料將被上次匯入前的快照覆蓋。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "現在のデータはインポート前のスナップショットで置き換えられます。" } }
+      }
+    },
+    "io.import.restore.confirm.action": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "恢复数据" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Restore data" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "還原資料" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "データを復元" } }
+      }
+    },
+    "io.import.restore.success": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已恢复导入前的数据" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Pre-import data restored" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已還原匯入前的資料" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "インポート前のデータを復元しました" } }
+      }
+    },
+    "io.import.success.withRecovery": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已导入 %lld 笔交易，恢复点已保留" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Imported %lld transactions. A recovery point is available." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已匯入 %lld 筆交易，復原點已保留" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld 件の取引をインポートしました。復元ポイントを利用できます。" } }
+      }
+    },
+    "io.import.rollback.success": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "导入失败，已恢复之前的数据：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Import failed; previous data was restored: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "匯入失敗，已還原先前資料：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "インポートに失敗したため、以前のデータを復元しました：%@" } }
+      }
+    },
     "io.import.warning": {
       "extractionState": "manual",
       "localizations": {

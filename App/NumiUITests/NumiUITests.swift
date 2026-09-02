@@ -953,6 +953,17 @@ final class NumiUITests: XCTestCase {
         XCTAssertFalse(restoreButton.isEnabled)
     }
 
+    func testImportRecoveryRestoreIsDisabledWithoutSavedRecoveryPoint() {
+        let app = launchApp()
+        XCTAssertTrue(app.scrollViews["scroll.transactionsHome"].waitForExistence(timeout: 5))
+        tabButton("我的", in: app).tap()
+        app.buttons["settings.importExport"].tap()
+
+        let restoreButton = app.buttons["io.import.restorePrevious"]
+        XCTAssertTrue(restoreButton.waitForExistence(timeout: 5))
+        XCTAssertFalse(restoreButton.isEnabled)
+    }
+
     func testCaptureScreenshotShowcaseGallery() throws {
         let app = launchApp(seedProfile: "screenshot_showcase")
 

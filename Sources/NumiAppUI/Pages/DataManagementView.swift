@@ -13,18 +13,24 @@ private struct ShareableURL: Identifiable {
 public struct DataManagementView: View {
     private let exportSnapshot: () -> BookkeepingSnapshot
     private let importSnapshot: (BookkeepingSnapshot) throws -> Void
+    private let recoveryPointService: ImportRecoveryPointService
 
     @State private var showImportJSON = false
+    @State private var hasImportRecoveryPoint: Bool
+    @State private var showRestoreRecoveryConfirmation = false
     @State private var shareURL: ShareableURL?
     @State private var toastMessage: String?
     @State private var showToast = false
 
     public init(
         exportSnapshot: @escaping () -> BookkeepingSnapshot,
-        importSnapshot: @escaping (BookkeepingSnapshot) throws -> Void
+        importSnapshot: @escaping (BookkeepingSnapshot) throws -> Void,
+        recoveryPointService: ImportRecoveryPointService = .shared
     ) {
         self.exportSnapshot = exportSnapshot
         self.importSnapshot = importSnapshot
+        self.recoveryPointService = recoveryPointService
+        _hasImportRecoveryPoint = State(initialValue: recoveryPointService.hasRecoveryPoint)
     }
 
     public var body: some View {
@@ -60,6 +66,14 @@ public struct DataManagementView: View {
                 showToastMessage(NumiLocalized.string( "io.saved"))
             }
 #endif
+        }
+        .alert("io.import.restore.confirm.title", isPresented: $showRestoreRecoveryConfirmation) {
+            Button("io.import.restore.confirm.action", role: .destructive) {
+                restoreRecoveryPoint()
+            }
+            Button("common.cancel", role: .cancel) {}
+        } message: {
+            Text("io.import.restore.confirm.message")
         }
     }
 
@@ -130,6 +144,21 @@ public struct DataManagementView: View {
                 ) { result in
                     handleImport(result)
                 }
+
+                Divider().padding(.leading, 48)
+
+                Button {
+                    showRestoreRecoveryConfirmation = true
+                } label: {
+                    exportRow(
+                        icon: "arrow.uturn.backward.circle",
+                        title: NumiLocalized.string("io.import.restore.previous"),
+                        subtitle: NumiLocalized.string("io.import.restore.previous.desc")
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(!hasImportRecoveryPoint)
+                .accessibilityIdentifier("io.import.restorePrevious")
             }
             .background(NumiColor.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
@@ -201,14 +230,48 @@ public struct DataManagementView: View {
                 let accessing = url.startAccessingSecurityScopedResource()
                 defer { if accessing { url.stopAccessingSecurityScopedResource() } }
 
-                let snapshot = try BackupService.shared.importJSON(from: url)
-                try importSnapshot(snapshot)
-                showToastMessage(NumiLocalized.string("io.import.success", snapshot.transactions.count))
+                try importDecodedSnapshot(BackupService.shared.importJSON(from: url))
+            } catch let error as ImportRecoveryPointError {
+                showToastMessage(error.displayMessage)
             } catch {
                 showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
             }
         case .failure(let error):
             showToastMessage(NumiLocalized.string("io.import.file.fail", error.localizedDescription))
+        }
+    }
+
+    private func importDecodedSnapshot(_ snapshot: BookkeepingSnapshot) throws {
+        let currentSnapshot = exportSnapshot()
+        try recoveryPointService.save(currentSnapshot)
+        hasImportRecoveryPoint = true
+
+        do {
+            try importSnapshot(snapshot)
+            showToastMessage(NumiLocalized.string("io.import.success.withRecovery", snapshot.transactions.count))
+        } catch {
+            let importError = error
+            do {
+                try importSnapshot(currentSnapshot)
+                try recoveryPointService.discard()
+                hasImportRecoveryPoint = false
+                showToastMessage(NumiLocalized.string("io.import.rollback.success", importError.localizedDescription))
+            } catch {
+                showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+            }
+        }
+    }
+
+    private func restoreRecoveryPoint() {
+        do {
+            try importSnapshot(recoveryPointService.load())
+            try recoveryPointService.discard()
+            hasImportRecoveryPoint = false
+            showToastMessage(NumiLocalized.string("io.import.restore.success"))
+        } catch let error as ImportRecoveryPointError {
+            showToastMessage(error.displayMessage)
+        } catch {
+            showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
         }
     }
 
