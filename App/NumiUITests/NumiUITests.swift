@@ -958,6 +958,8 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["plans.section.installments"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.otherElements["plans.empty.subscriptions"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.otherElements["plans.empty.installments"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["action.addSubscription.empty"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["action.addInstallment.empty"].waitForExistence(timeout: 5))
     }
 
     func testScreenshotShowcaseSeedProfileBootsIntoRichState() {

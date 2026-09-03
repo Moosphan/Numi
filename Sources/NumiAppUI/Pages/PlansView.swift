@@ -247,7 +247,7 @@ public struct PlansView: View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
             PlanSectionHeader(
                 title: NumiLocalized.string( "subscription.title"),
-                trailingText: subscriptions.isEmpty ? NumiLocalized.string("subscription.no") : NumiLocalized.string("subscription.count", subscriptions.count),
+                trailingText: nil,
                 accessibilityIdentifier: "plans.section.subscriptions"
             )
 
@@ -256,7 +256,10 @@ public struct PlansView: View {
                     iconName: "repeat",
                     title: NumiLocalized.string( "subscription.empty.title"),
                     message: NumiLocalized.string( "subscription.add.desc"),
-                    accessibilityIdentifier: "plans.empty.subscriptions"
+                    accessibilityIdentifier: "plans.empty.subscriptions",
+                    actionTitle: NumiLocalized.string("subscription.add"),
+                    actionAccessibilityIdentifier: "action.addSubscription.empty",
+                    action: { showAddSubscription = true }
                 )
             } else {
                 ForEach(subscriptions) { sub in
@@ -357,7 +360,7 @@ public struct PlansView: View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
             PlanSectionHeader(
                 title: NumiLocalized.string( "installment.title"),
-                trailingText: installmentPlans.isEmpty ? NumiLocalized.string("installment.no") : NumiLocalized.string("installment.count", installmentPlans.count),
+                trailingText: nil,
                 accessibilityIdentifier: "plans.section.installments"
             )
 
@@ -366,7 +369,10 @@ public struct PlansView: View {
                     iconName: "creditcard",
                     title: NumiLocalized.string( "installment.empty.title"),
                     message: NumiLocalized.string( "installment.empty.desc"),
-                    accessibilityIdentifier: "plans.empty.installments"
+                    accessibilityIdentifier: "plans.empty.installments",
+                    actionTitle: NumiLocalized.string("installment.add"),
+                    actionAccessibilityIdentifier: "action.addInstallment.empty",
+                    action: { showAddInstallment = true }
                 )
             } else {
                 ForEach(installmentPlans) { plan in
@@ -532,7 +538,7 @@ public struct PlansView: View {
 
 private struct PlanSectionHeader: View {
     let title: String
-    let trailingText: String
+    let trailingText: String?
     let accessibilityIdentifier: String
 
     var body: some View {
@@ -542,9 +548,11 @@ private struct PlanSectionHeader: View {
                 .foregroundStyle(NumiColor.textPrimary)
                 .accessibilityIdentifier(accessibilityIdentifier)
             Spacer()
-            Text(trailingText)
-                .font(NumiFont.footnote)
-                .foregroundStyle(NumiColor.textTertiary)
+            if let trailingText {
+                Text(trailingText)
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(NumiColor.textTertiary)
+            }
         }
     }
 }
@@ -810,6 +818,27 @@ private struct PlanEmptyStateCard: View {
     let title: String
     let message: String
     let accessibilityIdentifier: String
+    let actionTitle: String?
+    let actionAccessibilityIdentifier: String?
+    let action: (() -> Void)?
+
+    init(
+        iconName: String,
+        title: String,
+        message: String,
+        accessibilityIdentifier: String,
+        actionTitle: String? = nil,
+        actionAccessibilityIdentifier: String? = nil,
+        action: (() -> Void)? = nil
+    ) {
+        self.iconName = iconName
+        self.title = title
+        self.message = message
+        self.accessibilityIdentifier = accessibilityIdentifier
+        self.actionTitle = actionTitle
+        self.actionAccessibilityIdentifier = actionAccessibilityIdentifier
+        self.action = action
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: NumiSpacing.s3) {
@@ -828,6 +857,13 @@ private struct PlanEmptyStateCard: View {
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
+                if let actionTitle, let action {
+                    Button(actionTitle, action: action)
+                        .font(NumiFont.bodySmall.weight(.semibold))
+                        .foregroundStyle(NumiColor.accentDeep)
+                        .padding(.top, NumiSpacing.s1)
+                        .accessibilityIdentifier(actionAccessibilityIdentifier ?? "action.emptyState")
+                }
             }
 
             Spacer(minLength: NumiSpacing.s3)
