@@ -10,6 +10,7 @@ struct RootShellView: View {
     @AppStorage("app.theme.id") private var themeID = NumiTheme.default.id
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
+    @AppStorage("app.privacy.hideAmounts") private var isAmountDisplayHidden = false
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @AppStorage("app.currentLedgerID") private var currentLedgerIDString: String = ""
     @AppStorage(NumiAppLanguage.pendingToastDefaultsKey) private var pendingLanguageToastCode: String = ""
@@ -114,6 +115,10 @@ struct RootShellView: View {
             } else {
                 currentPage
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .environment(
+                        \.privacyAmountDisplayPolicy,
+                        PrivacyAmountDisplayPolicy(isHidden: isAmountDisplayHidden)
+                    )
             }
         }
         .environmentObject(bottomAccessoryController)
@@ -138,6 +143,10 @@ struct RootShellView: View {
             }
         }
         .tint(NumiColor.accentDeep)
+        .environment(
+            \.privacyAmountDisplayPolicy,
+            PrivacyAmountDisplayPolicy(isHidden: isAmountDisplayHidden)
+        )
         .task {
             await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
         }
@@ -258,6 +267,10 @@ struct RootShellView: View {
                         editingTransactionID = transactionID
                     }
                 }
+            )
+            .environment(
+                \.privacyAmountDisplayPolicy,
+                PrivacyAmountDisplayPolicy(isHidden: isAmountDisplayHidden)
             )
             .presentationDetents([.medium, .large])
         }
@@ -840,7 +853,7 @@ struct RootShellView: View {
 
     private func shareText(for transaction: NumiCore.Transaction) -> String {
         let category = category(for: transaction)
-        let amount = transaction.amount.formatted()
+        let amount = PrivacyAmountDisplayPolicy(isHidden: isAmountDisplayHidden).display(transaction.amount)
         let date = NumiDatePickerRow.displayText(for: transaction.occurredAt)
         let account = accountName(for: transaction)
         let noSelection = NumiLocalized.string( "empty.no.selection")

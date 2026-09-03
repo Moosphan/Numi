@@ -5801,6 +5801,35 @@
         }
       }
     },
+    "setting.hide.amounts": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏金额"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide Amounts"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隱藏金額"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金額を隠す"
+          }
+        }
+      }
+    },
     "setting.lock.biometric": {
       "extractionState": "manual",
       "localizations": {

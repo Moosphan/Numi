@@ -57,6 +57,7 @@ public struct TransactionHomeSection: Identifiable {
 }
 
 public struct TransactionsHomeView: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     private let summary: TransactionSummary
     private let periodTitle: String
     private let selectedPeriod: HomePeriod
@@ -221,8 +222,8 @@ public struct TransactionsHomeView: View {
 
     private var summaryGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: NumiSpacing.s3) {
-            NumiSummaryTile(title: NumiLocalized.string( "record.expense"), value: summary.expense.formatted(), systemImage: "cart", variant: .expense, accessibilityKey: "home.expense")
-            NumiSummaryTile(title: NumiLocalized.string( "record.income"), value: summary.income.formatted(), systemImage: "creditcard", variant: .income, accessibilityKey: "home.income")
+            NumiSummaryTile(title: NumiLocalized.string( "record.expense"), value: summary.expense.formatted(), systemImage: "cart", variant: .expense, accessibilityKey: "home.expense", amount: summary.expense)
+            NumiSummaryTile(title: NumiLocalized.string( "record.income"), value: summary.income.formatted(), systemImage: "creditcard", variant: .income, accessibilityKey: "home.income", amount: summary.income)
         }
     }
 
@@ -317,7 +318,7 @@ public struct TransactionsHomeView: View {
 
                     HStack(spacing: NumiSpacing.s1) {
                         if let expense = section.dailyExpense, expense.minorUnits > 0 {
-                            Text("-\(expense.formatted())")
+                            Text(privacyAmountDisplayPolicy.display(expense, prefix: "-"))
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.expenseText)
                                 .monospacedDigit()
@@ -327,7 +328,7 @@ public struct TransactionsHomeView: View {
                                 .clipShape(Capsule())
                         }
                         if let income = section.dailyIncome, income.minorUnits > 0 {
-                            Text("+\(income.formatted())")
+                            Text(privacyAmountDisplayPolicy.display(income, prefix: "+"))
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.incomeText)
                                 .monospacedDigit()

@@ -49,6 +49,7 @@ public struct SettingsView: View {
 
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
+    @AppStorage("app.privacy.hideAmounts") private var isAmountDisplayHidden = false
     @AppStorage("app.privacy.lockMethod") private var lockMethod: String = "biometric"
     @AppStorage("app.privacy.passcode") private var storedPasscode: String = ""
     @State private var showLockMethodSheet = false
@@ -222,6 +223,7 @@ public struct SettingsView: View {
                         }
                     }
                     autoBlurRow
+                    hiddenAmountRow
                 }
 
                 settingsSection(
@@ -615,6 +617,32 @@ public struct SettingsView: View {
                 .labelsHidden()
                 .tint(NumiColor.accentDeep)
                 .accessibilityIdentifier("toggle.autoBlur")
+        }
+        .padding(.horizontal, NumiSpacing.s4)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NumiColor.surfaceCard)
+    }
+
+    private var hiddenAmountRow: some View {
+        HStack(spacing: NumiSpacing.s3) {
+            Image(systemName: "eye.slash.circle")
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 36, height: 36)
+                .background(NumiColor.iconBackground)
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                .foregroundStyle(NumiColor.accentPrimary)
+
+            Text("setting.hide.amounts")
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(NumiColor.textPrimary)
+
+            Spacer(minLength: NumiSpacing.s3)
+
+            Toggle("", isOn: $isAmountDisplayHidden)
+                .labelsHidden()
+                .tint(NumiColor.accentDeep)
+                .accessibilityIdentifier("toggle.hideAmounts")
         }
         .padding(.horizontal, NumiSpacing.s4)
         .padding(.vertical, 12)

@@ -9,24 +9,28 @@ public enum NumiSummaryTileVariant {
 }
 
 public struct NumiSummaryTile: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     private let title: String
     private let value: String
     private let systemImage: String?
     private let variant: NumiSummaryTileVariant
     private let accessibilityKey: String
+    private let amount: Money?
 
     public init(
         title: String,
         value: String,
         systemImage: String? = nil,
         variant: NumiSummaryTileVariant,
-        accessibilityKey: String
+        accessibilityKey: String,
+        amount: Money? = nil
     ) {
         self.title = title
         self.value = value
         self.systemImage = systemImage
         self.variant = variant
         self.accessibilityKey = accessibilityKey
+        self.amount = amount
     }
 
     public var body: some View {
@@ -41,7 +45,7 @@ public struct NumiSummaryTile: View {
             }
             .foregroundStyle(NumiColor.textSecondary)
 
-            Text(value)
+            Text(amount.map { privacyAmountDisplayPolicy.display($0) } ?? value)
                 .font(NumiFont.amount)
                 .foregroundStyle(textColor)
                 .lineLimit(1)

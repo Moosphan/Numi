@@ -678,6 +678,44 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["settings.card.appearance"].waitForExistence(timeout: 5))
     }
 
+    func testHiddenAmountModeMasksHomeAndDetailAmounts() {
+        let app = launchApp()
+        addFoodExpense(in: app)
+
+        tabButton("我的", in: app).tap()
+        let settingsScroll = app.scrollViews["scroll.settingsHome"]
+        XCTAssertTrue(settingsScroll.waitForExistence(timeout: 5))
+        let hideAmountsToggle = app.switches["toggle.hideAmounts"]
+        if !hideAmountsToggle.waitForExistence(timeout: 2) {
+            settingsScroll.swipeUp()
+        }
+        XCTAssertTrue(hideAmountsToggle.waitForExistence(timeout: 5))
+        if (hideAmountsToggle.value as? String) == "0" {
+            hideAmountsToggle.tap()
+        }
+
+        settingsScroll.swipeDown()
+        tabButton("明细", in: app).tap()
+        let homeExpense = app.staticTexts["summary.home.expense.value"]
+        XCTAssertTrue(homeExpense.waitForExistence(timeout: 5))
+        XCTAssertEqual(homeExpense.label, "••••")
+
+        let record = recordElement("餐饮", in: app)
+        XCTAssertTrue(record.waitForExistence(timeout: 5))
+        record.tap()
+        XCTAssertTrue(app.scrollViews["page.recordDetail"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["detail.amount"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["detail.amount"].label, "••••")
+
+        app.buttons["action.closeRecordDetail"].tap()
+        tabButton("我的", in: app).tap()
+        XCTAssertTrue(hideAmountsToggle.waitForExistence(timeout: 5))
+        hideAmountsToggle.tap()
+        settingsScroll.swipeDown()
+        tabButton("明细", in: app).tap()
+        XCTAssertNotEqual(homeExpense.label, "••••")
+    }
+
     func testChangingHomePeriodUpdatesCenteredTitle() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 

@@ -46,6 +46,7 @@ public enum InsightsTimeDimension: String, CaseIterable, Identifiable {
 // MARK: - Insights View
 
 public struct InsightsView: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     private let summary: TransactionSummary
     private let expenseDistribution: [InsightsDistributionRow]
     private let incomeDistribution: [InsightsDistributionRow]
@@ -135,9 +136,9 @@ public struct InsightsView: View {
 
                 // Summary grid
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: NumiSpacing.s3) {
-                    NumiSummaryTile(title: NumiLocalized.string( "insight.expense"), value: summary.expense.formatted(), variant: .expense, accessibilityKey: "insights.expense")
-                    NumiSummaryTile(title: NumiLocalized.string( "insight.income"), value: summary.income.formatted(), variant: .income, accessibilityKey: "insights.income")
-                    NumiSummaryTile(title: NumiLocalized.string( "insight.balance"), value: summary.balance.formatted(), variant: summary.balance.minorUnits < 0 ? .negative : .neutral, accessibilityKey: "insights.balance")
+                    NumiSummaryTile(title: NumiLocalized.string( "insight.expense"), value: summary.expense.formatted(), variant: .expense, accessibilityKey: "insights.expense", amount: summary.expense)
+                    NumiSummaryTile(title: NumiLocalized.string( "insight.income"), value: summary.income.formatted(), variant: .income, accessibilityKey: "insights.income", amount: summary.income)
+                    NumiSummaryTile(title: NumiLocalized.string( "insight.balance"), value: summary.balance.formatted(), variant: summary.balance.minorUnits < 0 ? .negative : .neutral, accessibilityKey: "insights.balance", amount: summary.balance)
                     NumiSummaryTile(title: NumiLocalized.string( "insight.record.count"), value: "\(summary.recordCount)", variant: .neutral, accessibilityKey: "insights.recordCount")
                 }
 
@@ -200,7 +201,7 @@ public struct InsightsView: View {
                                     .font(NumiFont.bodyStrong)
                                     .foregroundStyle(NumiColor.textPrimary)
                                     .accessibilityIdentifier("insights.category.\(item.categoryID.uuidString)")
-                                Text(item.amount.formatted())
+                                Text(privacyAmountDisplayPolicy.display(item.amount))
                                     .font(NumiFont.bodySmall)
                                     .foregroundStyle(NumiColor.textSecondary)
                             }
@@ -248,6 +249,7 @@ public struct InsightsView: View {
 // MARK: - Category Transactions Detail View
 
 public struct CategoryTransactionsDetailView: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     private let categoryID: UUID
     private let transactions: [NumiCore.Transaction]
     private let categories: [NumiCore.Category]
@@ -329,7 +331,7 @@ public struct CategoryTransactionsDetailView: View {
                         Text("insight.total.amount")
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
-                        Text(totalAmount.formatted())
+                        Text(privacyAmountDisplayPolicy.display(totalAmount))
                             .font(NumiFont.amountLarge)
                             .foregroundStyle(accentColor)
                             .monospacedDigit()
@@ -358,7 +360,7 @@ public struct CategoryTransactionsDetailView: View {
                             HStack(spacing: NumiSpacing.s1) {
                                 if dayTotals.expenseMinor > 0 {
                                     let m = Money(minorUnits: dayTotals.expenseMinor, currencyCode: "CNY")
-                                    Text("-\(m.formatted())")
+                                    Text(privacyAmountDisplayPolicy.display(m, prefix: "-"))
                                         .font(NumiFont.caption)
                                         .foregroundStyle(NumiColor.expenseText)
                                         .monospacedDigit()
@@ -369,7 +371,7 @@ public struct CategoryTransactionsDetailView: View {
                                 }
                                 if dayTotals.incomeMinor > 0 {
                                     let m = Money(minorUnits: dayTotals.incomeMinor, currencyCode: "CNY")
-                                    Text("+\(m.formatted())")
+                                    Text(privacyAmountDisplayPolicy.display(m, prefix: "+"))
                                         .font(NumiFont.caption)
                                         .foregroundStyle(NumiColor.incomeText)
                                         .monospacedDigit()
@@ -451,7 +453,7 @@ public struct CategoryTransactionsDetailView: View {
 
             Spacer()
 
-            Text("\(prefix)\(tx.amount.formatted())")
+            Text(privacyAmountDisplayPolicy.display(tx.amount, prefix: prefix))
                 .font(NumiFont.bodyStrong)
                 .foregroundStyle(NumiColor.textPrimary)
                 .monospacedDigit()

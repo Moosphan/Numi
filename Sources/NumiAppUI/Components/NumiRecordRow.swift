@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct NumiRecordRow: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     public enum Style {
         case card
         case grouped
@@ -86,11 +87,11 @@ public struct NumiRecordRow: View {
     private var amountText: String {
         switch transaction.type {
         case .expense:
-            return "-" + transaction.amount.formatted()
+            return privacyAmountDisplayPolicy.display(transaction.amount, prefix: "-")
         case .income:
-            return transaction.amount.formatted()
+            return privacyAmountDisplayPolicy.display(transaction.amount)
         case .transfer:
-            return transaction.amount.formatted()
+            return privacyAmountDisplayPolicy.display(transaction.amount)
         }
     }
 

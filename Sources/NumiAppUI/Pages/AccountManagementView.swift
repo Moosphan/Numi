@@ -3,6 +3,7 @@ import Foundation
 import NumiCore
 
 public struct AccountManagementView: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     @State private var localAccounts: [Account]
     @State private var editingDraft: AccountDraft?
     @State private var pendingDelete: Account?
@@ -41,7 +42,7 @@ public struct AccountManagementView: View {
                     Text("account.total.asset")
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textSecondary)
-                    Text(totalAssets.formatted())
+                    Text(privacyAmountDisplayPolicy.display(totalAssets))
                         .font(NumiFont.title)
                         .foregroundStyle(NumiColor.textPrimary)
                         .monospacedDigit()
@@ -191,7 +192,7 @@ public struct AccountManagementView: View {
                 Text("account.balance")
                     .font(NumiFont.caption)
                     .foregroundStyle(NumiColor.textTertiary)
-                Text(account.balance.formatted())
+                Text(privacyAmountDisplayPolicy.display(account.balance))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
                     .monospacedDigit()
@@ -524,6 +525,7 @@ private struct AccountFormView: View {
 // MARK: - AccountDetailView
 
 struct AccountDetailView: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     let account: Account
     let transactions: [NumiCore.Transaction]
     let categories: [NumiCore.Category]
@@ -613,7 +615,7 @@ struct AccountDetailView: View {
                         Text("account.current.balance")
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
-                        Text(account.balance.formatted())
+                        Text(privacyAmountDisplayPolicy.display(account.balance))
                             .font(NumiFont.amountLarge)
                             .foregroundStyle(NumiColor.textPrimary)
                             .monospacedDigit()
@@ -626,7 +628,7 @@ struct AccountDetailView: View {
                             Text("account.initial.amount")
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
-                            Text(initialBalance.formatted())
+                            Text(privacyAmountDisplayPolicy.display(initialBalance))
                                 .font(NumiFont.bodyStrong)
                                 .foregroundStyle(NumiColor.textPrimary)
                                 .monospacedDigit()
@@ -638,7 +640,7 @@ struct AccountDetailView: View {
                             Text("account.total.expense")
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
-                            Text(expenseTotal.formatted())
+                            Text(privacyAmountDisplayPolicy.display(expenseTotal))
                                 .font(NumiFont.bodyStrong)
                                 .foregroundStyle(NumiColor.expenseText)
                                 .monospacedDigit()
@@ -650,7 +652,7 @@ struct AccountDetailView: View {
                             Text("account.total.income")
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
-                            Text(incomeTotal.formatted())
+                            Text(privacyAmountDisplayPolicy.display(incomeTotal))
                                 .font(NumiFont.bodyStrong)
                                 .foregroundStyle(NumiColor.incomeText)
                                 .monospacedDigit()
@@ -738,12 +740,12 @@ struct AccountDetailView: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text("\(prefix)\(tx.amount.formatted())")
+                Text(privacyAmountDisplayPolicy.display(tx.amount, prefix: prefix))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
                     .monospacedDigit()
                 if let balance {
-                    Text("\(NumiLocalized.string( "account.balance")) \(balance.formatted())")
+                    Text("\(NumiLocalized.string( "account.balance")) \(privacyAmountDisplayPolicy.display(balance))")
                         .font(NumiFont.caption)
                         .foregroundStyle(NumiColor.textTertiary)
                         .monospacedDigit()

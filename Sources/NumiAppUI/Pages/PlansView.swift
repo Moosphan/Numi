@@ -25,6 +25,7 @@ public struct BudgetCardModel: Identifiable, Equatable {
 }
 
 public struct PlansView: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     @State private var editingDraft: BudgetDraft?
     @State private var showAddSubscription = false
     @State private var showAddInstallment = false
@@ -263,7 +264,7 @@ public struct PlansView: View {
                     Text(sub.name)
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(sub.isEnabled ? NumiColor.textPrimary : NumiColor.textTertiary)
-                    Text("\(sub.cycle.displayName) · \(sub.amount.formatted())")
+                    Text("\(sub.cycle.displayName) · \(privacyAmountDisplayPolicy.display(sub.amount))")
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textSecondary)
                 }
@@ -378,7 +379,7 @@ public struct PlansView: View {
                         Text(plan.name)
                             .font(NumiFont.bodyStrong)
                             .foregroundStyle(NumiColor.textPrimary)
-                        Text(NumiLocalized.string("installment.per.period", plan.amountPerPeriod.formatted()))
+                        Text(NumiLocalized.string("installment.per.period", privacyAmountDisplayPolicy.display(plan.amountPerPeriod)))
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
                     }
@@ -466,7 +467,7 @@ public struct PlansView: View {
     private func shareText(_ sub: Subscription) -> String {
         """
         \(NumiLocalized.string( "share.note"))【\(NumiLocalized.string( "subscription.title"))】\(sub.name)
-        \(NumiLocalized.string( "record.amount"))：\(sub.amount.formatted())
+        \(NumiLocalized.string( "record.amount"))：\(privacyAmountDisplayPolicy.display(sub.amount))
         \(NumiLocalized.string( "subscription.cycle"))：\(sub.cycle.displayName)
         \(NumiLocalized.string( "subscription.next.billing"))：\(sub.nextBillingDate.numiFormatted(.dateTime.year().month().day()))
         """
@@ -477,8 +478,8 @@ public struct PlansView: View {
         let paid = periods.filter { $0.isPaid }.count
         return """
         \(NumiLocalized.string( "share.note"))【\(NumiLocalized.string( "installment.title"))】\(plan.name)
-        \(NumiLocalized.string( "installment.total"))：\(plan.totalAmount.formatted())
-        \(NumiLocalized.string("installment.per.period", plan.amountPerPeriod.formatted()))
+        \(NumiLocalized.string( "installment.total"))：\(privacyAmountDisplayPolicy.display(plan.totalAmount))
+        \(NumiLocalized.string("installment.per.period", privacyAmountDisplayPolicy.display(plan.amountPerPeriod)))
         \(NumiLocalized.string("installment.progress.n", paid, plan.periodCount))
         """
     }
@@ -551,6 +552,7 @@ private enum BudgetCardStyle {
 }
 
 private struct BudgetProgressCard: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     let model: BudgetCardModel
     let style: BudgetCardStyle
     let accessibilityIdentifier: String?
@@ -618,7 +620,7 @@ private struct BudgetProgressCard: View {
         HStack(alignment: .top, spacing: NumiSpacing.s3) {
             VStack(alignment: .leading, spacing: NumiSpacing.s1) {
                 HStack(alignment: .firstTextBaseline, spacing: NumiSpacing.s2) {
-                    Text(model.spent.formatted())
+                    Text(privacyAmountDisplayPolicy.display(model.spent))
                         .font(style == .hero ? NumiFont.amountLarge : NumiFont.amount)
                         .foregroundStyle(primaryAmountColor)
                         .lineLimit(1)
@@ -627,7 +629,7 @@ private struct BudgetProgressCard: View {
                     Text("/")
                         .font(style == .hero ? NumiFont.body : NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textTertiary)
-                    Text(model.amount.formatted())
+                    Text(privacyAmountDisplayPolicy.display(model.amount))
                         .font(style == .hero ? NumiFont.body : NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textTertiary)
                         .lineLimit(1)
@@ -640,7 +642,7 @@ private struct BudgetProgressCard: View {
             }
             Spacer(minLength: NumiSpacing.s3)
             VStack(alignment: .trailing, spacing: NumiSpacing.s1) {
-                Text(model.status.remaining.formatted())
+                Text(privacyAmountDisplayPolicy.display(model.status.remaining))
                     .font(style == .hero ? NumiFont.bodyStrong.monospacedDigit() : NumiFont.bodySmall.monospacedDigit())
                     .foregroundStyle(remainingColor)
                     .lineLimit(1)
@@ -730,7 +732,7 @@ private struct BudgetProgressCard: View {
 
     private var progressSummary: String {
         if model.status.isOverBudget {
-            return NumiLocalized.string("budget.exceeded.amount", overBudgetAmount.formatted())
+            return NumiLocalized.string("budget.exceeded.amount", privacyAmountDisplayPolicy.display(overBudgetAmount))
         }
         return NumiLocalized.string("budget.used.percent", usedPercent)
     }
@@ -1150,6 +1152,7 @@ private struct InstallmentFormView: View {
 // MARK: - Subscription Detail View
 
 private struct SubscriptionDetailView: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     let subscription: Subscription
     let categories: [NumiCore.Category]
     let accounts: [Account]
@@ -1184,7 +1187,7 @@ private struct SubscriptionDetailView: View {
 
                     Divider()
 
-                    detailRow(NumiLocalized.string( "subscription.amount"), value: subscription.amount.formatted())
+                    detailRow(NumiLocalized.string( "subscription.amount"), value: privacyAmountDisplayPolicy.display(subscription.amount))
                     detailRow(NumiLocalized.string( "subscription.cycle"), value: subscription.cycle.displayName)
                     detailRow(NumiLocalized.string( "subscription.next.billing"), value: subscription.nextBillingDate.numiFormatted(.dateTime.year().month().day()))
 
@@ -1280,6 +1283,7 @@ private struct SubscriptionDetailView: View {
 // MARK: - Installment Detail View
 
 private struct InstallmentDetailView: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     let plan: InstallmentPlan
     let periods: [InstallmentPeriod]
     let categories: [NumiCore.Category]
@@ -1322,11 +1326,11 @@ private struct InstallmentDetailView: View {
 
                     Divider()
 
-                    detailRow(NumiLocalized.string( "installment.total"), value: plan.totalAmount.formatted())
-                    detailRow(NumiLocalized.string( "subscription.amount"), value: plan.amountPerPeriod.formatted())
+                    detailRow(NumiLocalized.string( "installment.total"), value: privacyAmountDisplayPolicy.display(plan.totalAmount))
+                    detailRow(NumiLocalized.string( "subscription.amount"), value: privacyAmountDisplayPolicy.display(plan.amountPerPeriod))
                     detailRow(NumiLocalized.string("installment.periods"), value: NumiLocalized.string("installment.progress.n", plan.periodCount, plan.periodCount))
                     if plan.feePerPeriod.minorUnits > 0 {
-                        detailRow(NumiLocalized.string( "installment.fee"), value: plan.feePerPeriod.formatted())
+                        detailRow(NumiLocalized.string( "installment.fee"), value: privacyAmountDisplayPolicy.display(plan.feePerPeriod))
                     }
                     detailRow(NumiLocalized.string( "installment.first.date"), value: plan.firstPaymentDate.numiFormatted(.dateTime.year().month().day()))
 

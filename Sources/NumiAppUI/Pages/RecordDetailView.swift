@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct RecordDetailView: View {
+    @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     private let transaction: NumiCore.Transaction
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
@@ -73,7 +74,7 @@ public struct RecordDetailView: View {
                 }
             }
 
-            Text(transaction.amount.formatted())
+            Text(privacyAmountDisplayPolicy.display(transaction.amount))
                 .font(NumiFont.amountLarge.monospacedDigit())
                 .foregroundStyle(amountColor)
                 .accessibilityIdentifier("detail.amount")
