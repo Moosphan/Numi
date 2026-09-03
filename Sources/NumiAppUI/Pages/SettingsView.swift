@@ -37,6 +37,7 @@ public struct SettingsView: View {
     private let ledgerTransactionCounts: [UUID: Int]
     private let exportSnapshot: (() -> BookkeepingSnapshot)?
     private let importSnapshot: ((BookkeepingSnapshot) throws -> Void)?
+    private let appendTransactions: (([NumiCore.Transaction]) throws -> Void)?
     private let onManageLedgers: () -> Void
     private let onCategoryVisibilityChange: (NumiCore.Category, Bool) -> Void
     private let onAccountVisibilityChange: (Account, Bool) -> Void
@@ -92,6 +93,7 @@ public struct SettingsView: View {
         ledgerTransactionCounts: [UUID: Int] = [:],
         exportSnapshot: (() -> BookkeepingSnapshot)? = nil,
         importSnapshot: ((BookkeepingSnapshot) throws -> Void)? = nil,
+        appendTransactions: (([NumiCore.Transaction]) throws -> Void)? = nil,
         onManageLedgers: @escaping () -> Void = {},
         onCategoryVisibilityChange: @escaping (NumiCore.Category, Bool) -> Void = { _, _ in },
         onAccountVisibilityChange: @escaping (Account, Bool) -> Void = { _, _ in },
@@ -109,6 +111,7 @@ public struct SettingsView: View {
         self.ledgerTransactionCounts = ledgerTransactionCounts
         self.exportSnapshot = exportSnapshot
         self.importSnapshot = importSnapshot
+        self.appendTransactions = appendTransactions
         self.onManageLedgers = onManageLedgers
         self.onCategoryVisibilityChange = onCategoryVisibilityChange
         self.onAccountVisibilityChange = onAccountVisibilityChange
@@ -183,9 +186,13 @@ public struct SettingsView: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.sync")
 
-                    if let export = exportSnapshot, let importFn = importSnapshot {
+                    if let export = exportSnapshot, let importFn = importSnapshot, let appendFn = appendTransactions {
                         NavigationLink {
-                            DataManagementView(exportSnapshot: export, importSnapshot: importFn)
+                            DataManagementView(
+                                exportSnapshot: export,
+                                importSnapshot: importFn,
+                                appendTransactions: appendFn
+                            )
                         } label: {
                             settingsRow(NumiLocalized.string( "setting.import.export"), icon: "square.and.arrow.up")
                         }

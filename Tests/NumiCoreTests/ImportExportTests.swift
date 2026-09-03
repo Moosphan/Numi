@@ -49,4 +49,44 @@ final class ImportExportTests: XCTestCase {
         XCTAssertEqual(result.errors.count, 1)
         XCTAssertEqual(result.errors[0].lineNumber, 3)
     }
+
+    func testCSVImporterMapsQuotedValuesAndResolvesNames() throws {
+        let category = Category(kind: .expense, name: "餐饮", icon: "fork.knife", sortOrder: 0)
+        let account = Account(name: "现金", type: .cash, balance: .zero(currencyCode: "CNY"))
+        let ledger = Ledger(name: "默认账本", currencyCode: "CNY")
+        let document = try CSVImportDocument(csv: "kind,total,day,category_name,wallet,memo\nexpense,12.30,2026-09-01,餐饮,现金,\"午餐,咖啡\"")
+        var mapping = CSVImportMapping(headers: document.headers)
+        mapping.assign(.type, to: "kind")
+        mapping.assign(.amount, to: "total")
+        mapping.assign(.date, to: "day")
+        mapping.assign(.category, to: "category_name")
+        mapping.assign(.account, to: "wallet")
+        mapping.assign(.note, to: "memo")
+
+        let result = NumiCSVImporter.preview(
+            document: document,
+            mapping: mapping,
+            context: CSVImportContext(ledger: ledger, categories: [category], accounts: [account])
+        )
+
+        XCTAssertEqual(result.transactions.count, 1)
+        XCTAssertEqual(result.transactions[0].categoryID, category.id)
+        XCTAssertEqual(result.transactions[0].accountID, account.id)
+        XCTAssertEqual(result.transactions[0].note, "午餐,咖啡")
+        XCTAssertTrue(result.errors.isEmpty)
+    }
+
+    func testCSVImporterKeepsValidRowsWhenOtherRowsAreInvalid() throws {
+        let ledger = Ledger(name: "默认账本", currencyCode: "CNY")
+        let document = try CSVImportDocument(csv: "type,amount,category\nexpense,12.30,不存在\nincome,bad,\nexpense,8.00,")
+
+        let result = NumiCSVImporter.preview(
+            document: document,
+            mapping: CSVImportMapping(headers: document.headers),
+            context: CSVImportContext(ledger: ledger, categories: [], accounts: [])
+        )
+
+        XCTAssertEqual(result.transactions.count, 1)
+        XCTAssertEqual(result.errors.map(\.lineNumber), [2, 3])
+    }
 }

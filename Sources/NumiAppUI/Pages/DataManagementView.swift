@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import NumiCore
 
 // MARK: - Share URL Wrapper
@@ -13,9 +14,14 @@ private struct ShareableURL: Identifiable {
 public struct DataManagementView: View {
     private let exportSnapshot: () -> BookkeepingSnapshot
     private let importSnapshot: (BookkeepingSnapshot) throws -> Void
+    private let appendTransactions: ([NumiCore.Transaction]) throws -> Void
     private let recoveryPointService: ImportRecoveryPointService
 
     @State private var showImportJSON = false
+    @State private var showImportCSV = false
+    @State private var showCSVImportReview = false
+    @State private var csvImportDocument: CSVImportDocument?
+    @State private var csvImportSnapshot: BookkeepingSnapshot?
     @State private var hasImportRecoveryPoint: Bool
     @State private var showRestoreRecoveryConfirmation = false
     @State private var shareURL: ShareableURL?
@@ -25,10 +31,12 @@ public struct DataManagementView: View {
     public init(
         exportSnapshot: @escaping () -> BookkeepingSnapshot,
         importSnapshot: @escaping (BookkeepingSnapshot) throws -> Void,
+        appendTransactions: @escaping ([NumiCore.Transaction]) throws -> Void,
         recoveryPointService: ImportRecoveryPointService = .shared
     ) {
         self.exportSnapshot = exportSnapshot
         self.importSnapshot = importSnapshot
+        self.appendTransactions = appendTransactions
         self.recoveryPointService = recoveryPointService
         _hasImportRecoveryPoint = State(initialValue: recoveryPointService.hasRecoveryPoint)
     }
@@ -74,6 +82,15 @@ public struct DataManagementView: View {
             Button("common.cancel", role: .cancel) {}
         } message: {
             Text("io.import.restore.confirm.message")
+        }
+        .sheet(isPresented: $showCSVImportReview) {
+            if let csvImportDocument, let csvImportSnapshot {
+                CSVImportReviewSheet(
+                    document: csvImportDocument,
+                    snapshot: csvImportSnapshot,
+                    onImport: importCSVTransactions
+                )
+            }
         }
     }
 
@@ -143,6 +160,26 @@ public struct DataManagementView: View {
                     allowedContentTypes: [.json]
                 ) { result in
                     handleImport(result)
+                }
+
+                Divider().padding(.leading, 48)
+
+                Button {
+                    showImportCSV = true
+                } label: {
+                    exportRow(
+                        icon: "tablecells.badge.ellipsis",
+                        title: NumiLocalized.string("io.import.csv"),
+                        subtitle: NumiLocalized.string("io.import.csv.desc")
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("io.import.csv")
+                .fileImporter(
+                    isPresented: $showImportCSV,
+                    allowedContentTypes: [.commaSeparatedText]
+                ) { result in
+                    handleCSVImport(result)
                 }
 
                 Divider().padding(.leading, 48)
@@ -272,6 +309,61 @@ public struct DataManagementView: View {
             showToastMessage(error.displayMessage)
         } catch {
             showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+        }
+    }
+
+    private func handleCSVImport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            do {
+                let accessing = url.startAccessingSecurityScopedResource()
+                defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+                let data = try Data(contentsOf: url)
+                guard let csv = String(data: data, encoding: .utf8) else {
+                    throw CSVImportDocumentError.missingHeader
+                }
+                let snapshot = exportSnapshot()
+                guard !snapshot.ledgers.isEmpty else {
+                    showToastMessage(NumiLocalized.string("io.import.csv.no.ledger"))
+                    return
+                }
+                csvImportDocument = try CSVImportDocument(csv: csv)
+                csvImportSnapshot = snapshot
+                showCSVImportReview = true
+            } catch {
+                showToastMessage(NumiLocalized.string("io.import.csv.file.fail", error.localizedDescription))
+            }
+        case .failure(let error):
+            showToastMessage(NumiLocalized.string("io.import.csv.file.fail", error.localizedDescription))
+        }
+    }
+
+    private func importCSVTransactions(_ transactions: [NumiCore.Transaction]) {
+        let currentSnapshot = exportSnapshot()
+        do {
+            try recoveryPointService.save(currentSnapshot)
+        } catch let error as ImportRecoveryPointError {
+            showToastMessage(error.displayMessage)
+            return
+        } catch {
+            showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+            return
+        }
+
+        do {
+            try appendTransactions(transactions)
+            hasImportRecoveryPoint = true
+            showToastMessage(NumiLocalized.string("io.import.csv.success", transactions.count))
+        } catch {
+            let importError = error
+            do {
+                try importSnapshot(currentSnapshot)
+                try recoveryPointService.discard()
+                hasImportRecoveryPoint = false
+                showToastMessage(NumiLocalized.string("io.import.rollback.success", importError.localizedDescription))
+            } catch {
+                showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+            }
         }
     }
 

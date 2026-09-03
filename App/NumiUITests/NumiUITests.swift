@@ -964,6 +964,14 @@ final class NumiUITests: XCTestCase {
         XCTAssertFalse(restoreButton.isEnabled)
     }
 
+    func testCSVImportEntryIsReachable() {
+        let app = launchApp()
+        tabButton("我的", in: app).tap()
+        app.buttons["settings.importExport"].tap()
+
+        XCTAssertTrue(app.buttons["io.import.csv"].waitForExistence(timeout: 5))
+    }
+
     func testCaptureScreenshotShowcaseGallery() throws {
         let app = launchApp(seedProfile: "screenshot_showcase")
 

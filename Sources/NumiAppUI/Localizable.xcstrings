@@ -7831,6 +7831,95 @@
         }
       }
     },
+    "io.import.csv": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "从 CSV 导入" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Import from CSV" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "從 CSV 匯入" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "CSVからインポート" } }
+      }
+    },
+    "io.import.csv.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "导入有效记录" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Import valid records" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "匯入有效記錄" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "有効な記録をインポート" } }
+      }
+    },
+    "io.import.csv.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "映射字段、预览有效记录并导入" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Map fields, preview valid records, and import" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "對應欄位、預覽有效記錄並匯入" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "項目を対応付け、有効な記録を確認してインポート" } }
+      }
+    },
+    "io.import.csv.errors": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "错误行" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Invalid rows" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "錯誤列" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "エラー行" } }
+      }
+    },
+    "io.import.csv.file.fail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法读取 CSV 文件：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unable to read CSV file: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "無法讀取 CSV 檔案：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "CSVファイルを読み込めません：%@" } }
+      }
+    },
+    "io.import.csv.mapping": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "字段映射" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Field mapping" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "欄位對應" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "項目の対応付け" } }
+      }
+    },
+    "io.import.csv.no.ledger": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "请先创建账本后再导入 CSV" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Create a ledger before importing CSV" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "請先建立帳本再匯入 CSV" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "CSVをインポートする前に帳簿を作成してください" } }
+      }
+    },
+    "io.import.csv.success": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已导入 %lld 笔有效记录，恢复点已保留" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Imported %lld valid records. A recovery point is available." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已匯入 %lld 筆有效記錄，復原點已保留" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld 件の有効な記録をインポートしました。復元ポイントを利用できます。" } }
+      }
+    },
+    "io.import.csv.valid.count": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "有效记录：%lld 笔（预览前 20 笔）" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%lld valid records (first 20 shown)" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "有效記錄：%lld 筆（預覽前 20 筆）" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "有効な記録：%lld件（先頭20件を表示）" } }
+      }
+    },
+    "io.import.csv.field.ignored": { "extractionState": "manual", "localizations": { "zh-Hans": { "stringUnit": { "state": "translated", "value": "不导入" } }, "en": { "stringUnit": { "state": "translated", "value": "Do not import" } }, "zh-Hant": { "stringUnit": { "state": "translated", "value": "不匯入" } }, "ja": { "stringUnit": { "state": "translated", "value": "インポートしない" } } } },
+    "io.import.csv.field.type": { "extractionState": "manual", "localizations": { "zh-Hans": { "stringUnit": { "state": "translated", "value": "类型" } }, "en": { "stringUnit": { "state": "translated", "value": "Type" } }, "zh-Hant": { "stringUnit": { "state": "translated", "value": "類型" } }, "ja": { "stringUnit": { "state": "translated", "value": "種類" } } } },
+    "io.import.csv.field.amount": { "extractionState": "manual", "localizations": { "zh-Hans": { "stringUnit": { "state": "translated", "value": "金额" } }, "en": { "stringUnit": { "state": "translated", "value": "Amount" } }, "zh-Hant": { "stringUnit": { "state": "translated", "value": "金額" } }, "ja": { "stringUnit": { "state": "translated", "value": "金額" } } } },
+    "io.import.csv.field.currency": { "extractionState": "manual", "localizations": { "zh-Hans": { "stringUnit": { "state": "translated", "value": "币种" } }, "en": { "stringUnit": { "state": "translated", "value": "Currency" } }, "zh-Hant": { "stringUnit": { "state": "translated", "value": "幣別" } }, "ja": { "stringUnit": { "state": "translated", "value": "通貨" } } } },
+    "io.import.csv.field.date": { "extractionState": "manual", "localizations": { "zh-Hans": { "stringUnit": { "state": "translated", "value": "日期" } }, "en": { "stringUnit": { "state": "translated", "value": "Date" } }, "zh-Hant": { "stringUnit": { "state": "translated", "value": "日期" } }, "ja": { "stringUnit": { "state": "translated", "value": "日付" } } } },
+    "io.import.csv.field.category": { "extractionState": "manual", "localizations": { "zh-Hans": { "stringUnit": { "state": "translated", "value": "分类" } }, "en": { "stringUnit": { "state": "translated", "value": "Category" } }, "zh-Hant": { "stringUnit": { "state": "translated", "value": "分類" } }, "ja": { "stringUnit": { "state": "translated", "value": "カテゴリ" } } } },
+    "io.import.csv.field.account": { "extractionState": "manual", "localizations": { "zh-Hans": { "stringUnit": { "state": "translated", "value": "账户" } }, "en": { "stringUnit": { "state": "translated", "value": "Account" } }, "zh-Hant": { "stringUnit": { "state": "translated", "value": "帳戶" } }, "ja": { "stringUnit": { "state": "translated", "value": "口座" } } } },
+    "io.import.csv.field.note": { "extractionState": "manual", "localizations": { "zh-Hans": { "stringUnit": { "state": "translated", "value": "备注" } }, "en": { "stringUnit": { "state": "translated", "value": "Note" } }, "zh-Hant": { "stringUnit": { "state": "translated", "value": "備註" } }, "ja": { "stringUnit": { "state": "translated", "value": "メモ" } } } },
     "io.import.restore.previous": {
       "extractionState": "manual",
       "localizations": {

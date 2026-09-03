@@ -209,6 +209,27 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testAppendingImportedTransactionsUpdatesAccountBalance() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let accountID = try XCTUnwrap(store.accounts.first?.id)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+
+        try store.appendTransactions([
+            Transaction(
+                type: .expense,
+                amount: Money(decimalString: "12.30", currencyCode: "CNY"),
+                accountID: accountID,
+                ledgerID: ledgerID,
+                note: "CSV 午餐"
+            )
+        ])
+
+        XCTAssertEqual(store.visibleTransactions.count, 1)
+        XCTAssertEqual(store.accounts.first?.balance.formatted(), "-¥12.30")
+    }
+
+    @MainActor
     func testPersistsTransactionsWhenStoreIsReopened() throws {
         let url = try temporaryStoreURL()
         do {

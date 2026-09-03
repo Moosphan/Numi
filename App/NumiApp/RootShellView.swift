@@ -539,6 +539,7 @@ struct RootShellView: View {
                 ledgerTransactionCounts: ledgerTransactionCounts,
                 exportSnapshot: { store.exportSnapshot() },
                 importSnapshot: { snapshot in try store.importSnapshot(snapshot) },
+                appendTransactions: { transactions in try store.appendTransactions(transactions) },
                 onManageLedgers: {
                     isManagingLedgers = true
                 },

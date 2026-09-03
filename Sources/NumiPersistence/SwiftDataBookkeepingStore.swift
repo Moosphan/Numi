@@ -791,6 +791,35 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         return transaction.domainModel
     }
 
+    public func appendTransactions(_ transactions: [Transaction]) throws {
+        for transaction in transactions {
+            let entity = TransactionEntity(
+                id: transaction.id,
+                type: transaction.type,
+                amount: transaction.amount,
+                occurredAt: transaction.occurredAt,
+                categoryID: transaction.categoryID,
+                accountID: transaction.accountID,
+                targetAccountID: transaction.targetAccountID,
+                ledgerID: transaction.ledgerID,
+                note: transaction.note,
+                isSoftDeleted: false
+            )
+            context.insert(entity)
+            if let accountID = transaction.accountID {
+                try applyBalanceEffect(
+                    type: transaction.type,
+                    amount: transaction.amount,
+                    accountID: accountID,
+                    targetAccountID: transaction.targetAccountID
+                )
+            }
+        }
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
     @discardableResult
     public func updateTransaction(
         id: UUID,
