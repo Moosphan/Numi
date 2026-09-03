@@ -3365,6 +3365,51 @@
         }
       }
     },
+    "budget.scope": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "预算范围" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Budget Scope" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "預算範圍" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "予算範囲" } }
+      }
+    },
+    "budget.category": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "分类" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Category" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "分類" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "カテゴリ" } }
+      }
+    },
+    "budget.account": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "账户" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Account" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "帳戶" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "アカウント" } }
+      }
+    },
+    "budget.all.categories": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "全部分类" } },
+        "en": { "stringUnit": { "state": "translated", "value": "All Categories" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "全部分類" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "すべてのカテゴリ" } }
+      }
+    },
+    "budget.all.accounts": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "全部账户" } },
+        "en": { "stringUnit": { "state": "translated", "value": "All Accounts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "全部帳戶" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "すべてのアカウント" } }
+      }
+    },
     "budget.weekly": {
       "extractionState": "manual",
       "localizations": {

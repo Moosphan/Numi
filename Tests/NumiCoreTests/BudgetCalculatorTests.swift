@@ -2,6 +2,42 @@ import XCTest
 @testable import NumiCore
 
 final class BudgetCalculatorTests: XCTestCase {
+
+    func testBudgetSpendingExcludesReimbursedExpenseAndOffsetsRefund() throws {
+        let ledgerID = UUID()
+        let categoryID = UUID()
+        let accountID = UUID()
+        let originalID = UUID()
+        let reimbursed = Transaction(
+            id: UUID(), type: .expense, amount: try Money(decimalString: "80", currencyCode: "CNY"),
+            categoryID: categoryID, accountID: accountID, ledgerID: ledgerID, reimbursementID: UUID()
+        )
+        let original = Transaction(
+            id: originalID, type: .expense, amount: try Money(decimalString: "120", currencyCode: "CNY"),
+            categoryID: categoryID, accountID: accountID, ledgerID: ledgerID
+        )
+        let refund = Transaction(
+            id: UUID(), type: .income, amount: try Money(decimalString: "30", currencyCode: "CNY"),
+            categoryID: UUID(), accountID: accountID, ledgerID: ledgerID, refundOfTransactionID: originalID
+        )
+
+        let spending = try BudgetSpendingCalculator.spending(
+            from: [reimbursed, original, refund], categoryID: categoryID, accountID: accountID, currencyCode: "CNY"
+        )
+
+        XCTAssertEqual(spending, try Money(decimalString: "90", currencyCode: "CNY"))
+    }
+
+    func testLegacyTransactionJSONWithoutBudgetLinksStillDecodes() throws {
+        let json = """
+        {"id":"00000000-0000-0000-0000-000000000001","type":"expense","amount":{"minorUnits":100,"currencyCode":"CNY"},"occurredAt":"2026-01-01T00:00:00Z","ledgerID":"00000000-0000-0000-0000-000000000002","note":"旧数据"}
+        """.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let transaction = try decoder.decode(Transaction.self, from: json)
+        XCTAssertNil(transaction.reimbursementID)
+        XCTAssertNil(transaction.refundOfTransactionID)
+    }
     func testMonthlyBudgetReportsRemainingAndDailySuggestion() throws {
         let budget = BudgetLimit(
             amount: try Money(decimalString: "3000", currencyCode: "CNY"),

@@ -16,6 +16,13 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
     public let targetAccountID: UUID?
     public let ledgerID: UUID
     public let note: String
+    public let reimbursementID: UUID?
+    public let refundOfTransactionID: UUID?
+
+    private enum CodingKeys: String, CodingKey {
+        case id, type, amount, occurredAt, categoryID, accountID, targetAccountID, ledgerID, note
+        case reimbursementID, refundOfTransactionID
+    }
 
     public init(
         id: UUID = UUID(),
@@ -26,7 +33,9 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
         accountID: UUID? = nil,
         targetAccountID: UUID? = nil,
         ledgerID: UUID = UUID(),
-        note: String = ""
+        note: String = "",
+        reimbursementID: UUID? = nil,
+        refundOfTransactionID: UUID? = nil
     ) {
         self.id = id
         self.type = type
@@ -37,6 +46,49 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
         self.targetAccountID = targetAccountID
         self.ledgerID = ledgerID
         self.note = note
+        self.reimbursementID = reimbursementID
+        self.refundOfTransactionID = refundOfTransactionID
+    }
+
+    public init(
+        id: UUID = UUID(),
+        type: TransactionType,
+        amount: Money,
+        occurredAt: Date = Date(),
+        categoryID: UUID?,
+        accountID: UUID?,
+        targetAccountID: UUID?,
+        ledgerID: UUID,
+        note: String
+    ) {
+        self.init(
+            id: id,
+            type: type,
+            amount: amount,
+            occurredAt: occurredAt,
+            categoryID: categoryID,
+            accountID: accountID,
+            targetAccountID: targetAccountID,
+            ledgerID: ledgerID,
+            note: note,
+            reimbursementID: nil,
+            refundOfTransactionID: nil
+        )
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(UUID.self, forKey: .id)
+        self.type = try container.decode(TransactionType.self, forKey: .type)
+        self.amount = try container.decode(Money.self, forKey: .amount)
+        self.occurredAt = try container.decode(Date.self, forKey: .occurredAt)
+        self.categoryID = try container.decodeIfPresent(UUID.self, forKey: .categoryID)
+        self.accountID = try container.decodeIfPresent(UUID.self, forKey: .accountID)
+        self.targetAccountID = try container.decodeIfPresent(UUID.self, forKey: .targetAccountID)
+        self.ledgerID = try container.decode(UUID.self, forKey: .ledgerID)
+        self.note = try container.decodeIfPresent(String.self, forKey: .note) ?? ""
+        self.reimbursementID = try container.decodeIfPresent(UUID.self, forKey: .reimbursementID)
+        self.refundOfTransactionID = try container.decodeIfPresent(UUID.self, forKey: .refundOfTransactionID)
     }
 
     public static func sample(

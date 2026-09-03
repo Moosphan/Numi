@@ -629,6 +629,62 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testCategoryBudgetAndTransactionLinksPersist() throws {
+        let url = try temporaryStoreURL()
+        let categoryID: UUID
+        let accountID: UUID
+        let ledgerID: UUID
+        let originalID = UUID()
+        do {
+            let store = try SwiftDataBookkeepingStore(storeURL: url)
+            try store.seedDefaultsIfNeeded()
+            categoryID = try XCTUnwrap(store.categories.first { $0.kind == .expense }.map(\.id))
+            accountID = try XCTUnwrap(store.accounts.first.map(\.id))
+            ledgerID = try XCTUnwrap(store.ledgers.first.map(\.id))
+            _ = try store.upsertBudgetSetting(
+                period: .month,
+                amount: Money(decimalString: "1000", currencyCode: "CNY"),
+                isEnabled: true,
+                ledgerID: ledgerID,
+                categoryID: categoryID,
+                accountID: accountID
+            )
+            _ = try store.createTransaction(
+                type: .expense,
+                amount: Money(decimalString: "120", currencyCode: "CNY"),
+                categoryID: categoryID,
+                accountID: accountID,
+                ledgerID: ledgerID,
+                note: "报销待处理",
+                reimbursementID: UUID()
+            )
+            try store.appendTransactions([
+                Transaction(
+                    id: originalID,
+                    type: .expense,
+                    amount: Money(decimalString: "80", currencyCode: "CNY"),
+                    categoryID: categoryID,
+                    accountID: accountID,
+                    ledgerID: ledgerID
+                ),
+                Transaction(
+                    type: .income,
+                    amount: Money(decimalString: "20", currencyCode: "CNY"),
+                    categoryID: categoryID,
+                    accountID: accountID,
+                    ledgerID: ledgerID,
+                    refundOfTransactionID: originalID
+                )
+            ])
+        }
+
+        let reopenedStore = try SwiftDataBookkeepingStore(storeURL: url)
+        XCTAssertEqual(reopenedStore.budgetSettings.first { $0.categoryID == categoryID }?.accountID, accountID)
+        XCTAssertEqual(reopenedStore.visibleTransactions.first { $0.reimbursementID != nil }?.note, "报销待处理")
+        XCTAssertEqual(reopenedStore.visibleTransactions.first { $0.refundOfTransactionID == originalID }?.amount, try Money(decimalString: "20", currencyCode: "CNY"))
+    }
+
+    @MainActor
     func testImportSnapshotReplacesExistingSubscriptionsAndInstallmentData() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

@@ -2,25 +2,43 @@ import SwiftUI
 import NumiCore
 
 public struct BudgetCardModel: Identifiable, Equatable {
-    public var id: BudgetPeriod { period }
+    public let id: UUID
     public let period: BudgetPeriod
     public let amount: Money
     public let spent: Money
     public let status: BudgetStatus
     public let isEnabled: Bool
+    public let categoryID: UUID?
+    public let accountID: UUID?
+    public let scopeName: String?
 
     public init(
         period: BudgetPeriod,
         amount: Money,
         spent: Money,
         status: BudgetStatus,
-        isEnabled: Bool
+        isEnabled: Bool,
+        id: UUID = UUID(),
+        categoryID: UUID? = nil,
+        accountID: UUID? = nil,
+        scopeName: String? = nil
     ) {
         self.period = period
         self.amount = amount
         self.spent = spent
         self.status = status
         self.isEnabled = isEnabled
+        self.id = id
+        self.categoryID = categoryID
+        self.accountID = accountID
+        self.scopeName = scopeName
+    }
+
+    public static func defaultID(for period: BudgetPeriod) -> UUID {
+        switch period {
+        case .week: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+        case .month: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
+        }
     }
 }
 
@@ -42,7 +60,7 @@ public struct PlansView: View {
     private let installmentPeriods: [InstallmentPeriod]
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
-    private let onSaveBudget: (BudgetPeriod, Money, Bool) -> Void
+    private let onSaveBudget: (BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void
     private let onAddSubscription: (Subscription) -> Void
     private let onUpdateSubscription: (Subscription) -> Void
     private let onDeleteSubscription: (UUID) -> Void
@@ -57,7 +75,7 @@ public struct PlansView: View {
         installmentPeriods: [InstallmentPeriod] = [],
         categories: [NumiCore.Category] = [],
         accounts: [Account] = [],
-        onSaveBudget: @escaping (BudgetPeriod, Money, Bool) -> Void = { _, _, _ in },
+        onSaveBudget: @escaping (BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void = { _, _, _, _, _ in },
         onAddSubscription: @escaping (Subscription) -> Void = { _ in },
         onUpdateSubscription: @escaping (Subscription) -> Void = { _ in },
         onDeleteSubscription: @escaping (UUID) -> Void = { _ in },
@@ -158,11 +176,11 @@ public struct PlansView: View {
             }
         }
         .sheet(item: $editingDraft) { draft in
-            BudgetFormView(draft: draft) { savedDraft in
+            BudgetFormView(draft: draft, categories: categories, accounts: accounts) { savedDraft in
                 guard let amount = try? Money(decimalString: savedDraft.amountText, currencyCode: savedDraft.currencyCode) else {
                     return
                 }
-                onSaveBudget(savedDraft.period, amount, savedDraft.isEnabled)
+                onSaveBudget(savedDraft.period, amount, savedDraft.isEnabled, savedDraft.categoryID, savedDraft.accountID)
                 editingDraft = nil
             }
             .presentationDetents([.medium])
@@ -491,7 +509,9 @@ public struct PlansView: View {
     }
 
     private var monthlyBudget: BudgetCardModel? {
-        orderedBudgets.first { $0.period == .month } ?? orderedBudgets.first
+        orderedBudgets.first { $0.period == .month && $0.categoryID == nil && $0.accountID == nil }
+            ?? orderedBudgets.first { $0.period == .month }
+            ?? orderedBudgets.first
     }
 
     private var secondaryBudgets: [BudgetCardModel] {
@@ -683,13 +703,20 @@ private struct BudgetProgressCard: View {
     }
 
     private var title: String {
-        switch model.period {
+        if let scopeName = model.scopeName {
+            return scopeName
+        }
+        return switch model.period {
         case .week: NumiLocalized.string( "budget.weekly")
         case .month: NumiLocalized.string( "budget.monthly")
         }
     }
 
     private var subtitle: String {
+        return periodSubtitle
+    }
+
+    private var periodSubtitle: String {
         switch model.period {
         case .week: NumiLocalized.string( "budget.this.week.expense")
         case .month: NumiLocalized.string( "budget.this.month.expense")
@@ -818,18 +845,22 @@ private struct PlanEmptyStateCard: View {
 }
 
 private struct BudgetDraft: Identifiable {
-    let id: BudgetPeriod
+    let id: UUID
     var period: BudgetPeriod
     var amountText: String
     var currencyCode: String
     var isEnabled: Bool
+    var categoryID: UUID?
+    var accountID: UUID?
 
     init(model: BudgetCardModel) {
-        self.id = model.period
+        self.id = model.id
         self.period = model.period
         self.amountText = Self.decimalText(for: model.amount)
         self.currencyCode = model.amount.currencyCode
         self.isEnabled = model.isEnabled
+        self.categoryID = model.categoryID
+        self.accountID = model.accountID
     }
 
     private static func decimalText(for money: Money) -> String {
@@ -849,9 +880,13 @@ private struct BudgetFormView: View {
     @State private var draft: BudgetDraft
 
     private let onSave: (BudgetDraft) -> Void
+    private let categories: [NumiCore.Category]
+    private let accounts: [Account]
 
-    init(draft: BudgetDraft, onSave: @escaping (BudgetDraft) -> Void) {
+    init(draft: BudgetDraft, categories: [NumiCore.Category], accounts: [Account], onSave: @escaping (BudgetDraft) -> Void) {
         self._draft = State(initialValue: draft)
+        self.categories = categories.filter { $0.kind == .expense && !$0.isHidden }
+        self.accounts = accounts.filter { !$0.isHidden }
         self.onSave = onSave
     }
 
@@ -889,6 +924,21 @@ private struct BudgetFormView: View {
                     Text(title)
                 } footer: {
                     Text("budget.local.desc")
+                }
+
+                Section("budget.scope") {
+                    Picker("budget.category", selection: $draft.categoryID) {
+                        Text("budget.all.categories").tag(UUID?.none)
+                        ForEach(categories) { category in
+                            Text(category.localizedDisplayName).tag(Optional(category.id))
+                        }
+                    }
+                    Picker("budget.account", selection: $draft.accountID) {
+                        Text("budget.all.accounts").tag(UUID?.none)
+                        ForEach(accounts) { account in
+                            Text(account.localizedDisplayName).tag(Optional(account.id))
+                        }
+                    }
                 }
             }
             .navigationTitle("budget.edit")

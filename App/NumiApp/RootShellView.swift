@@ -485,10 +485,17 @@ struct RootShellView: View {
                 installmentPeriods: store.installmentPeriods,
                 categories: store.categories,
                 accounts: store.accounts,
-                onSaveBudget: { period, amount, isEnabled in
+                onSaveBudget: { period, amount, isEnabled, categoryID, accountID in
                     do {
                         guard let ledgerID = currentLedger?.id else { return }
-                        try store.upsertBudgetSetting(period: period, amount: amount, isEnabled: isEnabled, ledgerID: ledgerID)
+                        try store.upsertBudgetSetting(
+                            period: period,
+                            amount: amount,
+                            isEnabled: isEnabled,
+                            ledgerID: ledgerID,
+                            categoryID: categoryID,
+                            accountID: accountID
+                        )
                     } catch {
                         initializationError = error.localizedDescription
                     }
@@ -884,11 +891,11 @@ struct RootShellView: View {
     private func budgetCards(today: Date = Date(), calendar: Calendar = Calendar.current) -> [BudgetCardModel] {
         let ledgerID = currentLedger?.id
         let settings = store.budgetSettings.filter { ledgerID == nil || $0.ledgerID == ledgerID }
-        return [BudgetPeriod.week, .month].map { period in
-            let setting = settings.first { $0.period == period }
+        let globalCards = [BudgetPeriod.week, .month].map { period in
+            let setting = settings.first { $0.period == period && $0.categoryID == nil && $0.accountID == nil }
             let amount = setting?.amount ?? defaultBudgetAmount(for: period)
             let range = budgetDateRange(for: period, today: today, calendar: calendar)
-            let spent = spentAmount(from: range.start, to: range.end)
+            let spent = spentAmount(from: range.start, to: range.end, categoryID: nil, accountID: nil)
             let limit = BudgetLimit(amount: amount, period: period, startsOn: range.start, endsOn: range.end)
             let status = (try? BudgetCalculator.status(for: limit, spent: spent, today: today, calendar: calendar))
                 ?? BudgetStatus(remaining: amount, dailySuggestion: amount, isOverBudget: false)
@@ -898,9 +905,33 @@ struct RootShellView: View {
                 amount: amount,
                 spent: spent,
                 status: status,
-                isEnabled: setting?.isEnabled ?? true
+                isEnabled: setting?.isEnabled ?? true,
+                id: setting?.id ?? BudgetCardModel.defaultID(for: period)
             )
         }
+        let scopedCards = settings
+            .filter { $0.categoryID != nil || $0.accountID != nil }
+            .map { setting in
+                let range = budgetDateRange(for: setting.period, today: today, calendar: calendar)
+                let spent = spentAmount(from: range.start, to: range.end, categoryID: setting.categoryID, accountID: setting.accountID)
+                let limit = BudgetLimit(amount: setting.amount, period: setting.period, startsOn: range.start, endsOn: range.end)
+                let status = (try? BudgetCalculator.status(for: limit, spent: spent, today: today, calendar: calendar))
+                    ?? BudgetStatus(remaining: setting.amount, dailySuggestion: setting.amount, isOverBudget: false)
+                let scopeName = setting.categoryID.flatMap { id in store.categories.first { $0.id == id }?.localizedDisplayName }
+                    ?? setting.accountID.flatMap { id in store.accounts.first { $0.id == id }?.localizedDisplayName }
+                return BudgetCardModel(
+                    period: setting.period,
+                    amount: setting.amount,
+                    spent: spent,
+                    status: status,
+                    isEnabled: setting.isEnabled,
+                    id: setting.id,
+                    categoryID: setting.categoryID,
+                    accountID: setting.accountID,
+                    scopeName: scopeName
+                )
+            }
+        return globalCards + scopedCards
     }
 
     private func defaultBudgetAmount(for period: BudgetPeriod) -> Money {
@@ -925,18 +956,20 @@ struct RootShellView: View {
         return (interval.start, end)
     }
 
-    private func spentAmount(from start: Date, to end: Date) -> Money {
+    private func spentAmount(from start: Date, to end: Date, categoryID: UUID?, accountID: UUID?) -> Money {
         let ledgerID = currentLedger?.id
-        return store.visibleTransactions
+        let transactions = store.visibleTransactions
             .filter { transaction in
-                transaction.type == .expense
-                    && transaction.occurredAt >= start
+                transaction.occurredAt >= start
                     && transaction.occurredAt <= end
                     && (ledgerID == nil || transaction.ledgerID == ledgerID)
             }
-            .reduce(Money.zero(currencyCode: "CNY")) { partial, transaction in
-                (try? partial.adding(transaction.amount)) ?? partial
-            }
+        return (try? BudgetSpendingCalculator.spending(
+            from: transactions,
+            categoryID: categoryID,
+            accountID: accountID,
+            currencyCode: currentLedger?.currencyCode ?? "CNY"
+        )) ?? Money.zero(currencyCode: currentLedger?.currencyCode ?? "CNY")
     }
 
     private var filteredHomeTransactions: [NumiCore.Transaction] {

@@ -25,19 +25,63 @@ public struct BudgetSetting: Codable, Equatable, Identifiable, Sendable {
     public var amount: Money
     public var isEnabled: Bool
     public var ledgerID: UUID
+    public var categoryID: UUID?
+    public var accountID: UUID?
 
     public init(
         id: UUID = UUID(),
         period: BudgetPeriod,
         amount: Money,
         isEnabled: Bool = true,
-        ledgerID: UUID = UUID()
+        ledgerID: UUID = UUID(),
+        categoryID: UUID? = nil,
+        accountID: UUID? = nil
     ) {
         self.id = id
         self.period = period
         self.amount = amount
         self.isEnabled = isEnabled
         self.ledgerID = ledgerID
+        self.categoryID = categoryID
+        self.accountID = accountID
+    }
+}
+
+public enum BudgetSpendingCalculator {
+    public static func spending(
+        from transactions: [Transaction],
+        categoryID: UUID? = nil,
+        accountID: UUID? = nil,
+        currencyCode: String
+    ) throws -> Money {
+        let expensesByID = Dictionary(uniqueKeysWithValues: transactions.map { ($0.id, $0) })
+        func matchesScope(_ transaction: Transaction) -> Bool {
+            guard transaction.amount.currencyCode == currencyCode.uppercased() else { return false }
+            if let categoryID, transaction.categoryID != categoryID { return false }
+            if let accountID, transaction.accountID != accountID { return false }
+            return true
+        }
+        var result = Money.zero(currencyCode: currencyCode)
+
+        for transaction in transactions {
+            switch transaction.type {
+            case .expense:
+                guard matchesScope(transaction) else { continue }
+                guard transaction.reimbursementID == nil else { continue }
+                result = try result.adding(transaction.amount)
+            case .income:
+                guard let originalID = transaction.refundOfTransactionID,
+                      let original = expensesByID[originalID],
+                      original.type == .expense,
+                      original.reimbursementID == nil,
+                      matchesScope(original),
+                      transaction.amount.currencyCode == currencyCode.uppercased() else { continue }
+                result = try result.subtracting(transaction.amount)
+            case .transfer:
+                continue
+            }
+        }
+        return result
     }
 }
 

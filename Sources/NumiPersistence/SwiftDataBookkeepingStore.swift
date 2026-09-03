@@ -81,6 +81,8 @@ final class TransactionEntity {
     var targetAccountID: UUID?
     var ledgerID: UUID
     var note: String
+    var reimbursementID: UUID?
+    var refundOfTransactionID: UUID?
     var isSoftDeleted: Bool
 
     init(
@@ -93,6 +95,8 @@ final class TransactionEntity {
         targetAccountID: UUID?,
         ledgerID: UUID,
         note: String,
+        reimbursementID: UUID? = nil,
+        refundOfTransactionID: UUID? = nil,
         isSoftDeleted: Bool
     ) {
         self.id = id
@@ -105,6 +109,8 @@ final class TransactionEntity {
         self.targetAccountID = targetAccountID
         self.ledgerID = ledgerID
         self.note = note
+        self.reimbursementID = reimbursementID
+        self.refundOfTransactionID = refundOfTransactionID
         self.isSoftDeleted = isSoftDeleted
     }
 }
@@ -117,14 +123,18 @@ final class BudgetSettingEntity {
     var currencyCode: String
     var isEnabled: Bool
     var ledgerID: UUID
+    var categoryID: UUID?
+    var accountID: UUID?
 
-    init(id: UUID, period: BudgetPeriod, amount: Money, isEnabled: Bool, ledgerID: UUID) {
+    init(id: UUID, period: BudgetPeriod, amount: Money, isEnabled: Bool, ledgerID: UUID, categoryID: UUID? = nil, accountID: UUID? = nil) {
         self.id = id
         self.periodRawValue = period.rawValue
         self.amountMinorUnits = amount.minorUnits
         self.currencyCode = amount.currencyCode
         self.isEnabled = isEnabled
         self.ledgerID = ledgerID
+        self.categoryID = categoryID
+        self.accountID = accountID
     }
 }
 
@@ -663,7 +673,10 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
                 occurredAt: tx.occurredAt, categoryID: tx.categoryID,
                 accountID: tx.accountID, targetAccountID: tx.targetAccountID,
                 ledgerID: tx.ledgerID,
-                note: tx.note, isSoftDeleted: false
+                note: tx.note,
+                reimbursementID: tx.reimbursementID,
+                refundOfTransactionID: tx.refundOfTransactionID,
+                isSoftDeleted: false
             )
             context.insert(entity)
         }
@@ -673,7 +686,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             let entity = BudgetSettingEntity(
                 id: budget.id, period: budget.period,
                 amount: budget.amount, isEnabled: budget.isEnabled,
-                ledgerID: budget.ledgerID
+                ledgerID: budget.ledgerID,
+                categoryID: budget.categoryID,
+                accountID: budget.accountID
             )
             context.insert(entity)
         }
@@ -770,7 +785,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         targetAccountID: UUID? = nil,
         ledgerID: UUID,
         note: String,
-        occurredAt: Date = Date()
+        occurredAt: Date = Date(),
+        reimbursementID: UUID? = nil,
+        refundOfTransactionID: UUID? = nil
     ) throws -> Transaction {
         let transaction = TransactionEntity(
             id: UUID(),
@@ -782,6 +799,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             targetAccountID: targetAccountID,
             ledgerID: ledgerID,
             note: note,
+            reimbursementID: reimbursementID,
+            refundOfTransactionID: refundOfTransactionID,
             isSoftDeleted: false
         )
         context.insert(transaction)
@@ -803,6 +822,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
                 targetAccountID: transaction.targetAccountID,
                 ledgerID: transaction.ledgerID,
                 note: transaction.note,
+                reimbursementID: transaction.reimbursementID,
+                refundOfTransactionID: transaction.refundOfTransactionID,
                 isSoftDeleted: false
             )
             context.insert(entity)
@@ -829,7 +850,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         accountID: UUID,
         targetAccountID: UUID? = nil,
         note: String,
-        occurredAt: Date? = nil
+        occurredAt: Date? = nil,
+        reimbursementID: UUID? = nil,
+        refundOfTransactionID: UUID? = nil
     ) throws -> Transaction {
         guard let transaction = fetchTransactionEntity(id: id) else {
             throw SwiftDataBookkeepingStoreError.transactionNotFound
@@ -845,7 +868,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             accountID: accountID,
             targetAccountID: targetAccountID,
             ledgerID: transaction.ledgerID,
-            note: note
+            note: note,
+            reimbursementID: reimbursementID ?? oldDomain.reimbursementID,
+            refundOfTransactionID: refundOfTransactionID ?? oldDomain.refundOfTransactionID
         )
 
         if !transaction.isSoftDeleted {
@@ -860,6 +885,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         transaction.accountID = accountID
         transaction.targetAccountID = targetAccountID
         transaction.note = note
+        transaction.reimbursementID = updatedDomain.reimbursementID
+        transaction.refundOfTransactionID = updatedDomain.refundOfTransactionID
         try save()
         objectWillChange.send()
         return transaction.domainModel
@@ -938,13 +965,18 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         period: BudgetPeriod,
         amount: Money,
         isEnabled: Bool,
-        ledgerID: UUID
+        ledgerID: UUID,
+        categoryID: UUID? = nil,
+        accountID: UUID? = nil
     ) throws -> BudgetSetting {
         let setting: BudgetSettingEntity
-        if let existing = fetchBudgetSettingEntities().first(where: { $0.periodRawValue == period.rawValue && $0.ledgerID == ledgerID }) {
+        if let existing = fetchBudgetSettingEntities().first(where: {
+            $0.periodRawValue == period.rawValue && $0.ledgerID == ledgerID
+                && $0.categoryID == categoryID && $0.accountID == accountID
+        }) {
             setting = existing
         } else {
-            setting = BudgetSettingEntity(id: UUID(), period: period, amount: amount, isEnabled: isEnabled, ledgerID: ledgerID)
+            setting = BudgetSettingEntity(id: UUID(), period: period, amount: amount, isEnabled: isEnabled, ledgerID: ledgerID, categoryID: categoryID, accountID: accountID)
             context.insert(setting)
         }
 
@@ -952,6 +984,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         setting.amountMinorUnits = amount.minorUnits
         setting.currencyCode = amount.currencyCode
         setting.isEnabled = isEnabled
+        setting.categoryID = categoryID
+        setting.accountID = accountID
         try save()
         changeRevision += 1
         objectWillChange.send()
@@ -1177,7 +1211,9 @@ private extension TransactionEntity {
             accountID: accountID,
             targetAccountID: targetAccountID,
             ledgerID: ledgerID,
-            note: note
+            note: note,
+            reimbursementID: reimbursementID,
+            refundOfTransactionID: refundOfTransactionID
         )
     }
 }
@@ -1189,7 +1225,9 @@ private extension BudgetSettingEntity {
             period: BudgetPeriod(rawValue: periodRawValue) ?? .month,
             amount: Money(minorUnits: amountMinorUnits, currencyCode: currencyCode),
             isEnabled: isEnabled,
-            ledgerID: ledgerID
+            ledgerID: ledgerID,
+            categoryID: categoryID,
+            accountID: accountID
         )
     }
 }
