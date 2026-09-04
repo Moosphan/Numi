@@ -69,6 +69,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
 
         UserDefaults.standard.set("ja", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.lookup("installment.settle"), "繰り上げ完済")
+
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.skip"), "跳过")
+        XCTAssertEqual(NumiLocalized.lookup("installment.skipped"), "已跳过")
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.skip"), "Skip")
+        XCTAssertEqual(NumiLocalized.lookup("installment.skipped"), "Skipped")
+
+        UserDefaults.standard.set("zh-Hant", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.skip"), "跳過")
+
+        UserDefaults.standard.set("ja", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.skip"), "スキップ")
+
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.string("error.installment.skip.fail", "期次不存在"), "跳过期次失败：期次不存在")
     }
 
     func testFormattedLookupUsesCatalogKeyAndArguments() {

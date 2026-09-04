@@ -70,6 +70,7 @@ public struct PlansView: View {
     private let onUpdateInstallmentPeriod: (InstallmentPeriod) -> Void
     private let onRecordInstallmentPayment: (InstallmentPeriod) -> Void
     private let onSettleInstallmentPlan: (InstallmentPlan) -> Void
+    private let onSkipInstallmentPeriod: (InstallmentPeriod) -> Void
 
     public init(
         budgets: [BudgetCardModel],
@@ -87,7 +88,8 @@ public struct PlansView: View {
         onDeleteInstallmentPlan: @escaping (UUID) -> Void = { _ in },
         onUpdateInstallmentPeriod: @escaping (InstallmentPeriod) -> Void = { _ in },
         onRecordInstallmentPayment: @escaping (InstallmentPeriod) -> Void = { _ in },
-        onSettleInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in }
+        onSettleInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
+        onSkipInstallmentPeriod: @escaping (InstallmentPeriod) -> Void = { _ in }
     ) {
         self.budgets = budgets
         self.subscriptions = subscriptions
@@ -105,6 +107,7 @@ public struct PlansView: View {
         self.onUpdateInstallmentPeriod = onUpdateInstallmentPeriod
         self.onRecordInstallmentPayment = onRecordInstallmentPayment
         self.onSettleInstallmentPlan = onSettleInstallmentPlan
+        self.onSkipInstallmentPeriod = onSkipInstallmentPeriod
     }
 
     public var body: some View {
@@ -155,6 +158,7 @@ public struct PlansView: View {
                 onUpdatePeriod: onUpdateInstallmentPeriod,
                 onRecordPayment: onRecordInstallmentPayment,
                 onSettlePlan: onSettleInstallmentPlan,
+                onSkipPeriod: onSkipInstallmentPeriod,
                 onEdit: {
                     selectedInstallmentPlan = nil
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -1391,6 +1395,7 @@ private struct InstallmentDetailView: View {
     let onUpdatePeriod: (InstallmentPeriod) -> Void
     let onRecordPayment: (InstallmentPeriod) -> Void
     let onSettlePlan: (InstallmentPlan) -> Void
+    let onSkipPeriod: (InstallmentPeriod) -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
 
@@ -1478,8 +1483,13 @@ private struct InstallmentDetailView: View {
                             HStack(spacing: NumiSpacing.s3) {
                                 Button {
                                     var updated = period
-                                    updated.isPaid.toggle()
-                                    updated.isRecorded = updated.isPaid
+                                    if period.isSkipped {
+                                        updated.isSkipped = false
+                                        updated.isRecorded = false
+                                    } else {
+                                        updated.isPaid.toggle()
+                                        updated.isRecorded = updated.isPaid
+                                    }
                                     onUpdatePeriod(updated)
                                 } label: {
                                     HStack(spacing: NumiSpacing.s3) {
@@ -1493,19 +1503,19 @@ private struct InstallmentDetailView: View {
                                             .font(NumiFont.bodySmall)
                                             .foregroundStyle(NumiColor.textTertiary)
 
-                                        Text(period.isPaid ? NumiLocalized.string("installment.paid") : NumiLocalized.string("installment.pending"))
+                                        Text(period.isPaid ? NumiLocalized.string("installment.paid") : (period.isSkipped ? NumiLocalized.string("installment.skipped") : NumiLocalized.string("installment.pending")))
                                             .font(NumiFont.caption)
-                                            .foregroundStyle(period.isPaid ? NumiColor.positiveText : (period.isOverdue() ? NumiColor.negativeText : NumiColor.textTertiary))
+                                            .foregroundStyle(period.isPaid ? NumiColor.positiveText : (period.isSkipped ? NumiColor.textTertiary : (period.isOverdue() ? NumiColor.negativeText : NumiColor.textTertiary)))
                                             .padding(.horizontal, 8)
                                             .padding(.vertical, 2)
-                                            .background(period.isPaid ? NumiColor.positiveBackground : (period.isOverdue() ? NumiColor.negativeBackground : NumiColor.surfaceCardSubtle))
+                                            .background(period.isPaid ? NumiColor.positiveBackground : (period.isSkipped ? NumiColor.surfaceCardSubtle : (period.isOverdue() ? NumiColor.negativeBackground : NumiColor.surfaceCardSubtle)))
                                             .clipShape(Capsule())
                                     }
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityIdentifier("installment.period.\(period.periodIndex).toggle")
 
-                                if !period.isPaid && period.transactionID == nil {
+                                if !period.isPaid && !period.isSkipped && period.transactionID == nil {
                                     Button {
                                         onRecordPayment(period)
                                     } label: {
@@ -1517,6 +1527,18 @@ private struct InstallmentDetailView: View {
                                     .buttonStyle(.plain)
                                     .accessibilityLabel(NumiLocalized.string("installment.record.payment"))
                                     .accessibilityIdentifier("installment.period.\(period.periodIndex).record")
+
+                                    Button {
+                                        onSkipPeriod(period)
+                                    } label: {
+                                        Image(systemName: "minus.circle")
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundStyle(NumiColor.textSecondary)
+                                            .frame(width: 44, height: 44)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(NumiLocalized.string("installment.skip"))
+                                    .accessibilityIdentifier("installment.period.\(period.periodIndex).skip")
                                 }
                             }
                             .padding(.horizontal, NumiSpacing.s4)

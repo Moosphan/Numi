@@ -582,6 +582,13 @@ struct RootShellView: View {
                     } catch {
                         showToast(NumiLocalized.string("error.installment.settle.fail", error.localizedDescription), isError: true)
                     }
+                },
+                onSkipInstallmentPeriod: { period in
+                    do {
+                        try store.skipInstallmentPeriod(periodID: period.id)
+                    } catch {
+                        showToast(NumiLocalized.string("error.installment.skip.fail", error.localizedDescription), isError: true)
+                    }
                 }
             )
             .numiBottomAccessoryNavigationDepth()
