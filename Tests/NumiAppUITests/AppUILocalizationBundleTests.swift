@@ -37,6 +37,26 @@ final class AppUILocalizationBundleTests: XCTestCase {
         XCTAssertEqual(NumiLocalized.string("setting.data"), "Data")
     }
 
+    func testInstallmentPaymentActionIsLocalized() {
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.record.payment"), "记录还款")
+
+        UserDefaults.standard.set("zh-Hant", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.record.payment"), "記錄還款")
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.record.payment"), "Record Payment")
+
+        UserDefaults.standard.set("ja", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.record.payment"), "支払いを記録")
+
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.string("error.installment.record.fail", "账户不可用"), "记录还款失败：账户不可用")
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.string("error.installment.record.fail", "Account unavailable"), "Unable to record payment: Account unavailable")
+    }
+
     func testFormattedLookupUsesCatalogKeyAndArguments() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.string("setting.ai.test.fail", 401), "连接失败：401")

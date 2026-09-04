@@ -603,10 +603,10 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         guard let plan = fetchInstallmentPlanEntities().first(where: { $0.id == period.planID }) else {
             throw SwiftDataBookkeepingStoreError.installmentPlanNotFound
         }
-        guard let accountID = plan.accountID else {
+        guard let accountID = plan.accountID ?? fetchAccountEntities().first?.id else {
             throw SwiftDataBookkeepingStoreError.accountNotFound
         }
-        guard let categoryID = plan.categoryID else {
+        guard let categoryID = plan.categoryID ?? fetchCategoryEntities().first(where: { $0.kindRawValue == CategoryKind.expense.rawValue })?.id else {
             throw SwiftDataBookkeepingStoreError.categoryNotFound
         }
         guard plan.periodCount > 0 else {

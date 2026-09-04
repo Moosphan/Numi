@@ -560,6 +560,17 @@ struct RootShellView: View {
                     } catch {
                         initializationError = error.localizedDescription
                     }
+                },
+                onRecordInstallmentPayment: { period in
+                    do {
+                        guard let ledgerID = currentLedger?.id else {
+                            initializationError = SwiftDataBookkeepingStoreError.ledgerNotFound.localizedDescription
+                            return
+                        }
+                        try store.recordInstallmentPayment(periodID: period.id, ledgerID: ledgerID)
+                    } catch {
+                        showToast(NumiLocalized.string("error.installment.record.fail", error.localizedDescription), isError: true)
+                    }
                 }
             )
             .numiBottomAccessoryNavigationDepth()

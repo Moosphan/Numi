@@ -68,6 +68,7 @@ public struct PlansView: View {
     private let onUpdateInstallmentPlan: (InstallmentPlan) -> Void
     private let onDeleteInstallmentPlan: (UUID) -> Void
     private let onUpdateInstallmentPeriod: (InstallmentPeriod) -> Void
+    private let onRecordInstallmentPayment: (InstallmentPeriod) -> Void
 
     public init(
         budgets: [BudgetCardModel],
@@ -83,7 +84,8 @@ public struct PlansView: View {
         onAddInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onUpdateInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onDeleteInstallmentPlan: @escaping (UUID) -> Void = { _ in },
-        onUpdateInstallmentPeriod: @escaping (InstallmentPeriod) -> Void = { _ in }
+        onUpdateInstallmentPeriod: @escaping (InstallmentPeriod) -> Void = { _ in },
+        onRecordInstallmentPayment: @escaping (InstallmentPeriod) -> Void = { _ in }
     ) {
         self.budgets = budgets
         self.subscriptions = subscriptions
@@ -99,6 +101,7 @@ public struct PlansView: View {
         self.onUpdateInstallmentPlan = onUpdateInstallmentPlan
         self.onDeleteInstallmentPlan = onDeleteInstallmentPlan
         self.onUpdateInstallmentPeriod = onUpdateInstallmentPeriod
+        self.onRecordInstallmentPayment = onRecordInstallmentPayment
     }
 
     public var body: some View {
@@ -147,6 +150,7 @@ public struct PlansView: View {
                 periods: periods,
                 categories: categories,
                 onUpdatePeriod: onUpdateInstallmentPeriod,
+                onRecordPayment: onRecordInstallmentPayment,
                 onEdit: {
                     selectedInstallmentPlan = nil
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -1153,6 +1157,9 @@ private struct InstallmentFormView: View {
             _firstPaymentDate = State(initialValue: plan.firstPaymentDate)
             _accountID = State(initialValue: plan.accountID)
             _categoryID = State(initialValue: plan.categoryID)
+        } else {
+            _accountID = State(initialValue: accounts.first?.id)
+            _categoryID = State(initialValue: categories.first(where: { $0.kind == .expense })?.id)
         }
     }
 
@@ -1378,6 +1385,7 @@ private struct InstallmentDetailView: View {
     let periods: [InstallmentPeriod]
     let categories: [NumiCore.Category]
     let onUpdatePeriod: (InstallmentPeriod) -> Void
+    let onRecordPayment: (InstallmentPeriod) -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
 
@@ -1461,34 +1469,50 @@ private struct InstallmentDetailView: View {
 
                     VStack(spacing: 0) {
                         ForEach(Array(sortedPeriods.enumerated()), id: \.element.id) { index, period in
-                            Button {
-                                var updated = period
-                                updated.isPaid.toggle()
-                                updated.isRecorded = updated.isPaid
-                                onUpdatePeriod(updated)
-                            } label: {
-                                HStack(spacing: NumiSpacing.s3) {
-                                    Text(NumiLocalized.string("installment.period.n", period.periodIndex + 1))
-                                        .font(NumiFont.bodyStrong)
-                                        .foregroundStyle(period.isPaid ? NumiColor.textTertiary : NumiColor.textPrimary)
+                            HStack(spacing: NumiSpacing.s3) {
+                                Button {
+                                    var updated = period
+                                    updated.isPaid.toggle()
+                                    updated.isRecorded = updated.isPaid
+                                    onUpdatePeriod(updated)
+                                } label: {
+                                    HStack(spacing: NumiSpacing.s3) {
+                                        Text(NumiLocalized.string("installment.period.n", period.periodIndex + 1))
+                                            .font(NumiFont.bodyStrong)
+                                            .foregroundStyle(period.isPaid ? NumiColor.textTertiary : NumiColor.textPrimary)
 
-                                    Spacer()
+                                        Spacer()
 
-                                    Text(period.dueDate.numiFormatted(.dateTime.year().month().day()))
-                                        .font(NumiFont.bodySmall)
-                                        .foregroundStyle(NumiColor.textTertiary)
+                                        Text(period.dueDate.numiFormatted(.dateTime.year().month().day()))
+                                            .font(NumiFont.bodySmall)
+                                            .foregroundStyle(NumiColor.textTertiary)
 
-                                    Text(period.isPaid ? NumiLocalized.string("installment.paid") : NumiLocalized.string("installment.pending"))
-                                        .font(NumiFont.caption)
-                                        .foregroundStyle(period.isPaid ? NumiColor.positiveText : (period.isOverdue() ? NumiColor.negativeText : NumiColor.textTertiary))
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 2)
-                                        .background(period.isPaid ? NumiColor.positiveBackground : (period.isOverdue() ? NumiColor.negativeBackground : NumiColor.surfaceCardSubtle))
-                                        .clipShape(Capsule())
+                                        Text(period.isPaid ? NumiLocalized.string("installment.paid") : NumiLocalized.string("installment.pending"))
+                                            .font(NumiFont.caption)
+                                            .foregroundStyle(period.isPaid ? NumiColor.positiveText : (period.isOverdue() ? NumiColor.negativeText : NumiColor.textTertiary))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)
+                                            .background(period.isPaid ? NumiColor.positiveBackground : (period.isOverdue() ? NumiColor.negativeBackground : NumiColor.surfaceCardSubtle))
+                                            .clipShape(Capsule())
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("installment.period.\(period.periodIndex).toggle")
+
+                                if !period.isPaid && period.transactionID == nil {
+                                    Button {
+                                        onRecordPayment(period)
+                                    } label: {
+                                        Image(systemName: "checkmark.circle")
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundStyle(NumiColor.accentDeep)
+                                            .frame(width: 44, height: 44)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(NumiLocalized.string("installment.record.payment"))
+                                    .accessibilityIdentifier("installment.period.\(period.periodIndex).record")
                                 }
                             }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("installment.period.\(period.periodIndex).toggle")
                             .padding(.horizontal, NumiSpacing.s4)
                             .padding(.vertical, 12)
 

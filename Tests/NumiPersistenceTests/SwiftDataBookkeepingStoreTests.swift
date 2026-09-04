@@ -346,6 +346,29 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testRecordingInstallmentPaymentUsesDefaultsWhenPlanHasNoAccountOrCategory() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let plan = InstallmentPlan(
+            name: "Unassigned plan",
+            totalAmount: try Money(decimalString: "50", currencyCode: account.balance.currencyCode),
+            feePerPeriod: .zero(currencyCode: account.balance.currencyCode),
+            periodCount: 1,
+            firstPaymentDate: Date()
+        )
+        try store.createInstallmentPlan(plan)
+        let period = try XCTUnwrap(store.installmentPeriods.first)
+
+        let transaction = try store.recordInstallmentPayment(periodID: period.id, ledgerID: ledgerID)
+
+        XCTAssertEqual(transaction.accountID, account.id)
+        XCTAssertNotNil(transaction.categoryID)
+        XCTAssertEqual(store.visibleTransactions.count, 1)
+    }
+
+    @MainActor
     func testUpdatingTransactionReversesOldBalanceAndAppliesNewBalance() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

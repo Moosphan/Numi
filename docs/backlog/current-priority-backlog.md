@@ -57,7 +57,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 | ID | Backlog | 当前状态 | 证据 | 下一步 | 验收 |
 | --- | --- | --- | --- | --- | --- |
 | P1-01 | 订阅/循环记账自动化 | Partial | 已支持启用订阅到期计算、到期生成支出、推进下次扣费日期与幂等处理；App 启动和回到前台会触发处理；仍缺少通知提醒、跳过/暂停和用户确认扣费 | 增加 recurring rule、通知提醒、跳过/暂停状态 | 到期订阅可提醒并生成交易，用户可跳过或确认 |
-| P1-02 | 分期计划完整状态机 | Partial | 计划详情页现可点按期次切换已还/待还，并通过既有 `updateInstallmentPeriod` 持久化、刷新进度；新增纯状态判定识别逾期期次并用风险色呈现；持久化层新增按期次创建支出、扣减账户余额并幂等绑定 `transactionID`；仍缺少界面入口、提前结清、跳过等状态 | 建立 installment payment schedule 与交易关联 | 每期还款影响余额和计划进度；支持提前结清 |
+| P1-02 | 分期计划完整状态机 | Partial | 计划详情页现可点按期次切换已还/待还，并通过既有 `updateInstallmentPeriod` 持久化、刷新进度；新增纯状态判定识别逾期期次并用风险色呈现；持久化层新增按期次创建支出、扣减账户余额并幂等绑定 `transactionID`；详情页新增多语言“记录还款”入口；仍缺少提前结清、跳过等状态 | 建立 installment payment schedule 与交易关联 | 每期还款影响余额和计划进度；支持提前结清 |
 | P1-03 | 多币种全链路 | Partial | 币种管理、汇率服务和 currencyCode 字段已存在；首页/洞悉统计、App 内 AI 记账及 `TransactionService` 快捷记账路径已跟随当前账本币种，仍缺少主币种换算与汇率快照 | 将默认币种继续注入导入服务；统计支持主币种换算与汇率快照 | 新增、统计、预算、导入导出、AI 记账都尊重默认币种和历史汇率 |
 | P1-04 | iCloud 同步真实实现或产品降级 | Partial | `RootShellView` 中 CloudKit 同步闭包偏占位；未注入真实同步闭包时已改为明确失败，不再模拟成功；`SyncSettingsView` 保留状态与错误反馈 UI | 明确首版是否发布同步；若保留则实现冲突合并、错误恢复、跨设备验证；若不保留则隐藏入口 | 用户看得到的同步入口必须真实可用，或在首版隐藏/标记实验 |
 | P1-05 | App Intents / Siri 记账产品化 | Partial | `NumiIntents/RecordTransactionIntent.swift` 与 shortcuts provider 已存在；`TransactionService` 现会解析转账目标账户、校验同币种且更新双方余额，仍需完善本地化 dialog 与失败恢复 | 接入真实 store、默认账本/账户/币种、本地化 dialog、失败恢复 | Siri/快捷指令可稳定创建支出/收入/转账 |
