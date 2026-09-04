@@ -69,6 +69,7 @@ public struct PlansView: View {
     private let onDeleteInstallmentPlan: (UUID) -> Void
     private let onUpdateInstallmentPeriod: (InstallmentPeriod) -> Void
     private let onRecordInstallmentPayment: (InstallmentPeriod) -> Void
+    private let onSettleInstallmentPlan: (InstallmentPlan) -> Void
 
     public init(
         budgets: [BudgetCardModel],
@@ -85,7 +86,8 @@ public struct PlansView: View {
         onUpdateInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onDeleteInstallmentPlan: @escaping (UUID) -> Void = { _ in },
         onUpdateInstallmentPeriod: @escaping (InstallmentPeriod) -> Void = { _ in },
-        onRecordInstallmentPayment: @escaping (InstallmentPeriod) -> Void = { _ in }
+        onRecordInstallmentPayment: @escaping (InstallmentPeriod) -> Void = { _ in },
+        onSettleInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in }
     ) {
         self.budgets = budgets
         self.subscriptions = subscriptions
@@ -102,6 +104,7 @@ public struct PlansView: View {
         self.onDeleteInstallmentPlan = onDeleteInstallmentPlan
         self.onUpdateInstallmentPeriod = onUpdateInstallmentPeriod
         self.onRecordInstallmentPayment = onRecordInstallmentPayment
+        self.onSettleInstallmentPlan = onSettleInstallmentPlan
     }
 
     public var body: some View {
@@ -151,6 +154,7 @@ public struct PlansView: View {
                 categories: categories,
                 onUpdatePeriod: onUpdateInstallmentPeriod,
                 onRecordPayment: onRecordInstallmentPayment,
+                onSettlePlan: onSettleInstallmentPlan,
                 onEdit: {
                     selectedInstallmentPlan = nil
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -1386,11 +1390,13 @@ private struct InstallmentDetailView: View {
     let categories: [NumiCore.Category]
     let onUpdatePeriod: (InstallmentPeriod) -> Void
     let onRecordPayment: (InstallmentPeriod) -> Void
+    let onSettlePlan: (InstallmentPlan) -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var showDeleteConfirm = false
+    @State private var showSettleConfirm = false
 
     private var sortedPeriods: [InstallmentPeriod] {
         periods.sorted { $0.periodIndex < $1.periodIndex }
@@ -1526,6 +1532,26 @@ private struct InstallmentDetailView: View {
                     .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
                 }
 
+                if paidCount < plan.periodCount {
+                    Button {
+                        showSettleConfirm = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "checkmark.seal")
+                            Text("installment.settle")
+                            Spacer()
+                        }
+                        .font(NumiFont.bodyStrong)
+                        .foregroundStyle(NumiColor.accentDeep)
+                        .padding(.vertical, 14)
+                        .padding(.horizontal, NumiSpacing.s4)
+                        .background(NumiColor.surfaceCard)
+                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("action.settleInstallment")
+                }
+
                 // Delete button
                 Button {
                     showDeleteConfirm = true
@@ -1556,6 +1582,10 @@ private struct InstallmentDetailView: View {
             Button("common.cancel", role: .cancel) {}
         } message: {
             Text("installment.delete.msg")
+        }
+        .confirmationDialog(NumiLocalized.string("installment.settle.confirm", plan.name), isPresented: $showSettleConfirm, titleVisibility: .visible) {
+            Button("installment.settle") { onSettlePlan(plan) }
+            Button("common.cancel", role: .cancel) {}
         }
         .toolbar {
             ToolbarItem(placement: .trailingBar) {

@@ -55,6 +55,20 @@ final class AppUILocalizationBundleTests: XCTestCase {
 
         UserDefaults.standard.set("en", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.string("error.installment.record.fail", "Account unavailable"), "Unable to record payment: Account unavailable")
+
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.settle"), "提前结清")
+        XCTAssertEqual(NumiLocalized.string("installment.settle.confirm", "相机分期"), "确认提前结清“相机分期”？")
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.settle"), "Settle Early")
+        XCTAssertEqual(NumiLocalized.string("installment.settle.confirm", "Camera Plan"), "Settle “Camera Plan” early?")
+
+        UserDefaults.standard.set("zh-Hant", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.settle"), "提前結清")
+
+        UserDefaults.standard.set("ja", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("installment.settle"), "繰り上げ完済")
     }
 
     func testFormattedLookupUsesCatalogKeyAndArguments() {

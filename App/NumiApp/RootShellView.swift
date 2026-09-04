@@ -571,6 +571,17 @@ struct RootShellView: View {
                     } catch {
                         showToast(NumiLocalized.string("error.installment.record.fail", error.localizedDescription), isError: true)
                     }
+                },
+                onSettleInstallmentPlan: { plan in
+                    do {
+                        guard let ledgerID = currentLedger?.id else {
+                            showToast(NumiLocalized.string("error.installment.settle.fail", SwiftDataBookkeepingStoreError.ledgerNotFound.localizedDescription), isError: true)
+                            return
+                        }
+                        _ = try store.settleInstallmentPlan(planID: plan.id, ledgerID: ledgerID)
+                    } catch {
+                        showToast(NumiLocalized.string("error.installment.settle.fail", error.localizedDescription), isError: true)
+                    }
                 }
             )
             .numiBottomAccessoryNavigationDepth()

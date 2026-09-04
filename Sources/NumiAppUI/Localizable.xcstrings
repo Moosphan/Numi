@@ -4599,6 +4599,33 @@
         }
       }
     },
+    "installment.settle": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "提前结清" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Settle Early" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "提前結清" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "繰り上げ完済" } }
+      }
+    },
+    "installment.settle.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "确认提前结清“%@”？" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Settle “%@” early?" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "確認提前結清「%@」？" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "「%@」を繰り上げ完済しますか？" } }
+      }
+    },
+    "error.installment.settle.fail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "提前结清失败：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unable to settle early: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "提前結清失敗：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "繰り上げ完済に失敗しました：%@" } }
+      }
+    },
     "installment.edit": {
       "extractionState": "manual",
       "localizations": {
