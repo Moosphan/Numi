@@ -542,6 +542,13 @@ struct RootShellView: View {
                     } catch {
                         initializationError = error.localizedDescription
                     }
+                },
+                onUpdateInstallmentPeriod: { period in
+                    do {
+                        try store.updateInstallmentPeriod(period)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
                 }
             )
             .numiBottomAccessoryNavigationDepth()
