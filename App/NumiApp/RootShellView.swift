@@ -1274,7 +1274,7 @@ struct RootShellView: View {
                 return
             }
 
-            let money = try Money(decimalString: "\(parsed.amount)", currencyCode: "CNY")
+            let money = try Money(decimalString: "\(parsed.amount)", currencyCode: activeCurrencyCode)
             guard let ledgerID = currentLedger?.id else {
                 showToast(NumiLocalized.string( "error.ai.no.ledger"), isError: true)
                 return

@@ -58,7 +58,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 | --- | --- | --- | --- | --- | --- |
 | P1-01 | 订阅/循环记账自动化 | Partial | `Subscription`、`PlansView` 已有展示和编辑；未见提醒、自动入账、跳过/暂停/确认扣费 | 增加 recurring rule、通知提醒、到期生成交易、跳过/暂停状态 | 到期订阅可提醒并生成交易，用户可跳过或确认 |
 | P1-02 | 分期计划完整状态机 | Partial | 计划详情页现可点按期次切换已还/待还，并通过既有 `updateInstallmentPeriod` 持久化、刷新进度；仍缺少还款记录绑定、提前结清、逾期/跳过等状态 | 建立 installment payment schedule 与交易关联 | 每期还款影响余额和计划进度；支持提前结清 |
-| P1-03 | 多币种全链路 | Partial | 币种管理、汇率服务和 currencyCode 字段已存在；首页/洞悉统计及 `TransactionService` AI/快捷记账路径已跟随当前账本币种，仍缺少主币种换算与汇率快照 | 将默认币种继续注入快捷记账和导入服务；统计支持主币种换算与汇率快照 | 新增、统计、预算、导入导出、AI 记账都尊重默认币种和历史汇率 |
+| P1-03 | 多币种全链路 | Partial | 币种管理、汇率服务和 currencyCode 字段已存在；首页/洞悉统计、App 内 AI 记账及 `TransactionService` 快捷记账路径已跟随当前账本币种，仍缺少主币种换算与汇率快照 | 将默认币种继续注入导入服务；统计支持主币种换算与汇率快照 | 新增、统计、预算、导入导出、AI 记账都尊重默认币种和历史汇率 |
 | P1-04 | iCloud 同步真实实现或产品降级 | Partial | `RootShellView` 中 CloudKit 同步闭包偏占位；`SyncSettingsView` 有 UI/状态 | 明确首版是否发布同步；若保留则实现冲突合并、错误恢复、跨设备验证；若不保留则隐藏入口 | 用户看得到的同步入口必须真实可用，或在首版隐藏/标记实验 |
 | P1-05 | App Intents / Siri 记账产品化 | Partial | `NumiIntents/RecordTransactionIntent.swift` 与 shortcuts provider 已存在 | 接入真实 store、默认账本/账户/币种、本地化 dialog、失败恢复 | Siri/快捷指令可稳定创建支出/收入/转账 |
 | P1-06 | 运行时本地化完成度 | Partial | 运行时本地化 backlog 大量标记完成，但本轮 SwiftPM 测试仍因资源 lookup 红灯 | 区分 iOS App 实际行为与 SwiftPM 测试资源限制；补稳定测试 harness | macOS SwiftPM 与 iOS simulator 至少各有清晰通过/跳过策略 |
