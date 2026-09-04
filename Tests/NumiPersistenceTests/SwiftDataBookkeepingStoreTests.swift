@@ -426,6 +426,106 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testTransferRequiresDistinctSourceAndTargetAccounts() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let cash = try XCTUnwrap(store.accounts.first { $0.name == "现金" })
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+
+        XCTAssertThrowsError(try store.createTransaction(
+            type: .transfer,
+            amount: Money(decimalString: "50", currencyCode: "CNY"),
+            categoryID: nil,
+            accountID: cash.id,
+            ledgerID: ledgerID,
+            note: "缺少转入账户"
+        )) { error in
+            XCTAssertEqual(error as? SwiftDataBookkeepingStoreError, .transferTargetRequired)
+        }
+
+        XCTAssertThrowsError(try store.createTransaction(
+            type: .transfer,
+            amount: Money(decimalString: "50", currencyCode: "CNY"),
+            categoryID: nil,
+            accountID: cash.id,
+            targetAccountID: cash.id,
+            ledgerID: ledgerID,
+            note: "相同账户"
+        )) { error in
+            XCTAssertEqual(error as? SwiftDataBookkeepingStoreError, .transferAccountsMustDiffer)
+        }
+
+        XCTAssertTrue(store.visibleTransactions.isEmpty)
+        XCTAssertEqual(store.accounts.first { $0.id == cash.id }?.balance.minorUnits, 0)
+    }
+
+    @MainActor
+    func testTransferRejectsCurrencyMismatchWithoutPersistingOrChangingBalances() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let cash = try XCTUnwrap(store.accounts.first { $0.name == "现金" })
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let usd = try store.createAccount(
+            name: "美元账户",
+            type: .other,
+            balance: Money(decimalString: "100", currencyCode: "USD")
+        )
+
+        XCTAssertThrowsError(try store.createTransaction(
+            type: .transfer,
+            amount: Money(decimalString: "50", currencyCode: "CNY"),
+            categoryID: nil,
+            accountID: cash.id,
+            targetAccountID: usd.id,
+            ledgerID: ledgerID,
+            note: "跨币种转账"
+        )) { error in
+            XCTAssertEqual(error as? SwiftDataBookkeepingStoreError, .transferCurrencyMismatch)
+        }
+
+        XCTAssertTrue(store.visibleTransactions.isEmpty)
+        XCTAssertEqual(store.accounts.first { $0.id == cash.id }?.balance.minorUnits, 0)
+        XCTAssertEqual(store.accounts.first { $0.id == usd.id }?.balance.minorUnits, 10000)
+    }
+
+    @MainActor
+    func testInvalidTransferUpdateLeavesOriginalTransactionAndBalancesUntouched() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let cash = try XCTUnwrap(store.accounts.first { $0.name == "现金" })
+        let card = try XCTUnwrap(store.accounts.first { $0.name == "银行卡" })
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let transfer = try store.createTransaction(
+            type: .transfer,
+            amount: Money(decimalString: "50", currencyCode: "CNY"),
+            categoryID: nil,
+            accountID: cash.id,
+            targetAccountID: card.id,
+            ledgerID: ledgerID,
+            note: "原始转账"
+        )
+
+        XCTAssertThrowsError(try store.updateTransaction(
+            id: transfer.id,
+            type: .transfer,
+            amount: Money(decimalString: "30", currencyCode: "CNY"),
+            categoryID: nil,
+            accountID: card.id,
+            targetAccountID: card.id,
+            note: "无效更新"
+        )) { error in
+            XCTAssertEqual(error as? SwiftDataBookkeepingStoreError, .transferAccountsMustDiffer)
+        }
+
+        let persisted = try XCTUnwrap(store.visibleTransactions.first { $0.id == transfer.id })
+        XCTAssertEqual(persisted.amount.minorUnits, 5000)
+        XCTAssertEqual(persisted.accountID, cash.id)
+        XCTAssertEqual(persisted.targetAccountID, card.id)
+        XCTAssertEqual(store.accounts.first { $0.id == cash.id }?.balance.minorUnits, -5000)
+        XCTAssertEqual(store.accounts.first { $0.id == card.id }?.balance.minorUnits, 5000)
+    }
+
+    @MainActor
     func testUpdatesCategoryVisibilityAndPersistsIt() throws {
         let url = try temporaryStoreURL()
         let foodID: UUID

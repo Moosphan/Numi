@@ -789,6 +789,12 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         reimbursementID: UUID? = nil,
         refundOfTransactionID: UUID? = nil
     ) throws -> Transaction {
+        try validateTransactionAccounts(
+            type: type,
+            amount: amount,
+            accountID: accountID,
+            targetAccountID: targetAccountID
+        )
         let transaction = TransactionEntity(
             id: UUID(),
             type: type,
@@ -811,6 +817,15 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
     }
 
     public func appendTransactions(_ transactions: [Transaction]) throws {
+        for transaction in transactions {
+            try validateTransactionAccounts(
+                type: transaction.type,
+                amount: transaction.amount,
+                accountID: transaction.accountID,
+                targetAccountID: transaction.targetAccountID
+            )
+        }
+
         for transaction in transactions {
             let entity = TransactionEntity(
                 id: transaction.id,
@@ -857,6 +872,13 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         guard let transaction = fetchTransactionEntity(id: id) else {
             throw SwiftDataBookkeepingStoreError.transactionNotFound
         }
+
+        try validateTransactionAccounts(
+            type: type,
+            amount: amount,
+            accountID: accountID,
+            targetAccountID: targetAccountID
+        )
 
         let oldDomain = transaction.domainModel
         let updatedDomain = Transaction(
@@ -997,6 +1019,30 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         try updateBalances(reversing: nil, applying: transaction)
     }
 
+    private func validateTransactionAccounts(
+        type: TransactionType,
+        amount: Money,
+        accountID: UUID?,
+        targetAccountID: UUID?
+    ) throws {
+        guard type == .transfer else { return }
+        guard let accountID else { throw SwiftDataBookkeepingStoreError.accountNotFound }
+        guard let targetAccountID else {
+            throw SwiftDataBookkeepingStoreError.transferTargetRequired
+        }
+        guard accountID != targetAccountID else {
+            throw SwiftDataBookkeepingStoreError.transferAccountsMustDiffer
+        }
+        guard let source = fetchAccountEntity(id: accountID),
+              let target = fetchAccountEntity(id: targetAccountID) else {
+            throw SwiftDataBookkeepingStoreError.accountNotFound
+        }
+        guard source.currencyCode == amount.currencyCode,
+              target.currencyCode == amount.currencyCode else {
+            throw SwiftDataBookkeepingStoreError.transferCurrencyMismatch
+        }
+    }
+
     private func updateBalances(reversing oldTransaction: Transaction?, applying newTransaction: Transaction?) throws {
         var balancesByAccountID: [UUID: Money] = [:]
 
@@ -1114,6 +1160,9 @@ public enum SwiftDataBookkeepingStoreError: Error, Equatable {
     case categoryNotFound
     case transactionNotFound
     case ledgerNotFound
+    case transferTargetRequired
+    case transferAccountsMustDiffer
+    case transferCurrencyMismatch
 }
 
 private enum BalanceAdjustment {
