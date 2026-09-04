@@ -472,6 +472,47 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         objectWillChange.send()
     }
 
+    @discardableResult
+    public func processDueSubscriptions(asOf date: Date = Date(), calendar: Calendar = .current) throws -> Int {
+        guard let ledger = ledgers.first else { return 0 }
+        var processed = 0
+
+        for subscription in subscriptions where subscription.isEnabled {
+            guard let accountID = subscription.accountID ?? accounts.first?.id else { continue }
+            guard let account = accounts.first(where: { $0.id == accountID }),
+                  account.balance.currencyCode == subscription.amount.currencyCode,
+                  account.balance.currencyCode == ledger.currencyCode else { continue }
+            let dueDates = subscription.dueDates(through: date, calendar: calendar)
+            guard !dueDates.isEmpty else { continue }
+
+            var nextBillingDate = subscription.nextBillingDate
+            for dueDate in dueDates {
+                _ = try createTransaction(
+                    type: .expense,
+                    amount: subscription.amount,
+                    categoryID: subscription.categoryID,
+                    accountID: accountID,
+                    ledgerID: ledger.id,
+                    note: subscription.note.isEmpty ? subscription.name : subscription.note,
+                    occurredAt: dueDate
+                )
+                nextBillingDate = subscription.nextBillingDateAfter(nextBillingDate, calendar: calendar)
+                processed += 1
+            }
+
+            if let entity = fetchSubscriptionEntities().first(where: { $0.id == subscription.id }) {
+                entity.nextBillingDate = nextBillingDate
+            }
+        }
+
+        if processed > 0 {
+            try save()
+            changeRevision += 1
+            objectWillChange.send()
+        }
+        return processed
+    }
+
     private func fetchSubscriptionEntities() -> [SubscriptionEntity] {
         (try? context.fetch(FetchDescriptor<SubscriptionEntity>())) ?? []
     }

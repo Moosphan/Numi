@@ -30,8 +30,8 @@
 - Modify: `Sources/NumiPersistence/SwiftDataBookkeepingStore.swift`
 - Create/modify: `Tests/NumiPersistenceTests/SwiftDataBookkeepingStoreTests.swift`
 
-- [ ] Add a store operation that records due occurrences once and advances `nextBillingDate`.
-- [ ] Verify account balance, transaction creation, and idempotence.
+- [x] Add a store operation that records due occurrences once and advances `nextBillingDate`.
+- [x] Verify account balance, transaction creation, and idempotence.
 
 ### Task 3: Trigger processing from App lifecycle
 

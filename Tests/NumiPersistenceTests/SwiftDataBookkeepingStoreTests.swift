@@ -282,6 +282,31 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testProcessDueSubscriptionsCreatesExpensesAndIsIdempotent() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let categoryID = try XCTUnwrap(store.categories.first(where: { $0.kind == .expense })?.id)
+        let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 1)))
+        let through = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 3)))
+        try store.createSubscription(Subscription(
+            name: "Daily",
+            amount: Money(minorUnits: 1000, currencyCode: account.balance.currencyCode),
+            cycle: .daily,
+            categoryID: categoryID,
+            accountID: account.id,
+            nextBillingDate: start
+        ))
+
+        XCTAssertEqual(try store.processDueSubscriptions(asOf: through, calendar: calendar), 3)
+        XCTAssertEqual(store.visibleTransactions.count, 3)
+        XCTAssertEqual(store.accounts.first?.balance.formatted(), "-¥30.00")
+        XCTAssertEqual(try store.processDueSubscriptions(asOf: through, calendar: calendar), 0)
+    }
+
+    @MainActor
     func testUpdatingTransactionReversesOldBalanceAndAppliesNewBalance() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
