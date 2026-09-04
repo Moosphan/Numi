@@ -62,4 +62,17 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
         case .yearly: return calendar.date(byAdding: .year, value: 1, to: date) ?? date
         }
     }
+
+    public func dueDates(through date: Date, calendar: Calendar = .current) -> [Date] {
+        guard isEnabled else { return [] }
+        var dates: [Date] = []
+        var nextDate = nextBillingDate
+        while nextDate <= date {
+            dates.append(nextDate)
+            let advanced = nextBillingDateAfter(nextDate, calendar: calendar)
+            guard advanced > nextDate else { break }
+            nextDate = advanced
+        }
+        return dates
+    }
 }
