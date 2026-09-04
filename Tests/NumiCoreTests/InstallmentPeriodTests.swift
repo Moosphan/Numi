@@ -20,4 +20,15 @@ final class InstallmentPeriodTests: XCTestCase {
 
         XCTAssertFalse(period.isOverdue(asOf: Date(timeIntervalSince1970: 2_000)))
     }
+
+    func testSkippedPeriodIsNeverOverdue() {
+        let period = InstallmentPeriod(
+            planID: UUID(),
+            periodIndex: 0,
+            dueDate: Date(timeIntervalSince1970: 1_000),
+            isSkipped: true
+        )
+
+        XCTAssertFalse(period.isOverdue(asOf: Date(timeIntervalSince1970: 2_000)))
+    }
 }

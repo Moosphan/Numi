@@ -61,6 +61,7 @@ public struct InstallmentPeriod: Identifiable, Codable, Equatable, Sendable {
     public var dueDate: Date
     public var isRecorded: Bool
     public var isPaid: Bool
+    public var isSkipped: Bool
     public var transactionID: UUID?
 
     public init(
@@ -70,6 +71,7 @@ public struct InstallmentPeriod: Identifiable, Codable, Equatable, Sendable {
         dueDate: Date,
         isRecorded: Bool = false,
         isPaid: Bool = false,
+        isSkipped: Bool = false,
         transactionID: UUID? = nil
     ) {
         self.id = id
@@ -78,10 +80,11 @@ public struct InstallmentPeriod: Identifiable, Codable, Equatable, Sendable {
         self.dueDate = dueDate
         self.isRecorded = isRecorded
         self.isPaid = isPaid
+        self.isSkipped = isSkipped
         self.transactionID = transactionID
     }
 
     public func isOverdue(asOf date: Date = Date()) -> Bool {
-        !isPaid && dueDate < date
+        !isPaid && !isSkipped && dueDate < date
     }
 }

@@ -200,15 +200,17 @@ final class InstallmentPeriodEntity {
     var dueDate: Date
     var isRecorded: Bool
     var isPaid: Bool
+    var isSkipped: Bool
     var transactionID: UUID?
 
-    init(id: UUID, planID: UUID, periodIndex: Int, dueDate: Date, isRecorded: Bool, isPaid: Bool, transactionID: UUID?) {
+    init(id: UUID, planID: UUID, periodIndex: Int, dueDate: Date, isRecorded: Bool, isPaid: Bool, isSkipped: Bool = false, transactionID: UUID?) {
         self.id = id
         self.planID = planID
         self.periodIndex = periodIndex
         self.dueDate = dueDate
         self.isRecorded = isRecorded
         self.isPaid = isPaid
+        self.isSkipped = isSkipped
         self.transactionID = transactionID
     }
 }
@@ -552,6 +554,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
                 dueDate: date,
                 isRecorded: false,
                 isPaid: false,
+                isSkipped: false,
                 transactionID: nil
             )
             context.insert(period)
@@ -588,6 +591,23 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         }
         entity.isRecorded = period.isRecorded
         entity.isPaid = period.isPaid
+        entity.isSkipped = period.isSkipped
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
+    public func skipInstallmentPeriod(periodID: UUID) throws {
+        guard let entity = fetchInstallmentPeriodEntities().first(where: { $0.id == periodID }) else {
+            throw SwiftDataBookkeepingStoreError.installmentPeriodNotFound
+        }
+        if let transactionID = entity.transactionID {
+            try softDeleteTransaction(id: transactionID)
+        }
+        entity.isRecorded = true
+        entity.isPaid = false
+        entity.isSkipped = true
+        entity.transactionID = nil
         try save()
         changeRevision += 1
         objectWillChange.send()
@@ -601,6 +621,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
     ) throws -> Transaction {
         guard let period = fetchInstallmentPeriodEntities().first(where: { $0.id == periodID }) else {
             throw SwiftDataBookkeepingStoreError.installmentPeriodNotFound
+        }
+        guard !period.isSkipped else {
+            throw SwiftDataBookkeepingStoreError.installmentPeriodSkipped
         }
         if let transactionID = period.transactionID,
            let transaction = fetchTransactionEntity(id: transactionID) {
@@ -664,7 +687,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             throw SwiftDataBookkeepingStoreError.installmentPlanNotFound
         }
         let remainingPeriods = fetchInstallmentPeriodEntities()
-            .filter { $0.planID == planID && !$0.isPaid }
+            .filter { $0.planID == planID && !$0.isPaid && !$0.isSkipped }
             .sorted { $0.periodIndex < $1.periodIndex }
 
         for period in remainingPeriods {
@@ -861,7 +884,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             let entity = InstallmentPeriodEntity(
                 id: period.id, planID: period.planID,
                 periodIndex: period.periodIndex, dueDate: period.dueDate,
-                isRecorded: period.isRecorded, isPaid: period.isPaid,
+            isRecorded: period.isRecorded, isPaid: period.isPaid,
+                isSkipped: period.isSkipped,
                 transactionID: period.transactionID
             )
             context.insert(entity)
@@ -1297,6 +1321,7 @@ public enum SwiftDataBookkeepingStoreError: Error, Equatable {
     case installmentPeriodNotFound
     case installmentPlanNotFound
     case installmentCurrencyMismatch
+    case installmentPeriodSkipped
 }
 
 private enum BalanceAdjustment {
@@ -1456,6 +1481,7 @@ private extension InstallmentPeriodEntity {
             dueDate: dueDate,
             isRecorded: isRecorded,
             isPaid: isPaid,
+            isSkipped: isSkipped,
             transactionID: transactionID
         )
     }

@@ -428,6 +428,32 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testSkippingPendingInstallmentPeriodDoesNotCreateTransaction() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let plan = InstallmentPlan(
+            name: "Desk",
+            totalAmount: try Money(decimalString: "100", currencyCode: account.balance.currencyCode),
+            feePerPeriod: .zero(currencyCode: account.balance.currencyCode),
+            periodCount: 1,
+            firstPaymentDate: Date(),
+            accountID: account.id,
+            categoryID: try XCTUnwrap(store.categories.first(where: { $0.kind == .expense })?.id)
+        )
+        try store.createInstallmentPlan(plan)
+        let period = try XCTUnwrap(store.installmentPeriods.first)
+
+        try store.skipInstallmentPeriod(periodID: period.id)
+
+        XCTAssertTrue(store.installmentPeriods.first?.isSkipped == true)
+        XCTAssertFalse(store.installmentPeriods.first?.isPaid == true)
+        XCTAssertNil(store.installmentPeriods.first?.transactionID)
+        XCTAssertTrue(store.visibleTransactions.isEmpty)
+        XCTAssertEqual(store.accounts.first?.balance, account.balance)
+    }
+
+    @MainActor
     func testUpdatingTransactionReversesOldBalanceAndAppliesNewBalance() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
