@@ -39,5 +39,5 @@
 - Modify: `App/NumiApp/RootShellView.swift`
 - Modify: `docs/backlog/current-priority-backlog.md`
 
-- [ ] Process due subscriptions after store initialization and on foreground activation.
-- [ ] Keep failures local and non-blocking; update backlog evidence.
+- [x] Process due subscriptions after store initialization and on foreground activation.
+- [x] Keep failures local and non-blocking; update backlog evidence.

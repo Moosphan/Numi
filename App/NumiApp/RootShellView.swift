@@ -148,6 +148,11 @@ struct RootShellView: View {
             PrivacyAmountDisplayPolicy(isHidden: isAmountDisplayHidden)
         )
         .task {
+            do {
+                try store.processDueSubscriptions()
+            } catch {
+                initializationError = error.localizedDescription
+            }
             await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("NumiIncomingURL"))) { notification in
@@ -204,6 +209,12 @@ struct RootShellView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             lockTimer?.invalidate()
             lockTimer = nil
+
+            do {
+                try store.processDueSubscriptions()
+            } catch {
+                initializationError = error.localizedDescription
+            }
 
             let shouldLock: Bool
             if let backgroundTime {
