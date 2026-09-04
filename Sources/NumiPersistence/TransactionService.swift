@@ -47,6 +47,19 @@ public final class TransactionService: @unchecked Sendable {
             throw TransactionServiceError.noLedger
         }
 
+        let targetAccount: AccountEntity?
+        if parsed.type == .transfer {
+            targetAccount = resolveAccount(parsed.targetAccountName)
+            guard let targetAccount,
+                  targetAccount.id != account.id,
+                  targetAccount.currencyCode == ledger.currencyCode,
+                  account.currencyCode == ledger.currencyCode else {
+                throw TransactionServiceError.noAccount
+            }
+        } else {
+            targetAccount = nil
+        }
+
         let money = try Money(
             decimalString: "\(parsed.amount)", currencyCode: ledger.currencyCode
         )
@@ -58,7 +71,7 @@ public final class TransactionService: @unchecked Sendable {
             occurredAt: parsed.occurredAt,
             categoryID: category?.id,
             accountID: account.id,
-            targetAccountID: nil,
+            targetAccountID: targetAccount?.id,
             ledgerID: ledger.id,
             note: parsed.note,
             isSoftDeleted: false
@@ -73,7 +86,8 @@ public final class TransactionService: @unchecked Sendable {
         case .income:
             account.balanceMinorUnits += money.minorUnits
         case .transfer:
-            break
+            account.balanceMinorUnits -= money.minorUnits
+            targetAccount?.balanceMinorUnits += money.minorUnits
         }
 
         try context.save()
