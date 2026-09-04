@@ -114,6 +114,7 @@ public struct DataManagementView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("io.export.json")
 
                 Divider().padding(.leading, 48)
 
@@ -128,6 +129,7 @@ public struct DataManagementView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("io.export.csv")
             }
             .background(NumiColor.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
@@ -155,6 +157,7 @@ public struct DataManagementView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("io.import.json")
                 .fileImporter(
                     isPresented: $showImportJSON,
                     allowedContentTypes: [.json]

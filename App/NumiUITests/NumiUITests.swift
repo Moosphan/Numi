@@ -1033,6 +1033,18 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.buttons["io.import.csv"].waitForExistence(timeout: 5))
     }
 
+    func testDataManagementExportAndImportEntriesAreReachable() {
+        let app = launchApp()
+        tabButton("我的", in: app).tap()
+        app.buttons["settings.importExport"].tap()
+
+        XCTAssertTrue(app.buttons["io.export.json"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["io.export.csv"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["io.import.json"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["io.import.csv"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["io.import.restorePrevious"].waitForExistence(timeout: 5))
+    }
+
     func testCaptureScreenshotShowcaseGallery() throws {
         let app = launchApp(seedProfile: "screenshot_showcase")
 

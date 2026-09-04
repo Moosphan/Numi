@@ -141,6 +141,12 @@ if stage_is_selected ui-tests; then
     -only-testing:NumiUITests/NumiUITests/testEditingExpenseUpdatesList \
     -only-testing:NumiUITests/NumiUITests/testDeletingExpenseCanBeUndone \
     -only-testing:NumiUITests/NumiUITests/testCanSwitchAppLanguageAtRuntimeFromSettings \
+    -only-testing:NumiUITests/NumiUITests/testCanCreateAccountTransferWithoutChangingIncomeExpenseSummary \
+    -only-testing:NumiUITests/NumiUITests/testHiddenAmountModeMasksHomeAndDetailAmounts \
+    -only-testing:NumiUITests/NumiUITests/testBackupRestoreRequiresPasswordBeforeSelectingFile \
+    -only-testing:NumiUITests/NumiUITests/testImportRecoveryRestoreIsDisabledWithoutSavedRecoveryPoint \
+    -only-testing:NumiUITests/NumiUITests/testCSVImportEntryIsReachable \
+    -only-testing:NumiUITests/NumiUITests/testDataManagementExportAndImportEntriesAreReachable \
     test
 fi
 
