@@ -48,7 +48,7 @@ public final class TransactionService: @unchecked Sendable {
         }
 
         let money = try Money(
-            decimalString: "\(parsed.amount)", currencyCode: "CNY"
+            decimalString: "\(parsed.amount)", currencyCode: ledger.currencyCode
         )
 
         let entity = TransactionEntity(
