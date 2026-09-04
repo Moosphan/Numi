@@ -307,6 +307,45 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testRecordingInstallmentPaymentCreatesAndBindsExpenseTransaction() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let categoryID = try XCTUnwrap(store.categories.first(where: { $0.kind == .expense })?.id)
+        let plan = InstallmentPlan(
+            name: "Laptop",
+            totalAmount: try Money(decimalString: "120", currencyCode: account.balance.currencyCode),
+            feePerPeriod: .zero(currencyCode: account.balance.currencyCode),
+            periodCount: 2,
+            firstPaymentDate: Date(timeIntervalSince1970: 1_700_000_000),
+            accountID: account.id,
+            categoryID: categoryID
+        )
+        try store.createInstallmentPlan(plan)
+        let period = try XCTUnwrap(store.installmentPeriods.first)
+
+        let transaction = try store.recordInstallmentPayment(
+            periodID: period.id,
+            ledgerID: ledgerID,
+            occurredAt: period.dueDate
+        )
+
+        XCTAssertEqual(transaction.type, .expense)
+        XCTAssertEqual(transaction.amount, plan.amountPerPeriod)
+        XCTAssertEqual(store.visibleTransactions.map(\.id), [transaction.id])
+        XCTAssertEqual(store.installmentPeriods.first?.transactionID, transaction.id)
+        XCTAssertTrue(store.installmentPeriods.first?.isPaid == true)
+        XCTAssertTrue(store.installmentPeriods.first?.isRecorded == true)
+        XCTAssertEqual(store.accounts.first?.balance, try account.balance.subtracting(plan.amountPerPeriod))
+
+        let repeatedTransaction = try store.recordInstallmentPayment(periodID: period.id, ledgerID: ledgerID)
+        XCTAssertEqual(repeatedTransaction.id, transaction.id)
+        XCTAssertEqual(store.visibleTransactions.count, 1)
+        XCTAssertEqual(store.accounts.first?.balance, try account.balance.subtracting(plan.amountPerPeriod))
+    }
+
+    @MainActor
     func testUpdatingTransactionReversesOldBalanceAndAppliesNewBalance() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

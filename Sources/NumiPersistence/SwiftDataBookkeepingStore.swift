@@ -587,6 +587,67 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         objectWillChange.send()
     }
 
+    @discardableResult
+    public func recordInstallmentPayment(
+        periodID: UUID,
+        ledgerID: UUID,
+        occurredAt: Date? = nil
+    ) throws -> Transaction {
+        guard let period = fetchInstallmentPeriodEntities().first(where: { $0.id == periodID }) else {
+            throw SwiftDataBookkeepingStoreError.installmentPeriodNotFound
+        }
+        if let transactionID = period.transactionID,
+           let transaction = fetchTransactionEntity(id: transactionID) {
+            return transaction.domainModel
+        }
+        guard let plan = fetchInstallmentPlanEntities().first(where: { $0.id == period.planID }) else {
+            throw SwiftDataBookkeepingStoreError.installmentPlanNotFound
+        }
+        guard let accountID = plan.accountID else {
+            throw SwiftDataBookkeepingStoreError.accountNotFound
+        }
+        guard let categoryID = plan.categoryID else {
+            throw SwiftDataBookkeepingStoreError.categoryNotFound
+        }
+        guard plan.periodCount > 0 else {
+            throw SwiftDataBookkeepingStoreError.installmentPlanNotFound
+        }
+        guard let account = fetchAccountEntity(id: accountID) else {
+            throw SwiftDataBookkeepingStoreError.accountNotFound
+        }
+        guard fetchCategoryEntity(id: categoryID) != nil else {
+            throw SwiftDataBookkeepingStoreError.categoryNotFound
+        }
+        guard let ledger = fetchLedgerEntity(id: ledgerID) else {
+            throw SwiftDataBookkeepingStoreError.ledgerNotFound
+        }
+        let amount = Money(
+            minorUnits: plan.totalAmountMinorUnits / Int64(plan.periodCount) + plan.feePerPeriodMinorUnits,
+            currencyCode: plan.currencyCode
+        )
+        guard account.currencyCode == amount.currencyCode,
+              ledger.currencyCode == amount.currencyCode else {
+            throw SwiftDataBookkeepingStoreError.installmentCurrencyMismatch
+        }
+
+        let transaction = try createTransaction(
+            type: .expense,
+            amount: amount,
+            categoryID: categoryID,
+            accountID: accountID,
+            ledgerID: ledgerID,
+            note: plan.name,
+            occurredAt: occurredAt ?? period.dueDate
+        )
+        period.isRecorded = true
+        period.isPaid = true
+        period.transactionID = transaction.id
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+        return transaction
+    }
+
     private func fetchInstallmentPlanEntities() -> [InstallmentPlanEntity] {
         (try? context.fetch(FetchDescriptor<InstallmentPlanEntity>())) ?? []
     }
@@ -1204,6 +1265,9 @@ public enum SwiftDataBookkeepingStoreError: Error, Equatable {
     case transferTargetRequired
     case transferAccountsMustDiffer
     case transferCurrencyMismatch
+    case installmentPeriodNotFound
+    case installmentPlanNotFound
+    case installmentCurrencyMismatch
 }
 
 private enum BalanceAdjustment {
