@@ -32,4 +32,43 @@ final class TransactionSummaryTests: XCTestCase {
         XCTAssertEqual(distribution[0].amount.formatted(), "¥80.00")
         XCTAssertEqual(distribution[0].percentage, 0.8, accuracy: 0.0001)
     }
+
+    func testMonthlySummaryConvertsForeignTransactionsUsingHistoricalRates() throws {
+        let ledgerID = UUID()
+        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        let history = ExchangeRateHistory(snapshots: [
+            ExchangeRateSnapshot(baseCode: "CNY", rates: ["CNY": 1, "USD": 0.14], effectiveDate: date)
+        ])
+        let transactions = [
+            Transaction(type: .expense, amount: Money(minorUnits: 1_000, currencyCode: "CNY"), occurredAt: date, ledgerID: ledgerID),
+            Transaction(type: .expense, amount: Money(minorUnits: 1_000, currencyCode: "USD"), occurredAt: date, ledgerID: ledgerID)
+        ]
+
+        let summary = try TransactionSummary.monthly(
+            transactions: transactions,
+            currencyCode: "CNY",
+            exchangeRateHistory: history
+        )
+
+        XCTAssertEqual(summary.expense, try Money(decimalString: "81.43", currencyCode: "CNY"))
+        XCTAssertEqual(summary.income, Money.zero(currencyCode: "CNY"))
+    }
+
+    func testMonthlySummaryThrowsWhenHistoricalRateIsMissing() throws {
+        let transaction = Transaction(
+            type: .expense,
+            amount: try Money(decimalString: "10", currencyCode: "USD"),
+            occurredAt: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+
+        XCTAssertThrowsError(
+            try TransactionSummary.monthly(
+                transactions: [transaction],
+                currencyCode: "CNY",
+                exchangeRateHistory: ExchangeRateHistory()
+            )
+        ) { error in
+            XCTAssertEqual(error as? TransactionSummaryError, .missingExchangeRate(sourceCurrencyCode: "USD", targetCurrencyCode: "CNY"))
+        }
+    }
 }

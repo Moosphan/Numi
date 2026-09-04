@@ -116,16 +116,30 @@ public struct TransactionSummary: Equatable {
         self.recordCount = recordCount
     }
 
-    public static func monthly(transactions: [Transaction], currencyCode: String) throws -> TransactionSummary {
+    public static func monthly(
+        transactions: [Transaction],
+        currencyCode: String,
+        exchangeRateHistory: ExchangeRateHistory? = nil
+    ) throws -> TransactionSummary {
         var expense = Money.zero(currencyCode: currencyCode)
         var income = Money.zero(currencyCode: currencyCode)
 
         for transaction in transactions {
             switch transaction.type {
             case .expense:
-                expense = try expense.adding(transaction.amount)
+                let amount = try normalizedAmount(
+                    transaction,
+                    currencyCode: currencyCode,
+                    exchangeRateHistory: exchangeRateHistory
+                )
+                expense = try expense.adding(amount)
             case .income:
-                income = try income.adding(transaction.amount)
+                let amount = try normalizedAmount(
+                    transaction,
+                    currencyCode: currencyCode,
+                    exchangeRateHistory: exchangeRateHistory
+                )
+                income = try income.adding(amount)
             case .transfer:
                 continue
             }
@@ -138,6 +152,27 @@ public struct TransactionSummary: Equatable {
             recordCount: transactions.count
         )
     }
+
+    private static func normalizedAmount(
+        _ transaction: Transaction,
+        currencyCode: String,
+        exchangeRateHistory: ExchangeRateHistory?
+    ) throws -> Money {
+        guard transaction.amount.currencyCode != currencyCode.uppercased() else { return transaction.amount }
+        guard let exchangeRateHistory,
+              let converted = exchangeRateHistory.convert(transaction.amount, to: currencyCode, on: transaction.occurredAt)
+        else {
+            throw TransactionSummaryError.missingExchangeRate(
+                sourceCurrencyCode: transaction.amount.currencyCode,
+                targetCurrencyCode: currencyCode.uppercased()
+            )
+        }
+        return converted
+    }
+}
+
+public enum TransactionSummaryError: Error, Equatable {
+    case missingExchangeRate(sourceCurrencyCode: String, targetCurrencyCode: String)
 }
 
 public struct CategoryDistributionItem: Equatable {
@@ -147,21 +182,56 @@ public struct CategoryDistributionItem: Equatable {
 }
 
 public enum CategoryDistribution {
-    public static func expense(transactions: [Transaction], currencyCode: String) throws -> [CategoryDistributionItem] {
-        return try distribution(transactions: transactions, type: .expense, currencyCode: currencyCode)
+    public static func expense(
+        transactions: [Transaction],
+        currencyCode: String,
+        exchangeRateHistory: ExchangeRateHistory? = nil
+    ) throws -> [CategoryDistributionItem] {
+        return try distribution(
+            transactions: transactions,
+            type: .expense,
+            currencyCode: currencyCode,
+            exchangeRateHistory: exchangeRateHistory
+        )
     }
 
-    public static func income(transactions: [Transaction], currencyCode: String) throws -> [CategoryDistributionItem] {
-        return try distribution(transactions: transactions, type: .income, currencyCode: currencyCode)
+    public static func income(
+        transactions: [Transaction],
+        currencyCode: String,
+        exchangeRateHistory: ExchangeRateHistory? = nil
+    ) throws -> [CategoryDistributionItem] {
+        return try distribution(
+            transactions: transactions,
+            type: .income,
+            currencyCode: currencyCode,
+            exchangeRateHistory: exchangeRateHistory
+        )
     }
 
-    private static func distribution(transactions: [Transaction], type: TransactionType, currencyCode: String) throws -> [CategoryDistributionItem] {
+    private static func distribution(
+        transactions: [Transaction],
+        type: TransactionType,
+        currencyCode: String,
+        exchangeRateHistory: ExchangeRateHistory?
+    ) throws -> [CategoryDistributionItem] {
         var totals: [UUID: Money] = [:]
 
         for transaction in transactions where transaction.type == type {
             guard let categoryID = transaction.categoryID else { continue }
+            let amount: Money
+            if transaction.amount.currencyCode == currencyCode.uppercased() {
+                amount = transaction.amount
+            } else if let exchangeRateHistory,
+                      let converted = exchangeRateHistory.convert(transaction.amount, to: currencyCode, on: transaction.occurredAt) {
+                amount = converted
+            } else {
+                throw TransactionSummaryError.missingExchangeRate(
+                    sourceCurrencyCode: transaction.amount.currencyCode,
+                    targetCurrencyCode: currencyCode.uppercased()
+                )
+            }
             let current = totals[categoryID] ?? .zero(currencyCode: currencyCode)
-            totals[categoryID] = try current.adding(transaction.amount)
+            totals[categoryID] = try current.adding(amount)
         }
 
         let totalMinorUnits = totals.values.reduce(Int64(0)) { $0 + $1.minorUnits }

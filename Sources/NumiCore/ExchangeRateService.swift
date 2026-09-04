@@ -14,6 +14,74 @@ public struct ExchangeRateData: Codable, Equatable {
     }
 }
 
+public struct ExchangeRateSnapshot: Codable, Equatable, Sendable {
+    public let baseCode: String
+    public let rates: [String: Double]
+    public let effectiveDate: Date
+
+    public init(baseCode: String, rates: [String: Double], effectiveDate: Date) {
+        self.baseCode = baseCode.uppercased()
+        self.rates = rates.reduce(into: [:]) { result, item in
+            result[item.key.uppercased()] = item.value
+        }
+        self.effectiveDate = effectiveDate
+    }
+
+    public func rate(from: String, to: String) -> Double? {
+        let sourceCode = from.uppercased()
+        let targetCode = to.uppercased()
+        guard sourceCode != targetCode else { return 1 }
+        guard let sourceRate = rates[sourceCode], let targetRate = rates[targetCode] else { return nil }
+        return targetRate / sourceRate
+    }
+
+    public func convert(_ amount: Money, to targetCode: String) -> Money? {
+        let normalizedTarget = targetCode.uppercased()
+        guard let exchangeRate = rate(from: amount.currencyCode, to: normalizedTarget) else { return nil }
+        guard amount.currencyCode != normalizedTarget else { return amount }
+
+        var convertedMinorUnits = Decimal(amount.minorUnits)
+            * Decimal(exchangeRate)
+            * Decimal(Money.scale(for: normalizedTarget))
+            / Decimal(Money.scale(for: amount.currencyCode))
+        var roundedMinorUnits = Decimal()
+        NSDecimalRound(&roundedMinorUnits, &convertedMinorUnits, 0, .plain)
+        return Money(
+            minorUnits: NSDecimalNumber(decimal: roundedMinorUnits).int64Value,
+            currencyCode: normalizedTarget
+        )
+    }
+}
+
+public struct ExchangeRateHistory: Codable, Equatable, Sendable {
+    public private(set) var snapshots: [ExchangeRateSnapshot]
+
+    public init(snapshots: [ExchangeRateSnapshot] = []) {
+        self.snapshots = snapshots.sorted { $0.effectiveDate < $1.effectiveDate }
+    }
+
+    public mutating func append(_ snapshot: ExchangeRateSnapshot) {
+        snapshots.removeAll {
+            $0.baseCode == snapshot.baseCode && $0.effectiveDate == snapshot.effectiveDate
+        }
+        snapshots.append(snapshot)
+        snapshots.sort { $0.effectiveDate < $1.effectiveDate }
+    }
+
+    public func snapshot(baseCode: String, on date: Date) -> ExchangeRateSnapshot? {
+        let normalizedBase = baseCode.uppercased()
+        return snapshots.last {
+            $0.baseCode == normalizedBase && $0.effectiveDate <= date
+        }
+    }
+
+    public func convert(_ amount: Money, to targetCode: String, on date: Date) -> Money? {
+        guard amount.currencyCode != targetCode.uppercased() else { return amount }
+        return snapshot(baseCode: amount.currencyCode, on: date)?.convert(amount, to: targetCode)
+            ?? snapshot(baseCode: targetCode, on: date)?.convert(amount, to: targetCode)
+    }
+}
+
 // MARK: - Fetch Result
 
 public enum FetchRateResult {
@@ -44,11 +112,15 @@ public final class ExchangeRateService: ObservableObject {
     public static let shared = ExchangeRateService()
 
     private let cacheKey = "app.currency.exchangeRates"
-    private let defaults = UserDefaults.standard
+    private let historyCacheKey = "app.currency.exchangeRateHistory"
+    private let defaults: UserDefaults
 
     @Published public private(set) var rateData: ExchangeRateData?
+    @Published public private(set) var history: ExchangeRateHistory
 
-    public init() {
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.history = ExchangeRateHistory()
         loadCached()
     }
 
@@ -92,7 +164,13 @@ public final class ExchangeRateService: ObservableObject {
                 rates: rates,
                 lastUpdated: Date()
             )
+            let snapshot = ExchangeRateSnapshot(
+                baseCode: base,
+                rates: rates,
+                effectiveDate: Self.effectiveDate(from: items.first?.date) ?? rateData.lastUpdated
+            )
             self.rateData = rateData
+            history.append(snapshot)
             saveCache(rateData)
             return .success
         } catch {
@@ -118,14 +196,33 @@ public final class ExchangeRateService: ObservableObject {
     // MARK: - Persistence
 
     private func loadCached() {
+        if let historyData = defaults.data(forKey: historyCacheKey),
+           let decodedHistory = try? JSONDecoder().decode(ExchangeRateHistory.self, from: historyData) {
+            history = decodedHistory
+        }
         guard let data = defaults.data(forKey: cacheKey),
               let decoded = try? JSONDecoder().decode(ExchangeRateData.self, from: data) else { return }
         rateData = decoded
+        if history.snapshots.isEmpty {
+            history.append(ExchangeRateSnapshot(baseCode: decoded.baseCode, rates: decoded.rates, effectiveDate: decoded.lastUpdated))
+        }
     }
 
     private func saveCache(_ data: ExchangeRateData) {
         guard let encoded = try? JSONEncoder().encode(data) else { return }
         defaults.set(encoded, forKey: cacheKey)
+        if let historyData = try? JSONEncoder().encode(history) {
+            defaults.set(historyData, forKey: historyCacheKey)
+        }
+    }
+
+    private static func effectiveDate(from value: String?) -> Date? {
+        guard let value else { return nil }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: value)
     }
 }
 
