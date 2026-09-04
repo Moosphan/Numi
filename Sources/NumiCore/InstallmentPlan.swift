@@ -80,4 +80,8 @@ public struct InstallmentPeriod: Identifiable, Codable, Equatable, Sendable {
         self.isPaid = isPaid
         self.transactionID = transactionID
     }
+
+    public func isOverdue(asOf date: Date = Date()) -> Bool {
+        !isPaid && dueDate < date
+    }
 }

@@ -1480,10 +1480,10 @@ private struct InstallmentDetailView: View {
 
                                     Text(period.isPaid ? NumiLocalized.string("installment.paid") : NumiLocalized.string("installment.pending"))
                                         .font(NumiFont.caption)
-                                        .foregroundStyle(period.isPaid ? NumiColor.positiveText : NumiColor.textTertiary)
+                                        .foregroundStyle(period.isPaid ? NumiColor.positiveText : (period.isOverdue() ? NumiColor.negativeText : NumiColor.textTertiary))
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 2)
-                                        .background(period.isPaid ? NumiColor.positiveBackground : NumiColor.surfaceCardSubtle)
+                                        .background(period.isPaid ? NumiColor.positiveBackground : (period.isOverdue() ? NumiColor.negativeBackground : NumiColor.surfaceCardSubtle))
                                         .clipShape(Capsule())
                                 }
                             }
