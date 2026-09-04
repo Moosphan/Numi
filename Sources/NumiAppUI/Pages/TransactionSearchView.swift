@@ -157,10 +157,21 @@ public struct TransactionSearchView: View {
                 Button {
                     isFilterPresented = true
                 } label: {
-                    Image(systemName: filter.hasActiveCriteria ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                    Image(systemName: hasActiveSearchCriteria ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                 }
                 .accessibilityLabel(NumiLocalized.string("search.filters"))
                 .accessibilityIdentifier("action.openTransactionFilters")
+            }
+            if hasActiveSearchCriteria {
+                ToolbarItem(placement: .secondaryAction) {
+                    Button {
+                        filter = TransactionSearchFilter()
+                        query = ""
+                    } label: {
+                        Text(NumiLocalized.string("common.reset"))
+                    }
+                    .accessibilityIdentifier("action.clearTransactionFilters")
+                }
             }
             ToolbarItem(placement: .cancellationAction) {
                 Button {
@@ -238,6 +249,10 @@ public struct TransactionSearchView: View {
                 subtitle: resolvedSubtitle(for: row)
             )
         }
+    }
+
+    private var hasActiveSearchCriteria: Bool {
+        filter.hasActiveCriteria || !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private func resolvedCategoryName(for row: TransactionSearchRow) -> String {
