@@ -640,11 +640,11 @@ struct RootShellView: View {
     }
 
     private func summary() -> TransactionSummary {
-        (try? TransactionSummary.monthly(transactions: store.visibleTransactions, currencyCode: "CNY"))
+        (try? TransactionSummary.monthly(transactions: store.visibleTransactions, currencyCode: activeCurrencyCode))
             ?? TransactionSummary(
-                expense: .zero(currencyCode: "CNY"),
-                income: .zero(currencyCode: "CNY"),
-                balance: .zero(currencyCode: "CNY"),
+                expense: .zero(currencyCode: activeCurrencyCode),
+                income: .zero(currencyCode: activeCurrencyCode),
+                balance: .zero(currencyCode: activeCurrencyCode),
                 recordCount: 0
             )
     }
@@ -788,13 +788,13 @@ struct RootShellView: View {
 
     private func insightsSummary() -> TransactionSummary {
         let txs = insightsFilteredTransactions
-        return (try? TransactionSummary.monthly(transactions: txs, currencyCode: "CNY"))
-            ?? TransactionSummary(expense: .zero(currencyCode: "CNY"), income: .zero(currencyCode: "CNY"), balance: .zero(currencyCode: "CNY"), recordCount: 0)
+        return (try? TransactionSummary.monthly(transactions: txs, currencyCode: activeCurrencyCode))
+            ?? TransactionSummary(expense: .zero(currencyCode: activeCurrencyCode), income: .zero(currencyCode: activeCurrencyCode), balance: .zero(currencyCode: activeCurrencyCode), recordCount: 0)
     }
 
     private func insightsDistribution() -> [InsightsDistributionRow] {
         let txs = insightsFilteredTransactions
-        let items = (try? CategoryDistribution.expense(transactions: txs, currencyCode: "CNY")) ?? []
+        let items = (try? CategoryDistribution.expense(transactions: txs, currencyCode: activeCurrencyCode)) ?? []
         return items.map { item in
             let category = store.categories.first { $0.id == item.categoryID }
             return InsightsDistributionRow(
@@ -809,7 +809,7 @@ struct RootShellView: View {
 
     private func insightsIncomeDistribution() -> [InsightsDistributionRow] {
         let txs = insightsFilteredTransactions
-        let items = (try? CategoryDistribution.income(transactions: txs, currencyCode: "CNY")) ?? []
+        let items = (try? CategoryDistribution.income(transactions: txs, currencyCode: activeCurrencyCode)) ?? []
         return items.map { item in
             let category = store.categories.first { $0.id == item.categoryID }
             return InsightsDistributionRow(
@@ -1086,11 +1086,11 @@ struct RootShellView: View {
     }
 
     private func summary(for transactions: [NumiCore.Transaction]) -> TransactionSummary {
-        (try? TransactionSummary.monthly(transactions: transactions, currencyCode: "CNY"))
+        (try? TransactionSummary.monthly(transactions: transactions, currencyCode: activeCurrencyCode))
             ?? TransactionSummary(
-                expense: .zero(currencyCode: "CNY"),
-                income: .zero(currencyCode: "CNY"),
-                balance: .zero(currencyCode: "CNY"),
+                expense: .zero(currencyCode: activeCurrencyCode),
+                income: .zero(currencyCode: activeCurrencyCode),
+                balance: .zero(currencyCode: activeCurrencyCode),
                 recordCount: 0
             )
     }
@@ -1184,6 +1184,10 @@ struct RootShellView: View {
             currentLedgerIDString = fallback.id.uuidString
         }
         return fallback
+    }
+
+    private var activeCurrencyCode: String {
+        currentLedger?.currencyCode ?? defaultCurrencyCode
     }
 
     private var ledgerTransactionCounts: [UUID: Int] {
