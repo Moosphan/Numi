@@ -147,13 +147,7 @@ public class iCloudSyncService: ObservableObject {
                 syncStatus = .failure(.syncFailed)
             }
         } else {
-            // 模拟同步
-            try? await Task.sleep(nanoseconds: 1_500_000_000)
-            let now = Date()
-            lastSyncDate = now
-            defaults.set(now, forKey: "app.sync.lastSyncDate")
-            syncStatus = .success(now)
-            syncProgress = 1.0
+            syncStatus = .failure(.syncFailed)
         }
     }
 
