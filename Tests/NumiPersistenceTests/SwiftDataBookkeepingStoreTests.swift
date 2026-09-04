@@ -369,6 +369,36 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testUnpayingBoundInstallmentPeriodReversesAndUnlinksTransaction() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let categoryID = try XCTUnwrap(store.categories.first(where: { $0.kind == .expense })?.id)
+        let plan = InstallmentPlan(
+            name: "Phone",
+            totalAmount: try Money(decimalString: "80", currencyCode: account.balance.currencyCode),
+            feePerPeriod: .zero(currencyCode: account.balance.currencyCode),
+            periodCount: 1,
+            firstPaymentDate: Date(),
+            accountID: account.id,
+            categoryID: categoryID
+        )
+        try store.createInstallmentPlan(plan)
+        let period = try XCTUnwrap(store.installmentPeriods.first)
+        _ = try store.recordInstallmentPayment(periodID: period.id, ledgerID: ledgerID)
+
+        var unpaid = try XCTUnwrap(store.installmentPeriods.first)
+        unpaid.isPaid = false
+        unpaid.isRecorded = false
+        try store.updateInstallmentPeriod(unpaid)
+
+        XCTAssertTrue(store.visibleTransactions.isEmpty)
+        XCTAssertEqual(store.accounts.first?.balance, account.balance)
+        XCTAssertNil(store.installmentPeriods.first?.transactionID)
+    }
+
+    @MainActor
     func testUpdatingTransactionReversesOldBalanceAndAppliesNewBalance() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

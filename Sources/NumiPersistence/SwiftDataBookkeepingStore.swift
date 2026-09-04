@@ -579,9 +579,15 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
 
     public func updateInstallmentPeriod(_ period: InstallmentPeriod) throws {
         guard let entity = fetchInstallmentPeriodEntities().first(where: { $0.id == period.id }) else { return }
+        if !period.isPaid,
+           let transactionID = period.transactionID ?? entity.transactionID {
+            try softDeleteTransaction(id: transactionID)
+            entity.transactionID = nil
+        } else {
+            entity.transactionID = period.transactionID
+        }
         entity.isRecorded = period.isRecorded
         entity.isPaid = period.isPaid
-        entity.transactionID = period.transactionID
         try save()
         changeRevision += 1
         objectWillChange.send()
