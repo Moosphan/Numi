@@ -654,6 +654,29 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         return transaction
     }
 
+    @discardableResult
+    public func settleInstallmentPlan(
+        planID: UUID,
+        ledgerID: UUID,
+        occurredAt: Date? = nil
+    ) throws -> Int {
+        guard fetchInstallmentPlanEntities().contains(where: { $0.id == planID }) else {
+            throw SwiftDataBookkeepingStoreError.installmentPlanNotFound
+        }
+        let remainingPeriods = fetchInstallmentPeriodEntities()
+            .filter { $0.planID == planID && !$0.isPaid }
+            .sorted { $0.periodIndex < $1.periodIndex }
+
+        for period in remainingPeriods {
+            _ = try recordInstallmentPayment(
+                periodID: period.id,
+                ledgerID: ledgerID,
+                occurredAt: occurredAt ?? period.dueDate
+            )
+        }
+        return remainingPeriods.count
+    }
+
     private func fetchInstallmentPlanEntities() -> [InstallmentPlanEntity] {
         (try? context.fetch(FetchDescriptor<InstallmentPlanEntity>())) ?? []
     }

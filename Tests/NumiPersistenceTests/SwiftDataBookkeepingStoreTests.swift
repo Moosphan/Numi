@@ -399,6 +399,35 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testSettlingInstallmentPlanRecordsAllRemainingPeriodsIdempotently() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let categoryID = try XCTUnwrap(store.categories.first(where: { $0.kind == .expense })?.id)
+        let plan = InstallmentPlan(
+            name: "Camera",
+            totalAmount: try Money(decimalString: "90", currencyCode: account.balance.currencyCode),
+            feePerPeriod: .zero(currencyCode: account.balance.currencyCode),
+            periodCount: 3,
+            firstPaymentDate: Date(),
+            accountID: account.id,
+            categoryID: categoryID
+        )
+        try store.createInstallmentPlan(plan)
+
+        XCTAssertEqual(
+            try store.settleInstallmentPlan(planID: plan.id, ledgerID: ledgerID, occurredAt: Date()),
+            3
+        )
+        XCTAssertTrue(store.installmentPeriods.allSatisfy(\.isPaid))
+        XCTAssertEqual(store.visibleTransactions.count, 3)
+        XCTAssertEqual(store.accounts.first?.balance, try account.balance.subtracting(Money(decimalString: "90", currencyCode: account.balance.currencyCode)))
+        XCTAssertEqual(try store.settleInstallmentPlan(planID: plan.id, ledgerID: ledgerID), 0)
+        XCTAssertEqual(store.visibleTransactions.count, 3)
+    }
+
+    @MainActor
     func testUpdatingTransactionReversesOldBalanceAndAppliesNewBalance() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
