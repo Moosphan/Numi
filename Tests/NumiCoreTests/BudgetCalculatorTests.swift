@@ -28,6 +28,26 @@ final class BudgetCalculatorTests: XCTestCase {
         XCTAssertEqual(spending, try Money(decimalString: "90", currencyCode: "CNY"))
     }
 
+    func testBudgetSpendingConvertsForeignTransactionsUsingHistoricalRates() throws {
+        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        let history = ExchangeRateHistory(snapshots: [
+            ExchangeRateSnapshot(baseCode: "CNY", rates: ["CNY": 1, "USD": 0.14], effectiveDate: date)
+        ])
+        let transaction = Transaction(
+            type: .expense,
+            amount: try Money(decimalString: "10", currencyCode: "USD"),
+            occurredAt: date
+        )
+
+        let spending = try BudgetSpendingCalculator.spending(
+            from: [transaction],
+            currencyCode: "CNY",
+            exchangeRateHistory: history
+        )
+
+        XCTAssertEqual(spending, try Money(decimalString: "71.43", currencyCode: "CNY"))
+    }
+
     func testLegacyTransactionJSONWithoutBudgetLinksStillDecodes() throws {
         let json = """
         {"id":"00000000-0000-0000-0000-000000000001","type":"expense","amount":{"minorUnits":100,"currencyCode":"CNY"},"occurredAt":"2026-01-01T00:00:00Z","ledgerID":"00000000-0000-0000-0000-000000000002","note":"旧数据"}

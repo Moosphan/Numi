@@ -36,3 +36,21 @@
 - [x] Update summary/distribution calculations to normalize amounts before arithmetic.
 - [x] Run focused tests, the full SwiftPM suite, and `git diff --check`.
 - [ ] Ask for confirmation before committing or pushing.
+
+### Task 2: Default import currency and budget conversion
+
+**Files:**
+- Modify: `Sources/NumiCore/ImportExport.swift`
+- Modify: `Sources/NumiCore/Budget.swift`
+- Modify: `Tests/NumiCoreTests/ImportExportTests.swift`
+- Modify: `Tests/NumiCoreTests/BudgetCalculatorTests.swift`
+
+**Interfaces:**
+- `NumiCSVImporter.importTransactions(csv:currencyCode:)`
+- `BudgetSpendingCalculator.spending(...:currencyCode:exchangeRateHistory:)`
+
+- [x] Write failing tests for injected import currency and historical budget conversion.
+- [x] Run focused tests and confirm the new APIs are missing.
+- [x] Implement backward-compatible import and budget conversion.
+- [x] Run focused tests, full SwiftPM tests, and `git diff --check`.
+- [ ] Ask for confirmation before committing or pushing.

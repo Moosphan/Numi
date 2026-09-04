@@ -1031,7 +1031,8 @@ struct RootShellView: View {
             from: transactions,
             categoryID: categoryID,
             accountID: accountID,
-            currencyCode: currentLedger?.currencyCode ?? "CNY"
+            currencyCode: currentLedger?.currencyCode ?? "CNY",
+            exchangeRateHistory: rateService.history
         )) ?? Money.zero(currencyCode: currentLedger?.currencyCode ?? "CNY")
     }
 

@@ -224,13 +224,13 @@ public struct CSVImportContext: Sendable {
 }
 
 public enum NumiCSVImporter {
-    public static func importTransactions(csv: String) -> CSVImportResult {
+    public static func importTransactions(csv: String, currencyCode: String = "CNY") -> CSVImportResult {
         do {
             let document = try CSVImportDocument(csv: csv)
             return preview(
                 document: document,
                 mapping: CSVImportMapping(headers: document.headers),
-                context: CSVImportContext(ledger: Ledger(name: "CSV Import", currencyCode: "CNY"), categories: [], accounts: [])
+                context: CSVImportContext(ledger: Ledger(name: "CSV Import", currencyCode: currencyCode), categories: [], accounts: [])
             )
         } catch {
             return CSVImportResult(

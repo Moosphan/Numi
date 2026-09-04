@@ -52,14 +52,26 @@ public enum BudgetSpendingCalculator {
         from transactions: [Transaction],
         categoryID: UUID? = nil,
         accountID: UUID? = nil,
-        currencyCode: String
+        currencyCode: String,
+        exchangeRateHistory: ExchangeRateHistory? = nil
     ) throws -> Money {
         let expensesByID = Dictionary(uniqueKeysWithValues: transactions.map { ($0.id, $0) })
         func matchesScope(_ transaction: Transaction) -> Bool {
-            guard transaction.amount.currencyCode == currencyCode.uppercased() else { return false }
             if let categoryID, transaction.categoryID != categoryID { return false }
             if let accountID, transaction.accountID != accountID { return false }
             return true
+        }
+        func normalizedAmount(_ transaction: Transaction) throws -> Money {
+            guard transaction.amount.currencyCode != currencyCode.uppercased() else { return transaction.amount }
+            guard let exchangeRateHistory,
+                  let converted = exchangeRateHistory.convert(transaction.amount, to: currencyCode, on: transaction.occurredAt)
+            else {
+                throw TransactionSummaryError.missingExchangeRate(
+                    sourceCurrencyCode: transaction.amount.currencyCode,
+                    targetCurrencyCode: currencyCode.uppercased()
+                )
+            }
+            return converted
         }
         var result = Money.zero(currencyCode: currencyCode)
 
@@ -68,15 +80,14 @@ public enum BudgetSpendingCalculator {
             case .expense:
                 guard matchesScope(transaction) else { continue }
                 guard transaction.reimbursementID == nil else { continue }
-                result = try result.adding(transaction.amount)
+                result = try result.adding(normalizedAmount(transaction))
             case .income:
                 guard let originalID = transaction.refundOfTransactionID,
                       let original = expensesByID[originalID],
                       original.type == .expense,
                       original.reimbursementID == nil,
-                      matchesScope(original),
-                      transaction.amount.currencyCode == currencyCode.uppercased() else { continue }
-                result = try result.subtracting(transaction.amount)
+                      matchesScope(original) else { continue }
+                result = try result.subtracting(normalizedAmount(transaction))
             case .transfer:
                 continue
             }
