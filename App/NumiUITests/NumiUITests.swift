@@ -431,6 +431,27 @@ final class NumiUITests: XCTestCase {
         XCTAssertFalse(app.textFields["search.transactions"].exists)
     }
 
+    func testTransactionFiltersCanOpenApplyAndReset() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        app.buttons["action.openTransactionSearch"].tap()
+        XCTAssertTrue(app.buttons["action.openTransactionFilters"].waitForExistence(timeout: 5))
+        app.buttons["action.openTransactionFilters"].tap()
+
+        XCTAssertTrue(app.otherElements["picker.transactionFilterType"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["picker.transactionFilterCategory"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["picker.transactionFilterAccount"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.switches["toggle.transactionFilterDate"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textFields["input.transactionFilterMinimum"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textFields["input.transactionFilterMaximum"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["action.resetTransactionFilters"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["action.applyTransactionFilters"].waitForExistence(timeout: 5))
+
+        app.buttons["action.resetTransactionFilters"].tap()
+        app.buttons["action.applyTransactionFilters"].tap()
+        XCTAssertTrue(app.buttons["action.openTransactionFilters"].waitForExistence(timeout: 5))
+    }
+
     func testAddRecordStartsFromCategorySelectionThenShowsCurrencyPicker() {
         let app = launchApp()
 

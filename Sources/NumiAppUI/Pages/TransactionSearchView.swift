@@ -17,6 +17,73 @@ public struct TransactionSearchRow: Identifiable {
     }
 }
 
+public struct TransactionSearchFilter: Equatable {
+    public var query: String
+    public var type: TransactionType?
+    public var categoryID: UUID?
+    public var accountID: UUID?
+    public var dateInterval: DateInterval?
+    public var minimumAmount: Money?
+    public var maximumAmount: Money?
+
+    public init(
+        query: String = "",
+        type: TransactionType? = nil,
+        categoryID: UUID? = nil,
+        accountID: UUID? = nil,
+        dateInterval: DateInterval? = nil,
+        minimumAmount: Money? = nil,
+        maximumAmount: Money? = nil
+    ) {
+        self.query = query
+        self.type = type
+        self.categoryID = categoryID
+        self.accountID = accountID
+        self.dateInterval = dateInterval
+        self.minimumAmount = minimumAmount
+        self.maximumAmount = maximumAmount
+    }
+
+    public var hasActiveCriteria: Bool {
+        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || type != nil
+            || categoryID != nil
+            || accountID != nil
+            || dateInterval != nil
+            || minimumAmount != nil
+            || maximumAmount != nil
+    }
+
+    public func matches(row: TransactionSearchRow, categoryName: String, subtitle: String?) -> Bool {
+        let transaction = row.transaction
+        if let type, transaction.type != type { return false }
+        if let categoryID, transaction.categoryID != categoryID { return false }
+        if let accountID, transaction.accountID != accountID { return false }
+        if let dateInterval, !dateInterval.contains(transaction.occurredAt) { return false }
+
+        if let minimumAmount {
+            guard transaction.amount.currencyCode == minimumAmount.currencyCode,
+                  transaction.amount.minorUnits >= minimumAmount.minorUnits else { return false }
+        }
+        if let maximumAmount {
+            guard transaction.amount.currencyCode == maximumAmount.currencyCode,
+                  transaction.amount.minorUnits <= maximumAmount.minorUnits else { return false }
+        }
+
+        let keyword = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !keyword.isEmpty else { return true }
+        return [
+            categoryName,
+            row.fallbackCategoryName,
+            subtitle ?? "",
+            row.fallbackSubtitle ?? "",
+            transaction.note,
+            transaction.amount.formatted(),
+            NumiDatePickerRow.displayText(for: transaction.occurredAt)
+        ].contains { $0.localizedCaseInsensitiveContains(keyword) }
+    }
+}
+
 public struct TransactionSearchView: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -26,6 +93,8 @@ public struct TransactionSearchView: View {
     private let onSelect: (NumiCore.Transaction) -> Void
 
     @State private var query = ""
+    @State private var filter = TransactionSearchFilter()
+    @State private var isFilterPresented = false
     @FocusState private var isSearchFocused: Bool
 
     public init(
@@ -84,6 +153,15 @@ public struct TransactionSearchView: View {
         .navigationBarTitleDisplayMode(.inline)
 #endif
         .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    isFilterPresented = true
+                } label: {
+                    Image(systemName: filter.hasActiveCriteria ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                }
+                .accessibilityLabel(NumiLocalized.string("search.filters"))
+                .accessibilityIdentifier("action.openTransactionFilters")
+            }
             ToolbarItem(placement: .cancellationAction) {
                 Button {
                     dismiss()
@@ -94,6 +172,13 @@ public struct TransactionSearchView: View {
             }
         }
         .accessibilityIdentifier("page.transactionSearch")
+        .sheet(isPresented: $isFilterPresented) {
+            TransactionSearchFilterSheet(
+                filter: $filter,
+                categories: categories,
+                accounts: accounts
+            )
+        }
         .onAppear {
             isSearchFocused = true
         }
@@ -143,17 +228,15 @@ public struct TransactionSearchView: View {
     }
 
     private var filteredRows: [TransactionSearchRow] {
-        let keyword = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !keyword.isEmpty else { return [] }
-
-        return rows.filter { (row: TransactionSearchRow) in
-            resolvedCategoryName(for: row).localizedCaseInsensitiveContains(keyword)
-            || row.fallbackCategoryName.localizedCaseInsensitiveContains(keyword)
-            || row.transaction.note.localizedCaseInsensitiveContains(keyword)
-            || row.transaction.amount.formatted().localizedCaseInsensitiveContains(keyword)
-            || (resolvedSubtitle(for: row)?.localizedCaseInsensitiveContains(keyword) ?? false)
-            || (row.fallbackSubtitle?.localizedCaseInsensitiveContains(keyword) ?? false)
-            || NumiDatePickerRow.displayText(for: row.transaction.occurredAt).localizedCaseInsensitiveContains(keyword)
+        var activeFilter = filter
+        activeFilter.query = query
+        guard activeFilter.hasActiveCriteria else { return rows }
+        return rows.filter { row in
+            activeFilter.matches(
+                row: row,
+                categoryName: resolvedCategoryName(for: row),
+                subtitle: resolvedSubtitle(for: row)
+            )
         }
     }
 
@@ -196,5 +279,138 @@ public struct TransactionSearchView: View {
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .contain)
+    }
+}
+
+private struct TransactionSearchFilterSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var filter: TransactionSearchFilter
+    let categories: [NumiCore.Category]
+    let accounts: [Account]
+
+    @State private var type: TransactionType?
+    @State private var categoryID: UUID?
+    @State private var accountID: UUID?
+    @State private var useDateRange = false
+    @State private var startDate = Date()
+    @State private var endDate = Date()
+    @State private var minimumAmountText = ""
+    @State private var maximumAmountText = ""
+
+    init(filter: Binding<TransactionSearchFilter>, categories: [NumiCore.Category], accounts: [Account]) {
+        self._filter = filter
+        self.categories = categories.filter { !$0.isHidden }
+        self.accounts = accounts.filter { !$0.isHidden }
+        let value = filter.wrappedValue
+        _type = State(initialValue: value.type)
+        _categoryID = State(initialValue: value.categoryID)
+        _accountID = State(initialValue: value.accountID)
+        _useDateRange = State(initialValue: value.dateInterval != nil)
+        _startDate = State(initialValue: value.dateInterval?.start ?? Date())
+        _endDate = State(initialValue: value.dateInterval?.end ?? Date())
+        _minimumAmountText = State(initialValue: value.minimumAmount.map(Self.decimalText) ?? "")
+        _maximumAmountText = State(initialValue: value.maximumAmount.map(Self.decimalText) ?? "")
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("search.filter.type") {
+                    Picker("search.filter.type", selection: $type) {
+                        Text("search.filter.allTypes").tag(TransactionType?.none)
+                        Text("record.expense").tag(TransactionType?.some(.expense))
+                        Text("record.income").tag(TransactionType?.some(.income))
+                        Text("record.transfer").tag(TransactionType?.some(.transfer))
+                    }
+                    .accessibilityIdentifier("picker.transactionFilterType")
+                }
+                Section("search.filter.scope") {
+                    Picker("search.filter.category", selection: $categoryID) {
+                        Text("search.filter.allCategories").tag(UUID?.none)
+                        ForEach(categories.filter { $0.kind == .expense || $0.kind == .income }) { category in
+                            Text(category.localizedDisplayName).tag(Optional(category.id))
+                        }
+                    }
+                    .accessibilityIdentifier("picker.transactionFilterCategory")
+                    Picker("search.filter.account", selection: $accountID) {
+                        Text("search.filter.allAccounts").tag(UUID?.none)
+                        ForEach(accounts) { account in
+                            Text(account.localizedDisplayName).tag(Optional(account.id))
+                        }
+                    }
+                    .accessibilityIdentifier("picker.transactionFilterAccount")
+                }
+                Section("search.filter.date") {
+                    Toggle("search.filter.enableDate", isOn: $useDateRange)
+                        .accessibilityIdentifier("toggle.transactionFilterDate")
+                    if useDateRange {
+                        DatePicker("search.filter.from", selection: $startDate, displayedComponents: .date)
+                        DatePicker("search.filter.to", selection: $endDate, displayedComponents: .date)
+                    }
+                }
+                Section("search.filter.amount") {
+                    TextField("search.filter.minimum", text: $minimumAmountText)
+                        #if os(iOS)
+                        .keyboardType(.decimalPad)
+                        #endif
+                        .accessibilityIdentifier("input.transactionFilterMinimum")
+                    TextField("search.filter.maximum", text: $maximumAmountText)
+                        #if os(iOS)
+                        .keyboardType(.decimalPad)
+                        #endif
+                        .accessibilityIdentifier("input.transactionFilterMaximum")
+                }
+            }
+            .navigationTitle(NumiLocalized.string("search.filters"))
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("common.apply") {
+                        apply()
+                        dismiss()
+                    }
+                    .accessibilityIdentifier("action.applyTransactionFilters")
+                }
+                ToolbarItem(placement: .secondaryAction) {
+                    Button("common.reset") {
+                        reset()
+                    }
+                    .accessibilityIdentifier("action.resetTransactionFilters")
+                }
+            }
+        }
+    }
+
+    private func apply() {
+        let currencyCode = accounts.first?.balance.currencyCode ?? "CNY"
+        filter.type = type
+        filter.categoryID = categoryID
+        filter.accountID = accountID
+        filter.dateInterval = useDateRange
+            ? DateInterval(start: min(startDate, endDate), end: max(startDate, endDate).addingTimeInterval(86_400))
+            : nil
+        filter.minimumAmount = try? Money(decimalString: minimumAmountText, currencyCode: currencyCode)
+        filter.maximumAmount = try? Money(decimalString: maximumAmountText, currencyCode: currencyCode)
+    }
+
+    private func reset() {
+        type = nil
+        categoryID = nil
+        accountID = nil
+        useDateRange = false
+        minimumAmountText = ""
+        maximumAmountText = ""
+        filter = TransactionSearchFilter()
+    }
+
+    private static func decimalText(_ money: Money) -> String {
+        let scale = Money.scale(for: money.currencyCode)
+        let whole = abs(money.minorUnits) / scale
+        let fractionDigits = Money.fractionDigits(for: money.currencyCode)
+        guard fractionDigits > 0 else { return "\(whole)" }
+        let fraction = abs(money.minorUnits) % scale
+        return "\(whole).\(String(format: "%0\(fractionDigits)lld", fraction))"
     }
 }
