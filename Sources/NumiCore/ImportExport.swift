@@ -79,6 +79,7 @@ public enum CSVImportField: String, CaseIterable, Identifiable, Sendable {
     case date
     case category
     case account
+    case targetAccount
     case note
     case reimbursementID
     case refundOfTransactionID
@@ -117,7 +118,8 @@ public struct CSVImportMapping: Equatable, Sendable {
         case "currency", "币种": return .currency
         case "occurredat", "date", "day", "日期": return .date
         case "category", "category_name", "分类": return .category
-        case "account", "wallet", "账户": return .account
+        case "accountid", "account", "wallet", "账户": return .account
+        case "targetaccountid", "targetaccount", "destinationaccount", "目标账户": return .targetAccount
         case "note", "memo", "备注": return .note
         case "reimbursementid", "报销标识": return .reimbursementID
         case "refundoftransactionid", "退款原交易标识": return .refundOfTransactionID
@@ -267,7 +269,7 @@ public enum NumiCSVImporter {
                 let amount = try requiredValue(for: .amount, in: values, mapping: mapping)
                 let currency = value(for: .currency, in: values, mapping: mapping) ?? context.ledger.currencyCode
                 let money = try Money(decimalString: amount, currencyCode: currency)
-                let categoryID = try resolvedCategoryID(
+                let categoryID = type == .transfer ? nil : try resolvedCategoryID(
                     from: value(for: .category, in: values, mapping: mapping),
                     type: type,
                     categories: context.categories
@@ -276,6 +278,13 @@ public enum NumiCSVImporter {
                     from: value(for: .account, in: values, mapping: mapping),
                     accounts: context.accounts
                 )
+                let targetAccountID = try resolvedAccountID(
+                    from: value(for: .targetAccount, in: values, mapping: mapping),
+                    accounts: context.accounts
+                )
+                if type == .transfer {
+                    try validateTransferAccounts(sourceAccountID: accountID, targetAccountID: targetAccountID)
+                }
                 let reimbursementID = try resolvedOptionalUUID(
                     from: value(for: .reimbursementID, in: values, mapping: mapping),
                     fieldName: "reimbursementID"
@@ -291,6 +300,7 @@ public enum NumiCSVImporter {
                     occurredAt: try date(from: value(for: .date, in: values, mapping: mapping)),
                     categoryID: categoryID,
                     accountID: accountID,
+                    targetAccountID: targetAccountID,
                     ledgerID: context.ledger.id,
                     note: value(for: .note, in: values, mapping: mapping) ?? "",
                     reimbursementID: reimbursementID,
@@ -341,7 +351,7 @@ public enum NumiCSVImporter {
         switch value?.lowercased() {
         case "expense", "支出": return .expense
         case "income", "收入": return .income
-        case "transfer", "转账": throw ImportFailure("Transfers are not supported")
+        case "transfer", "转账": return .transfer
         default: throw ImportFailure("Invalid type")
         }
     }
@@ -374,6 +384,12 @@ public enum NumiCSVImporter {
             ?? accounts.first { $0.name.caseInsensitiveCompare(value) == .orderedSame }
         guard let account else { throw ImportFailure("Unknown account \(value)") }
         return account.id
+    }
+
+    private static func validateTransferAccounts(sourceAccountID: UUID?, targetAccountID: UUID?) throws {
+        guard let sourceAccountID, let targetAccountID, sourceAccountID != targetAccountID else {
+            throw ImportFailure("Transfer requires distinct source and target accounts")
+        }
     }
 
     private struct ImportFailure: Error, CustomStringConvertible {

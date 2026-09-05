@@ -139,4 +139,28 @@ final class ImportExportTests: XCTestCase {
         XCTAssertEqual(result.transactions.first?.reimbursementID, reimbursementID)
         XCTAssertEqual(result.transactions.first?.refundOfTransactionID, refundID)
     }
+
+    func testCSVRoundTripPreservesTransferTargetAccount() throws {
+        let sourceAccountID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
+        let targetAccountID = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
+        let transaction = Transaction(
+            type: .transfer,
+            amount: try Money(decimalString: "12.30", currencyCode: "USD"),
+            accountID: sourceAccountID,
+            targetAccountID: targetAccountID
+        )
+        let csv = NumiCSVExporter.exportTransactions([transaction])
+        let source = Account(id: sourceAccountID, name: "Source", type: .cash, balance: .zero(currencyCode: "USD"))
+        let target = Account(id: targetAccountID, name: "Target", type: .debitCard, balance: .zero(currencyCode: "USD"))
+        let result = NumiCSVImporter.preview(
+            document: try CSVImportDocument(csv: csv),
+            mapping: CSVImportMapping(headers: try CSVImportDocument(csv: csv).headers),
+            context: CSVImportContext(ledger: Ledger(name: "Ledger", currencyCode: "USD"), categories: [], accounts: [source, target])
+        )
+
+        XCTAssertEqual(result.transactions.count, 1)
+        XCTAssertEqual(result.transactions.first?.type, .transfer)
+        XCTAssertEqual(result.transactions.first?.accountID, sourceAccountID)
+        XCTAssertEqual(result.transactions.first?.targetAccountID, targetAccountID)
+    }
 }
