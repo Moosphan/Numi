@@ -18,6 +18,7 @@
 		8B70F184CF5A4023B5A549B9 /* RecordTransactionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B1F0F9A4D44B72B84C905E /* RecordTransactionIntent.swift */; };
 		DADC3D40D32AF1B9E3E30327 /* NumiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FFA43CBCA48D6C895D410D /* NumiApp.swift */; };
 		FAE86F4D109AB291ECD3BDFF /* NumiPersistence in Frameworks */ = {isa = PBXBuildFile; fileRef = B853F1FB74B42C4714511279 /* NumiPersistence.framework */; productRef = 4A9AC963A344DFDEB566647A /* NumiPersistence */; };
+		E1250AA174CBBF0C3A6A4001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E1250AA174CBBF0C3A6A4002 /* PrivacyInfo.xcprivacy */; };
 		2A592DDA13624A44B4353648 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0F48E1B791944C3E8877C051 /* Localizable.xcstrings */; };
 		9BC08E082F0E4F20B704F9AD /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B94ABB53823A46139605FC7F /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
@@ -46,6 +47,7 @@
 		E5B1F0F9A4D44B72B84C905E /* RecordTransactionIntent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecordTransactionIntent.swift; path = NumiIntents/RecordTransactionIntent.swift; sourceTree = "<group>"; };
 		F821A04AF10BDED7B816A3A0 /* NumiAppUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NumiAppUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9FFA43CBCA48D6C895D410D /* NumiApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NumiApp.swift; path = App/NumiApp/NumiApp.swift; sourceTree = "<group>"; };
+		E1250AA174CBBF0C3A6A4002 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = App/NumiApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		0F48E1B791944C3E8877C051 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = App/NumiApp/Localizable.xcstrings; sourceTree = "<group>"; };
 		B94ABB53823A46139605FC7F /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = NumiIntents/Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -135,6 +137,7 @@
 				F9FFA43CBCA48D6C895D410D /* NumiApp.swift */,
 				0370E2C9BFEB8E881E9A7224 /* RootShellView.swift */,
 				DC39486A436D62F9731704D6 /* Info.plist */,
+				E1250AA174CBBF0C3A6A4002 /* PrivacyInfo.xcprivacy */,
 			);
 			name = NumiApp;
 			sourceTree = "<group>";
@@ -232,6 +235,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A592DDA13624A44B4353648 /* Localizable.xcstrings in Resources */,
+				E1250AA174CBBF0C3A6A4001 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -311,6 +311,7 @@ xcodebuild test -scheme Numi -only-testing:NumiUITests/AIBillRecordingE2ETests
 
 - [Siri 语音记账技术方案](docs/tech/siri-voice-bill-recording.md) — 架构设计、模块详解、自动化测试方案
 - [数据管理与隐私说明](docs/data-management.md) — 本地存储、JSON/CSV、加密备份、恢复点与 iCloud 边界
+- [TestFlight 发布检查清单](docs/release/testflight-checklist.md) — archive、隐私披露、TestFlight 测试和发布风险
 
 ## 🤝 贡献指南
 
