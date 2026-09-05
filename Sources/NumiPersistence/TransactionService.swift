@@ -7,25 +7,41 @@ public final class TransactionService: @unchecked Sendable {
     public static let shared = TransactionService()
 
     private let appGroupID = "group.com.numi.shared"
-    private let container: ModelContainer
-    private let context: ModelContext
+    private let container: ModelContainer?
+    private let context: ModelContext?
 
     public init() {
-        let url = FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: appGroupID)!
-            .appendingPathComponent("Numi.store")
-        let config = ModelConfiguration(url: url)
-        self.container = try! ModelContainer(
-            for: LedgerEntity.self, TransactionEntity.self, CategoryEntity.self, AccountEntity.self,
-            configurations: config
-        )
-        self.context = ModelContext(container)
+        guard let containerURL = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroupID) else {
+            self.container = nil
+            self.context = nil
+            return
+        }
+
+        do {
+            let url = containerURL.appendingPathComponent("Numi.store")
+            let config = ModelConfiguration(url: url)
+            let container = try ModelContainer(
+                for: LedgerEntity.self, TransactionEntity.self, CategoryEntity.self, AccountEntity.self,
+                configurations: config
+            )
+            self.container = container
+            self.context = ModelContext(container)
+        } catch {
+            self.container = nil
+            self.context = nil
+        }
+    }
+
+    public var isAvailable: Bool {
+        context != nil
     }
 
     // MARK: - 查询
 
     /// 获取当前所有可见分类名称
     public func availableCategoryNames() -> [String] {
+        guard let context else { return [] }
         let desc = FetchDescriptor<CategoryEntity>(
             predicate: #Predicate { !$0.isHidden }
         )
@@ -36,6 +52,9 @@ public final class TransactionService: @unchecked Sendable {
 
     /// 从 AI 解析结果创建账单，返回是否成功
     public func createTransaction(from parsed: ParsedTransaction) throws {
+        guard let context else {
+            throw TransactionServiceError.initializationFailed
+        }
         let category = resolveCategory(parsed.categoryName)
         let account = resolveAccount(parsed.accountName) ?? defaultAccount()
         let ledger = defaultLedger()
@@ -96,6 +115,7 @@ public final class TransactionService: @unchecked Sendable {
     // MARK: - 匹配
 
     private func resolveCategory(_ name: String) -> CategoryEntity? {
+        guard let context else { return nil }
         // 精确匹配
         let exact = FetchDescriptor<CategoryEntity>(
             predicate: #Predicate { $0.name == name && !$0.isHidden }
@@ -112,6 +132,7 @@ public final class TransactionService: @unchecked Sendable {
     }
 
     private func resolveAccount(_ name: String?) -> AccountEntity? {
+        guard let context else { return nil }
         guard let name, !name.isEmpty else { return nil }
         let desc = FetchDescriptor<AccountEntity>(
             predicate: #Predicate { $0.name == name && !$0.isHidden }
@@ -120,6 +141,7 @@ public final class TransactionService: @unchecked Sendable {
     }
 
     private func defaultAccount() -> AccountEntity? {
+        guard let context else { return nil }
         let desc = FetchDescriptor<AccountEntity>(
             predicate: #Predicate { !$0.isHidden }
         )
@@ -127,6 +149,7 @@ public final class TransactionService: @unchecked Sendable {
     }
 
     private func defaultLedger() -> LedgerEntity? {
+        guard let context else { return nil }
         let desc = FetchDescriptor<LedgerEntity>(sortBy: [SortDescriptor(\.name)])
         return try? context.fetch(desc).first
     }
@@ -137,11 +160,13 @@ public final class TransactionService: @unchecked Sendable {
 public enum TransactionServiceError: Error, LocalizedError {
     case noAccount
     case noLedger
+    case initializationFailed
 
     public var errorDescription: String? {
         switch self {
         case .noAccount: return NumiLocalized.string("error.transaction.no.account")
         case .noLedger: return NumiLocalized.string("error.transaction.no.ledger")
+        case .initializationFailed: return NumiLocalized.string("error.transaction.initialization.failed")
         }
     }
 }

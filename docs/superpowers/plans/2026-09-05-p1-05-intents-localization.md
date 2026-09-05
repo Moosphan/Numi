@@ -11,4 +11,6 @@
 - [x] Replace hard-coded title, description, parameter title, and dialogs with localized resources.
 - [x] Verify the App Intents target through an iOS simulator build.
 - [x] Check `git diff --check` and update backlog evidence.
+- [x] Prevent unavailable App Group/SwiftData containers from crashing the Intent process.
+- [x] Verify persistence error localization in SwiftPM tests and compile the iOS target.
 - [ ] Ask for confirmation before committing or pushing.

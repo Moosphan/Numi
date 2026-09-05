@@ -107,6 +107,14 @@ final class TransactionServiceTests: XCTestCase {
         XCTAssertEqual(TransactionServiceError.noLedger.errorDescription, "No available ledger")
     }
 
+    func testTransactionServiceInitializationFailureIsLocalized() {
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+        XCTAssertEqual(TransactionServiceError.initializationFailed.errorDescription, "无法初始化本地数据")
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(TransactionServiceError.initializationFailed.errorDescription, "Unable to initialize local data")
+    }
+
     // MARK: - Transaction Creation via Store
 
     func testCreateExpenseTransaction() throws {

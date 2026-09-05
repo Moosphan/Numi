@@ -12,6 +12,10 @@ struct RecordTransactionIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let service = TransactionService.shared
+        guard service.isAvailable else {
+            let message = NumiLocalized.string("error.transaction.initialization.failed")
+            return .result(dialog: IntentDialog("\(message)"))
+        }
         let categories = service.availableCategoryNames()
 
         guard !categories.isEmpty else {
