@@ -13,6 +13,7 @@ struct RootShellView: View {
     @AppStorage("app.privacy.hideAmounts") private var isAmountDisplayHidden = false
     @AppStorage("app.subscription.requiresConfirmation") private var requiresSubscriptionConfirmation = false
     @AppStorage("app.installment.reminder.daysBefore") private var installmentReminderDaysBefore = 1
+    @AppStorage("app.subscription.reminder.daysBefore") private var subscriptionReminderDaysBefore = 1
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @AppStorage("app.currentLedgerID") private var currentLedgerIDString: String = ""
     @AppStorage(NumiAppLanguage.pendingToastDefaultsKey) private var pendingLanguageToastCode: String = ""
@@ -157,7 +158,10 @@ struct RootShellView: View {
                     initializationError = error.localizedDescription
                 }
             }
-            await SubscriptionReminderScheduler.schedule(subscriptions: store.subscriptions)
+            await SubscriptionReminderScheduler.schedule(
+                subscriptions: store.subscriptions,
+                daysBefore: subscriptionReminderDaysBefore
+            )
             await InstallmentReminderScheduler.schedule(
                 plans: store.installmentPlans,
                 periods: store.installmentPeriods,
@@ -171,6 +175,14 @@ struct RootShellView: View {
                     plans: store.installmentPlans,
                     periods: store.installmentPeriods,
                     daysBefore: installmentReminderDaysBefore
+                )
+            }
+        }
+        .onChange(of: subscriptionReminderDaysBefore) { _, _ in
+            Task {
+                await SubscriptionReminderScheduler.schedule(
+                    subscriptions: store.subscriptions,
+                    daysBefore: subscriptionReminderDaysBefore
                 )
             }
         }
@@ -238,7 +250,10 @@ struct RootShellView: View {
             }
 
             Task {
-                await SubscriptionReminderScheduler.schedule(subscriptions: store.subscriptions)
+                await SubscriptionReminderScheduler.schedule(
+                    subscriptions: store.subscriptions,
+                    daysBefore: subscriptionReminderDaysBefore
+                )
             }
 
             let shouldLock: Bool
@@ -547,7 +562,7 @@ struct RootShellView: View {
                     do {
                         try store.updateSubscription(sub)
                         Task {
-                            await SubscriptionReminderScheduler.schedule(subscription: sub)
+                            await SubscriptionReminderScheduler.schedule(subscription: sub, daysBefore: subscriptionReminderDaysBefore)
                         }
                     } catch {
                         initializationError = error.localizedDescription
@@ -572,7 +587,7 @@ struct RootShellView: View {
                     guard let subscription = store.subscriptions.first(where: { $0.id == id }) else { return }
                     Task {
                         guard await SubscriptionReminderScheduler.requestAuthorization() else { return }
-                        await SubscriptionReminderScheduler.schedule(subscription: subscription)
+                        await SubscriptionReminderScheduler.schedule(subscription: subscription, daysBefore: subscriptionReminderDaysBefore)
                     }
                 },
                 onRecordSubscriptionBilling: { id in
@@ -580,7 +595,7 @@ struct RootShellView: View {
                         _ = try store.recordNextSubscriptionBilling(id: id)
                         if let subscription = store.subscriptions.first(where: { $0.id == id }) {
                             Task {
-                                await SubscriptionReminderScheduler.schedule(subscription: subscription)
+                                await SubscriptionReminderScheduler.schedule(subscription: subscription, daysBefore: subscriptionReminderDaysBefore)
                             }
                         }
                     } catch {

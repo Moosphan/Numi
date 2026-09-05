@@ -5665,6 +5665,24 @@
         "ja": { "stringUnit": { "state": "translated", "value": "%lld日前" } }
       }
     },
+    "setting.subscription.reminder.days": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅提前提醒" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Subscription Reminder" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱提前提醒" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクの事前通知" } }
+      }
+    },
+    "setting.subscription.reminder.days.value": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "提前 %lld 天" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%lld days before" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "提前 %lld 天" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld日前" } }
+      }
+    },
     "setting.ai.service": {
       "extractionState": "manual",
       "localizations": {

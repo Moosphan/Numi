@@ -58,6 +58,7 @@ public struct SettingsView: View {
     @State private var showLanguageSheet = false
     @AppStorage("app.language") private var languageCode: String = "system"
     @AppStorage("app.installment.reminder.daysBefore") private var installmentReminderDaysBefore = 1
+    @AppStorage("app.subscription.reminder.daysBefore") private var subscriptionReminderDaysBefore = 1
 
     @AppStorage("app.ai.provider") private var aiProvider: String = "claude"
     @AppStorage("app.ai.claudeAPIKey") private var claudeAPIKey: String = ""
@@ -267,6 +268,20 @@ public struct SettingsView: View {
                         )
                     }
                     .accessibilityIdentifier("settings.installmentReminderDays")
+
+                    Picker(selection: $subscriptionReminderDaysBefore) {
+                        ForEach([0, 1, 3, 7], id: \.self) { days in
+                            Text(NumiLocalized.string("setting.subscription.reminder.days.value", days))
+                                .tag(days)
+                        }
+                    } label: {
+                        settingsRow(
+                            NumiLocalized.string("setting.subscription.reminder.days"),
+                            icon: "bell.badge",
+                            trailingText: NumiLocalized.string("setting.subscription.reminder.days.value", subscriptionReminderDaysBefore)
+                        )
+                    }
+                    .accessibilityIdentifier("settings.subscriptionReminderDays")
                 }
 
                 settingsSection(
