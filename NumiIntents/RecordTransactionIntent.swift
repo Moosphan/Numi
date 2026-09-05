@@ -31,11 +31,10 @@ struct RecordTransactionIntent: AppIntent {
 
         do {
             let parsed = try await parser.parseTransaction(text, categories: categories)
-            try service.createTransaction(from: parsed)
+            let recordedAmount = try service.createTransaction(from: parsed)
 
             let symbol = parsed.type == .income ? "+" : "-"
-            let amountStr = "\(parsed.amount)"
-            let message = NumiLocalized.string("intent.success", parsed.categoryName, symbol, "¥\(amountStr)")
+            let message = NumiLocalized.string("intent.success", parsed.categoryName, symbol, recordedAmount.formatted())
             return .result(
                 dialog: IntentDialog("\(message)")
             )

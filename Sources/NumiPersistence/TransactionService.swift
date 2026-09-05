@@ -51,7 +51,8 @@ public final class TransactionService: @unchecked Sendable {
     // MARK: - 创建
 
     /// 从 AI 解析结果创建账单，返回是否成功
-    public func createTransaction(from parsed: ParsedTransaction) throws {
+    @discardableResult
+    public func createTransaction(from parsed: ParsedTransaction) throws -> Money {
         guard let context else {
             throw TransactionServiceError.initializationFailed
         }
@@ -110,6 +111,7 @@ public final class TransactionService: @unchecked Sendable {
         }
 
         try context.save()
+        return money
     }
 
     // MARK: - 匹配
