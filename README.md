@@ -21,7 +21,7 @@
 
 - **🚀 极速记账** - 5秒完成一笔记录，支持连续速记
 - **🎙️ 语音记账** - Siri 语音指令，AI 自动解析生成账单
-- **🔒 纯本地存储** - 数据只在本机，不上传服务器，完全可控
+- **🔒 默认本地存储** - 账本默认保存在设备本地，可选开启 iCloud 同步
 - **📊 智能洞察** - 30秒理解消费趋势，月度概览一目了然
 - **💰 预算管理** - 月预算、分类预算、周视图，动态日均预算
 - **🔄 订阅/分期** - 自动提醒固定扣费，分期记录清晰管理
@@ -246,6 +246,15 @@ ruby scripts/generate_xcodeproj.rb
 3. 开启自动更新汇率（每天首次打开时更新）
 4. 搜索查看各货币汇率
 
+### 数据导出、导入与恢复
+
+1. 进入"我的" → "数据管理"，可导出完整 JSON 快照或仅交易记录的 CSV。
+2. JSON 导入会替换当前完整快照；开始前 App 会创建“导入前恢复点”。
+3. CSV 导入可映射字段、预览有效记录和错误行，确认后追加交易记录。
+4. 进入"我的" → "本地备份"可创建密码加密的完整备份；恢复会替换当前数据，请先保留一份新的备份。
+
+格式字段、恢复范围和多账本注意事项见[数据管理与隐私说明](docs/data-management.md)。
+
 ## 🎨 设计原则
 
 Numi 的设计遵循以下原则：
@@ -257,18 +266,18 @@ Numi 的设计遵循以下原则：
 
 ## 🔒 隐私与安全
 
-- **数据本地化** - 所有数据存储在本地数据库（SwiftData）
-- **无云端同步** - 不依赖云服务，不用账号登录
+- **默认本地存储** - 账本默认存储在设备 App 沙盒的 SwiftData 数据库中
+- **可选 iCloud 同步** - 用户开启后使用当前 Apple ID 的私有 CloudKit 容器；独立加密备份仍是推荐的恢复方式
 - **隐私锁** - 支持 Face ID / Touch ID / 数字密码解锁
 - **后台模糊** - 进入后台自动模糊界面，2 分钟后才触发锁定
-- **数据导出** - 随时导出完整数据，可独立迁移
-- **API Key 本地存储** - AI 服务密钥仅存在本地，不上传
+- **数据导出** - 支持 JSON、CSV 与密码加密的完整备份；格式与恢复行为见[数据管理与隐私说明](docs/data-management.md)
+- **AI 服务按需调用** - 仅在用户配置并使用对应 AI 服务时发起请求
 
 ## 🧪 测试
 
-项目包含完整的测试套件：
+项目包含覆盖核心规则、持久化、导入导出和本地化的测试套件。以当前环境运行结果为准：未配置外部 AI API Key 时，相关集成测试会自动跳过。
 
-### 单元测试（100 个，全部通过）
+### 核心测试范围
 - `ParsedTransactionTests` — AI 解析结果模型
 - `LLMMapperTests` — JSON 提取与日期解析
 - `LLMErrorTests` — 错误类型处理
@@ -277,7 +286,7 @@ Numi 的设计遵循以下原则：
 - `DeepSeekTransactionParserTests` — DeepSeek 解析器（Mock）
 - `TransactionServiceTests` — 持久化服务
 
-### 集成测试（需配置 API Key）
+### 外部 AI 集成测试（需配置 API Key）
 - 真实 API 调用验证（DeepSeek/Claude/千问）
 - E2E 测试：AI 解析 → 分类匹配 → SwiftData 持久化 → 余额更新
 
@@ -287,6 +296,9 @@ Numi 的设计遵循以下原则：
 ```bash
 # 运行所有测试
 swift test
+
+# 运行项目验证脚本（包含 Swift 测试、资源与工程检查）
+./scripts/verify.sh
 
 # 运行集成测试（需配置 Key）
 DEEPSEEK_API_KEY=sk-xxx swift test --filter IntegrationTests
@@ -298,6 +310,7 @@ xcodebuild test -scheme Numi -only-testing:NumiUITests/AIBillRecordingE2ETests
 ## 📚 技术文档
 
 - [Siri 语音记账技术方案](docs/tech/siri-voice-bill-recording.md) — 架构设计、模块详解、自动化测试方案
+- [数据管理与隐私说明](docs/data-management.md) — 本地存储、JSON/CSV、加密备份、恢复点与 iCloud 边界
 
 ## 🤝 贡献指南
 

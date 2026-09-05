@@ -49,7 +49,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 | P0C-01 | P0 UI Test 稳定通过 | Partial | 2026-09-04 iPhone 15 验证入口已稳定覆盖 11 个流程：首次启动、新增、编辑、删除撤销、语言切换、转账、隐藏金额、备份密码门槛、恢复点、CSV 入口、JSON/CSV 导入导出入口；搜索相关 3 个测试仍受全屏页面 accessibility 查询不稳定影响 | 修复并重新纳入搜索/筛选 UI 测试，随后补齐视觉截图与大字体回归 | 固定模拟器上的关键 UI Test 可重复通过 |
 | P0C-02 | 视觉截图基线与非空校验 | Partial | UI Test 有截图 showcase seed profile；原 backlog 要求固定截图与非空校验 | 输出稳定截图目录、命名规则、空白/全黑/主要元素缺失检测 | 明细、记账、洞悉、计划、设置、数据管理、深色、大字体均有基线 |
 | P0C-03 | 性能压测 | Not Started | PRD 要求 10000 条 60fps、50000 条统计 1 秒或渐进加载；未见性能压测入口 | 增加 10k/50k seed profile、统计耗时度量、列表滚动基准 | 性能结果有记录；超时路径显示加载或降级策略 |
-| P0C-04 | README、隐私说明、数据格式说明 | Partial | 既有 PRD/技术方案较完整；面向新开发者和用户的数据格式说明仍需落地 | 更新运行、验证、架构、隐私、本地存储、JSON/CSV/备份格式文档 | 新开发者可按 README 启动；用户能理解数据保存位置和导出恢复方式 |
+| P0C-04 | README、隐私说明、数据格式说明 | Done | README 已补齐运行与验证入口、默认本地存储与可选 iCloud 同步边界；新增 `docs/data-management.md`，说明 SwiftData 本地存储、完整快照、JSON/CSV、加密备份、导入恢复点、CSV 字段映射与多账本注意事项 | 后续功能变更时同步更新数据格式说明；发布前按 TestFlight 检查清单复核隐私披露 | 新开发者可按 README 启动；用户能理解数据保存位置和导出恢复方式 |
 | P0C-05 | TestFlight 检查清单 | Not Started | 原 backlog E13 要求 App 图标、权限文案、隐私清单 | 建立 release checklist，跑一次 archive/build 验证 | 可进入 TestFlight 提交流程 |
 
 ## 6. P1 产品完整度
