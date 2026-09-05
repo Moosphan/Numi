@@ -84,21 +84,7 @@ public final class BackupService: Sendable {
 
     /// 导出 CSV
     public func exportCSV(snapshot: BookkeepingSnapshot) -> BackupResult {
-        let header = "id,type,amount,currency,occurredAt,categoryID,accountID,note"
-        let rows = snapshot.transactions.map { tx in
-            [
-                tx.id.uuidString,
-                tx.type.rawValue,
-                "\(tx.amount.minorUnits)",
-                tx.amount.currencyCode,
-                ISO8601DateFormatter().string(from: tx.occurredAt),
-                tx.categoryID?.uuidString ?? "",
-                tx.accountID?.uuidString ?? "",
-                tx.note.replacingOccurrences(of: ",", with: "，")
-            ].joined(separator: ",")
-        }
-
-        let csv = ([header] + rows).joined(separator: "\n")
+        let csv = NumiCSVExporter.exportTransactions(snapshot.transactions)
 
         do {
             let fileName = "Numi_Transactions_\(Self.dateFormatter.string(from: Date())).csv"
