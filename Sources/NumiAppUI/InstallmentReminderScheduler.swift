@@ -26,14 +26,14 @@ public enum InstallmentReminderScheduler {
         periods: [InstallmentPeriod],
         daysBefore: Int = 1,
         calendar: Calendar = .current
-    ) async {
+    ) async -> Bool {
         #if canImport(UserNotifications)
         let identifier = notificationIdentifier(for: plan.id)
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
         guard case let .schedule(period) = reminderAction(plan: plan, periods: periods),
               let reminderDate = period.reminderDate(daysBefore: daysBefore, calendar: calendar),
-              reminderDate > Date() else { return }
+              ReminderSchedulePolicy.canSchedule(reminderDate: reminderDate) else { return false }
 
         let content = UNMutableNotificationContent()
         content.title = NumiLocalized.string("installment.reminder.title")
@@ -48,7 +48,14 @@ public enum InstallmentReminderScheduler {
         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: reminderDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-        try? await center.add(request)
+        do {
+            try await center.add(request)
+            return true
+        } catch {
+            return false
+        }
+        #else
+        return false
         #endif
     }
 

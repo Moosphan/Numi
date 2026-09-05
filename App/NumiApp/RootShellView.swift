@@ -591,7 +591,10 @@ struct RootShellView: View {
                             showToast(NumiLocalized.string("reminder.permission.denied"), isError: true)
                             return
                         }
-                        await SubscriptionReminderScheduler.schedule(subscription: subscription, daysBefore: subscriptionReminderDaysBefore)
+                        guard await SubscriptionReminderScheduler.schedule(subscription: subscription, daysBefore: subscriptionReminderDaysBefore) else {
+                            showToast(NumiLocalized.string("reminder.schedule.failed"), isError: true)
+                            return
+                        }
                     }
                 },
                 onRecordSubscriptionBilling: { id in
@@ -613,11 +616,14 @@ struct RootShellView: View {
                             showToast(NumiLocalized.string("reminder.permission.denied"), isError: true)
                             return
                         }
-                        await InstallmentReminderScheduler.schedule(
+                        guard await InstallmentReminderScheduler.schedule(
                             plan: plan,
                             periods: store.installmentPeriods,
                             daysBefore: installmentReminderDaysBefore
-                        )
+                        ) else {
+                            showToast(NumiLocalized.string("reminder.schedule.failed"), isError: true)
+                            return
+                        }
                     }
                 },
                 onAddInstallmentPlan: { plan in

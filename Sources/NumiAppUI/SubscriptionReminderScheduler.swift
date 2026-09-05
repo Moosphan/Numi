@@ -18,12 +18,12 @@ public enum SubscriptionReminderScheduler {
         #endif
     }
 
-    public static func schedule(subscription: Subscription, daysBefore: Int = 1, calendar: Calendar = .current) async {
+    public static func schedule(subscription: Subscription, daysBefore: Int = 1, calendar: Calendar = .current) async -> Bool {
         #if canImport(UserNotifications)
         let identifier = "subscription-reminder-\(subscription.id.uuidString)"
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
-        guard let reminderDate = subscription.reminderDate(daysBefore: daysBefore, calendar: calendar), reminderDate > Date() else { return }
+        guard let reminderDate = subscription.reminderDate(daysBefore: daysBefore, calendar: calendar), ReminderSchedulePolicy.canSchedule(reminderDate: reminderDate) else { return false }
 
         let content = UNMutableNotificationContent()
         content.title = NumiLocalized.string("subscription.reminder.title")
@@ -33,7 +33,14 @@ public enum SubscriptionReminderScheduler {
         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: reminderDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-        try? await center.add(request)
+        do {
+            try await center.add(request)
+            return true
+        } catch {
+            return false
+        }
+        #else
+        return false
         #endif
     }
 

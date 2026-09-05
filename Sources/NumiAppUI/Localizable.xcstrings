@@ -4361,6 +4361,15 @@
         "ja": { "stringUnit": { "state": "translated", "value": "通知が許可されていません。設定で通知を有効にしてからもう一度お試しください。" } }
       }
     },
+    "reminder.schedule.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "暂时无法创建提醒，请确认存在未来到期日后重试。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unable to create a reminder. Confirm there is a future due date and try again." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "暫時無法建立提醒，請確認有未來到期日後再試。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "リマインダーを作成できません。将来の支払日を確認してからもう一度お試しください。" } }
+      }
+    },
     "subscription.reminder.title": {
       "extractionState": "manual",
       "localizations": {
