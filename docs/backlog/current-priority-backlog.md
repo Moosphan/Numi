@@ -79,7 +79,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 
 | ID | Backlog | 当前状态 | 证据 | 下一步 | 验收 |
 | --- | --- | --- | --- | --- | --- |
-| PRO-01 | 会员 Domain 模型 | Not Started | 仅有 `docs/prd/numi-pro-membership-*.md`；源码未见 `Sources/NumiCore/Membership` | 实现 `MembershipPlan`、`MembershipTier`、`MembershipCapability`、`MembershipStatus`、`MembershipPolicy` | 会员能力可被单元测试独立验证 |
+| PRO-01 | 会员 Domain 模型 | Done | 新增 `Sources/NumiCore/Membership/Membership.swift`：`MembershipPlan`、`MembershipTier`、`MembershipCapability`、`MembershipStatus`、`MembershipPolicy`、Paywall context 和统一 `MembershipFeatureGate` 已落地；`MembershipFeatureGateTests` 覆盖免费数量上限、核心高级能力拦截和 Pro 全权益解析 | StoreKit 服务只负责产生已验证会员状态；业务页后续统一消费 gate 决策 | 会员能力可被单元测试独立验证 |
 | PRO-02 | StoreKit 2 接入 | Not Started | 源码未见 `MembershipStoreKitService`、`ProductCatalog`、transaction observer | 配置 product id、购买、恢复购买、交易监听、离线缓存 | Sandbox 可购买/恢复；会员态可重启保持 |
 | PRO-03 | FeatureGate 能力闸口 | Not Started | 源码未见 `FeatureGate` 或 entitlement resolver | 在账本数、账户数、多币种、加密备份、iCloud、AI、导入导出高级能力入口统一拦截 | 所有收费能力只通过统一 gate 判断 |
 | PRO-04 | Paywall 与会员状态页 | Not Started | 设计稿和组件拆分已存在；源码未见 Membership UI | 实现状态卡、paywall、权益对比、购买 dock、功能受限 sheet | 设置页可进入会员页；受限功能可弹上下文 paywall |
