@@ -536,6 +536,7 @@ struct RootShellView: View {
                 installmentPeriods: store.installmentPeriods,
                 categories: store.categories,
                 accounts: store.accounts,
+                defaultCurrencyCode: activeCurrencyCode,
                 onSaveBudget: { period, amount, isEnabled, categoryID, accountID in
                     do {
                         guard let ledgerID = currentLedger?.id else { return }

@@ -62,6 +62,7 @@ public struct PlansView: View {
     private let installmentPeriods: [InstallmentPeriod]
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
+    private let defaultCurrencyCode: String
     private let onSaveBudget: (BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void
     private let onAddSubscription: (Subscription) -> Void
     private let onUpdateSubscription: (Subscription) -> Void
@@ -85,6 +86,7 @@ public struct PlansView: View {
         installmentPeriods: [InstallmentPeriod] = [],
         categories: [NumiCore.Category] = [],
         accounts: [Account] = [],
+        defaultCurrencyCode: String = "CNY",
         onSaveBudget: @escaping (BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void = { _, _, _, _, _ in },
         onAddSubscription: @escaping (Subscription) -> Void = { _ in },
         onUpdateSubscription: @escaping (Subscription) -> Void = { _ in },
@@ -107,6 +109,7 @@ public struct PlansView: View {
         self.installmentPeriods = installmentPeriods
         self.categories = categories
         self.accounts = accounts
+        self.defaultCurrencyCode = defaultCurrencyCode
         self.onSaveBudget = onSaveBudget
         self.onUpdateSubscription = onUpdateSubscription
         self.onAddSubscription = onAddSubscription
@@ -216,7 +219,7 @@ public struct PlansView: View {
             .presentationDetents([.medium])
         }
         .sheet(isPresented: $showAddSubscription) {
-            SubscriptionFormView(categories: categories, accounts: accounts) { sub in
+            SubscriptionFormView(categories: categories, accounts: accounts, defaultCurrencyCode: defaultCurrencyCode) { sub in
                 onAddSubscription(sub)
                 showAddSubscription = false
             }
@@ -224,7 +227,7 @@ public struct PlansView: View {
             .presentationCornerRadius(28)
         }
         .sheet(isPresented: $showAddInstallment) {
-            InstallmentFormView(categories: categories, accounts: accounts) { plan in
+            InstallmentFormView(categories: categories, accounts: accounts, defaultCurrencyCode: defaultCurrencyCode) { plan in
                 onAddInstallmentPlan(plan)
                 showAddInstallment = false
             }
@@ -235,6 +238,7 @@ public struct PlansView: View {
             SubscriptionFormView(
                 categories: categories,
                 accounts: accounts,
+                defaultCurrencyCode: defaultCurrencyCode,
                 existing: sub
             ) { updated in
                 onUpdateSubscription(updated)
@@ -247,6 +251,7 @@ public struct PlansView: View {
             InstallmentFormView(
                 categories: categories,
                 accounts: accounts,
+                defaultCurrencyCode: defaultCurrencyCode,
                 existing: plan
             ) { updated in
                 onUpdateInstallmentPlan(updated)
@@ -1131,12 +1136,14 @@ private struct SubscriptionFormView: View {
 
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
+    private let defaultCurrencyCode: String
     private let existing: Subscription?
     private let onSave: (Subscription) -> Void
 
-    init(categories: [NumiCore.Category], accounts: [Account], existing: Subscription? = nil, onSave: @escaping (Subscription) -> Void) {
+    init(categories: [NumiCore.Category], accounts: [Account], defaultCurrencyCode: String = "CNY", existing: Subscription? = nil, onSave: @escaping (Subscription) -> Void) {
         self.categories = categories
         self.accounts = accounts
+        self.defaultCurrencyCode = defaultCurrencyCode
         self.existing = existing
         self.onSave = onSave
         if let sub = existing {
@@ -1207,7 +1214,7 @@ private struct SubscriptionFormView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(existing == nil ? NumiLocalized.string( "common.add") : NumiLocalized.string( "common.save")) {
-                        guard let amount = try? Money(decimalString: amountText, currencyCode: "CNY") else { return }
+                        guard let amount = try? Money(decimalString: amountText, currencyCode: currencyCode) else { return }
                         let customInterval = SubscriptionInterval(
                             value: Int(customIntervalValueText) ?? 0,
                             unit: customIntervalUnit
@@ -1239,8 +1246,15 @@ private struct SubscriptionFormView: View {
             unit: customIntervalUnit
         ) != nil
         return !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && (try? Money(decimalString: amountText, currencyCode: "CNY")) != nil
+            && (try? Money(decimalString: amountText, currencyCode: currencyCode)) != nil
             && hasValidCustomInterval
+    }
+
+    private var currencyCode: String {
+        PlanFormCurrencyResolver.currencyCode(
+            existingCurrencyCode: existing?.amount.currencyCode,
+            defaultCurrencyCode: defaultCurrencyCode
+        )
     }
 
     private static func decimalText(for money: Money) -> String {
@@ -1270,11 +1284,13 @@ private struct InstallmentFormView: View {
     private let categories: [NumiCore.Category]
     private let existing: InstallmentPlan?
     private let accounts: [Account]
+    private let defaultCurrencyCode: String
     private let onSave: (InstallmentPlan) -> Void
 
-    init(categories: [NumiCore.Category], accounts: [Account], existing: InstallmentPlan? = nil, onSave: @escaping (InstallmentPlan) -> Void) {
+    init(categories: [NumiCore.Category], accounts: [Account], defaultCurrencyCode: String = "CNY", existing: InstallmentPlan? = nil, onSave: @escaping (InstallmentPlan) -> Void) {
         self.categories = categories
         self.accounts = accounts
+        self.defaultCurrencyCode = defaultCurrencyCode
         self.existing = existing
         self.onSave = onSave
         if let plan = existing {
@@ -1334,9 +1350,9 @@ private struct InstallmentFormView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(existing == nil ? NumiLocalized.string( "common.add") : NumiLocalized.string( "common.save")) {
-                        guard let total = try? Money(decimalString: totalAmountText, currencyCode: "CNY"),
+                        guard let total = try? Money(decimalString: totalAmountText, currencyCode: currencyCode),
                               let count = Int(periodCountText), count > 0 else { return }
-                        let fee = (try? Money(decimalString: feePerPeriodText.isEmpty ? "0" : feePerPeriodText, currencyCode: "CNY")) ?? .zero(currencyCode: "CNY")
+                        let fee = (try? Money(decimalString: feePerPeriodText.isEmpty ? "0" : feePerPeriodText, currencyCode: currencyCode)) ?? .zero(currencyCode: currencyCode)
                         let plan = InstallmentPlan(
                             id: existing?.id ?? UUID(),
                             name: name,
@@ -1358,8 +1374,15 @@ private struct InstallmentFormView: View {
 
     private var canSave: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && (try? Money(decimalString: totalAmountText, currencyCode: "CNY")) != nil
+            && (try? Money(decimalString: totalAmountText, currencyCode: currencyCode)) != nil
             && (Int(periodCountText) ?? 0) > 0
+    }
+
+    private var currencyCode: String {
+        PlanFormCurrencyResolver.currencyCode(
+            existingCurrencyCode: existing?.totalAmount.currencyCode,
+            defaultCurrencyCode: defaultCurrencyCode
+        )
     }
 
     private static func decimalText(for money: Money) -> String {
