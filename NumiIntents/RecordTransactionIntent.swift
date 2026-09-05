@@ -3,11 +3,11 @@ import NumiCore
 import NumiPersistence
 
 struct RecordTransactionIntent: AppIntent {
-    static var title: LocalizedStringResource = "快速记账"
-    static var description = IntentDescription("通过语音快速记录一笔账单")
+    static var title: LocalizedStringResource = "intent.record.title"
+    static var description = IntentDescription("intent.record.description")
     static var openAppWhenRun: Bool = false
 
-    @Parameter(title: "账单内容")
+    @Parameter(title: "intent.param.content")
     var text: String
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -15,12 +15,12 @@ struct RecordTransactionIntent: AppIntent {
         let categories = service.availableCategoryNames()
 
         guard !categories.isEmpty else {
-            return .result(dialog: "请先在应用中设置分类")
+            return .result(dialog: IntentDialog(LocalizedStringResource("intent.error.no.categories")))
         }
 
         let apiKey = Config.llmAPIKey
         guard !apiKey.isEmpty else {
-            return .result(dialog: "请先在设置中配置 AI 服务密钥")
+            return .result(dialog: IntentDialog(LocalizedStringResource("intent.error.no.key")))
         }
 
         let parser = ClaudeTransactionParser(apiKey: apiKey)
@@ -31,11 +31,13 @@ struct RecordTransactionIntent: AppIntent {
 
             let symbol = parsed.type == .income ? "+" : "-"
             let amountStr = "\(parsed.amount)"
+            let message = NumiLocalized.string("intent.success", parsed.categoryName, symbol, "¥\(amountStr)")
             return .result(
-                dialog: "已记录 \(parsed.categoryName) \(symbol)¥\(amountStr)"
+                dialog: IntentDialog("\(message)")
             )
         } catch {
-            return .result(dialog: "记录失败：\(error.localizedDescription)")
+            let message = NumiLocalized.string("intent.fail", error.localizedDescription)
+            return .result(dialog: IntentDialog("\(message)"))
         }
     }
 }
