@@ -1,6 +1,7 @@
 import SwiftUI
 import Network
 import Combine
+import CloudKit
 import NumiCore
 
 // MARK: - Sync Status
@@ -42,6 +43,12 @@ public enum SyncFailureReason: Equatable {
         case .syncFailed:
             return NumiLocalized.string("sync.status.failed")
         }
+    }
+}
+
+public enum iCloudAccountStatusEvaluator {
+    public static func isUsable(_ status: CKAccountStatus) -> Bool {
+        status == .available
     }
 }
 
@@ -172,8 +179,8 @@ public class iCloudSyncService: ObservableObject {
     }
 
     private func checkiCloudAvailability() {
-        DispatchQueue.global(qos: .background).async { [weak self] in
-            let available = FileManager.default.url(forUbiquityContainerIdentifier: nil) != nil
+        CKContainer(identifier: "iCloud.com.local.Numi").accountStatus { [weak self] status, _ in
+            let available = iCloudAccountStatusEvaluator.isUsable(status)
             DispatchQueue.main.async {
                 self?.isiCloudAvailable = available
             }
