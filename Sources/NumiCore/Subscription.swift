@@ -4,6 +4,7 @@ import Foundation
 
 public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
     case daily = "daily"
+    case weekdays = "weekdays"
     case weekly = "weekly"
     case monthly = "monthly"
     case monthEnd = "monthEnd"
@@ -14,6 +15,7 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
     public var displayName: String {
         switch self {
         case .daily: return NumiLocalized.string( "subscription.cycle.daily")
+        case .weekdays: return NumiLocalized.string("subscription.cycle.weekdays")
         case .weekly: return NumiLocalized.string( "subscription.cycle.weekly")
         case .monthly: return NumiLocalized.string( "subscription.cycle.monthly")
         case .monthEnd: return NumiLocalized.string("subscription.cycle.month.end")
@@ -93,6 +95,9 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
     public func nextBillingDateAfter(_ date: Date, calendar: Calendar = .current) -> Date {
         switch cycle {
         case .daily: return calendar.date(byAdding: .day, value: 1, to: date) ?? date
+        case .weekdays:
+            guard let followingDay = calendar.date(byAdding: .day, value: 1, to: date) else { return date }
+            return Self.weekdayDate(onOrAfter: followingDay, calendar: calendar)
         case .weekly: return calendar.date(byAdding: .weekOfYear, value: 1, to: date) ?? date
         case .monthly: return calendar.date(byAdding: .month, value: 1, to: date) ?? date
         case .monthEnd:
@@ -117,6 +122,16 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
             return date
         }
         return monthEnd
+    }
+
+    public static func weekdayDate(onOrAfter date: Date, calendar: Calendar = .current) -> Date {
+        var candidate = date
+        for _ in 0..<7 {
+            guard calendar.isDateInWeekend(candidate) else { return candidate }
+            guard let followingDay = calendar.date(byAdding: .day, value: 1, to: candidate) else { return candidate }
+            candidate = followingDay
+        }
+        return candidate
     }
 
     public func dueDates(through date: Date, calendar: Calendar = .current) -> [Date] {

@@ -1235,9 +1235,7 @@ private struct SubscriptionFormView: View {
                             customInterval: cycle == .custom ? customInterval : nil,
                             categoryID: categoryID,
                             accountID: accountID,
-                            nextBillingDate: cycle == .monthEnd
-                                ? Subscription.monthEndDate(containing: nextBillingDate)
-                                : nextBillingDate,
+                            nextBillingDate: resolvedNextBillingDate,
                             isEnabled: isEnabled
                         )
                         onSave(sub)
@@ -1268,6 +1266,17 @@ private struct SubscriptionFormView: View {
 
     private var compatibleAccounts: [Account] {
         PlanFormCurrencyResolver.compatibleAccounts(accounts, currencyCode: currencyCode)
+    }
+
+    private var resolvedNextBillingDate: Date {
+        switch cycle {
+        case .monthEnd:
+            Subscription.monthEndDate(containing: nextBillingDate)
+        case .weekdays:
+            Subscription.weekdayDate(onOrAfter: nextBillingDate)
+        default:
+            nextBillingDate
+        }
     }
 
     private static func decimalText(for money: Money) -> String {

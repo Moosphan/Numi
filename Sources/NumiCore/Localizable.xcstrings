@@ -610,6 +610,15 @@
         }
       }
     },
+    "subscription.cycle.weekdays": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每个工作日" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Weekdays" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "每個工作日" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "平日" } }
+      }
+    },
     "subscription.cycle.weekly": {
       "extractionState": "manual",
       "localizations": {

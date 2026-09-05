@@ -125,6 +125,30 @@ final class SubscriptionTests: XCTestCase {
         XCTAssertEqual(Subscription.monthEndDate(containing: date, calendar: calendar), expected)
     }
 
+    func testWeekdayCycleAdvancesFromFridayToMonday() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let friday = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 4, day: 4)))
+        let monday = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 4, day: 7)))
+        let subscription = Subscription(
+            name: "Weekday",
+            amount: Money(minorUnits: 1000, currencyCode: "CNY"),
+            cycle: .weekdays,
+            nextBillingDate: friday
+        )
+
+        XCTAssertEqual(subscription.nextBillingDateAfter(friday, calendar: calendar), monday)
+    }
+
+    func testWeekdayDateMovesWeekendToMonday() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let sunday = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 4, day: 6)))
+        let monday = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 4, day: 7)))
+
+        XCTAssertEqual(Subscription.weekdayDate(onOrAfter: sunday, calendar: calendar), monday)
+    }
+
     func testQuarterlyCycleIsLocalizedInAllSupportedLanguages() {
         let expectedValues = [
             "zh-Hans": "每季度",
@@ -152,6 +176,22 @@ final class SubscriptionTests: XCTestCase {
         for (language, expected) in expectedValues {
             XCTAssertEqual(
                 NumiLocalized.lookup("subscription.cycle.month.end", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+    }
+
+    func testWeekdayCycleIsLocalizedInAllSupportedLanguages() {
+        let expectedValues = [
+            "zh-Hans": "每个工作日",
+            "zh-Hant": "每個工作日",
+            "en": "Weekdays",
+            "ja": "平日"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("subscription.cycle.weekdays", locale: Locale(identifier: language)),
                 expected
             )
         }
