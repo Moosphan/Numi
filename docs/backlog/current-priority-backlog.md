@@ -61,7 +61,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 | P1-03 | 多币种全链路 | Partial | 币种管理、汇率服务和 `currencyCode` 字段已存在；已新增按日期持久化汇率快照、主币种金额转换，并接入首页/洞悉汇总、分类分布与预算；CSV 导入缺少币种列时使用注入的默认币种；App 内 AI 记账及 `TransactionService` 快捷记账路径已跟随当前账本币种，仍需继续覆盖更多导入导出场景 | 继续补齐导入导出链路的历史汇率处理与多币种端到端验证 | 新增、统计、预算、导入导出、AI 记账都尊重默认币种和历史汇率 |
 | P1-04 | iCloud 同步真实实现或产品降级 | Partial | `RootShellView` 中已使用 SwiftData CloudKit 容器；未注入真实同步闭包时明确失败，不再模拟成功；`SyncSettingsView` 现通过 `CKContainer.accountStatus` 判断账户可用性并保留状态/错误反馈 UI；冲突合并与跨设备验证仍待完成 | 明确首版是否发布同步；若保留则实现冲突合并、错误恢复、跨设备验证；若不保留则隐藏入口 | 用户看得到的同步入口必须真实可用，或在首版隐藏/标记实验 |
 | P1-05 | App Intents / Siri 记账产品化 | Partial | `NumiIntents/RecordTransactionIntent.swift` 与 shortcuts provider 已存在；`TransactionService` 现会解析转账目标账户、校验同币种且更新双方余额；Intent 标题、描述、参数、成功/失败 dialog 已改用四语言资源；App Group/SwiftData 初始化失败会返回本地化错误而不再触发扩展崩溃，仍需补充真实 Intent 端到端验证 | 接入真实 store、默认账本/账户/币种、本地化 dialog、失败恢复 | Siri/快捷指令可稳定创建支出/收入/转账 |
-| P1-06 | 运行时本地化完成度 | Partial | 运行时本地化 backlog 大量标记完成，但本轮 SwiftPM 测试仍因资源 lookup 红灯 | 区分 iOS App 实际行为与 SwiftPM 测试资源限制；补稳定测试 harness | macOS SwiftPM 与 iOS simulator 至少各有清晰通过/跳过策略 |
+| P1-06 | 运行时本地化完成度 | Partial | SwiftPM 运行时 lookup 已稳定；新增 Core/AppUI 四语言矩阵回归测试，覆盖 `zh-Hans`、`zh-Hant`、`en`、`ja`；iOS simulator 构建通过，未执行依赖真实设备环境的 UI 测试 | 继续为新增文案保持四语言矩阵，并在发布前补齐真实设备语言切换验收 | macOS SwiftPM 与 iOS simulator 至少各有清晰通过/跳过策略 |
 
 ## 7. P2 / V1.1+ 功能池
 

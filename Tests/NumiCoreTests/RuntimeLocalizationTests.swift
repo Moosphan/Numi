@@ -30,6 +30,23 @@ final class RuntimeLocalizationTests: XCTestCase {
         XCTAssertEqual(englishName, "US Dollar")
     }
 
+    func testCurrencyNameCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "美元",
+            "en": "US Dollar",
+            "zh-Hant": "美元",
+            "ja": "米ドル"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("currency.name.USD", locale: Locale(identifier: language)),
+                expected,
+                "Missing USD localization for \(language)"
+            )
+        }
+    }
+
     func testThemeDisplayNameTracksRuntimeLanguageChanges() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
         let chineseName = NumiTheme.default.displayName

@@ -29,6 +29,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         XCTAssertEqual(NumiLocalized.lookup("setting.data"), "Data")
     }
 
+    func testAppUIKeyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "数据",
+            "en": "Data",
+            "zh-Hant": "資料",
+            "ja": "データ"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("setting.data", locale: Locale(identifier: language)),
+                expected,
+                "Missing App UI localization for \(language)"
+            )
+        }
+    }
+
     func testStringLiteralOverloadUsesRawLocalizationKey() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.string("setting.stat.days"), "记账天数")
