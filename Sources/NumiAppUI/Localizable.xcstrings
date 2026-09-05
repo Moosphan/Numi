@@ -4307,6 +4307,24 @@
         "ja": { "stringUnit": { "state": "translated", "value": "次回のみスキップし、サブスクリプションは維持されます。" } }
       }
     },
+    "subscription.pause": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "暂停订阅" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Pause Subscription" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "暫停訂閱" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクを一時停止" } }
+      }
+    },
+    "subscription.resume": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "恢复订阅" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Resume Subscription" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "恢復訂閱" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクを再開" } }
+      }
+    },
     "subscription.delete.title": {
       "extractionState": "manual",
       "localizations": {

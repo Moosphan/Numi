@@ -340,6 +340,17 @@ public struct PlansView: View {
                 Label("common.edit", systemImage: "square.and.pencil")
             }
 
+            Button {
+                var updated = sub
+                updated.isEnabled.toggle()
+                onUpdateSubscription(updated)
+            } label: {
+                Label(
+                    sub.isEnabled ? "subscription.pause" : "subscription.resume",
+                    systemImage: sub.isEnabled ? "pause.circle" : "play.circle"
+                )
+            }
+
             if sub.isEnabled {
                 Button {
                     pendingSkipSubscription = sub

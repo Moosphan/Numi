@@ -105,6 +105,21 @@ final class AppUILocalizationBundleTests: XCTestCase {
         XCTAssertEqual(NumiLocalized.string("error.installment.skip.fail", "期次不存在"), "跳过期次失败：期次不存在")
     }
 
+    func testSubscriptionPauseActionsAreLocalized() {
+        let expectedValues = [
+            "zh-Hans": (pause: "暂停订阅", resume: "恢复订阅"),
+            "en": (pause: "Pause Subscription", resume: "Resume Subscription"),
+            "zh-Hant": (pause: "暫停訂閱", resume: "恢復訂閱"),
+            "ja": (pause: "サブスクを一時停止", resume: "サブスクを再開")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("subscription.pause", locale: locale), expected.pause)
+            XCTAssertEqual(NumiLocalized.lookup("subscription.resume", locale: locale), expected.resume)
+        }
+    }
+
     func testFormattedLookupUsesCatalogKeyAndArguments() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.string("setting.ai.test.fail", 401), "连接失败：401")
