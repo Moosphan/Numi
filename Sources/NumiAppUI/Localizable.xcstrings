@@ -4352,6 +4352,33 @@
         "ja": { "stringUnit": { "state": "translated", "value": "%@は明日請求されます（%@）" } }
       }
     },
+    "subscription.record.billing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "确认扣费" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Confirm Billing" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "確認扣款" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "請求を確認" } }
+      }
+    },
+    "subscription.confirmation.mode": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "扣费需确认" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Confirm Billing Manually" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "扣款需確認" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "請求を手動確認" } }
+      }
+    },
+    "subscription.confirmation.mode.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "开启后，到期订阅不会自动记账，需要手动确认。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "When enabled, due subscriptions wait for your confirmation before recording." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "開啟後，到期訂閱不會自動記帳，需要手動確認。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "有効にすると、期限のサブスクは確認するまで自動記録されません。" } }
+      }
+    },
     "subscription.delete.title": {
       "extractionState": "manual",
       "localizations": {

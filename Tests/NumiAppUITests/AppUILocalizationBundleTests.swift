@@ -132,6 +132,37 @@ final class AppUILocalizationBundleTests: XCTestCase {
         XCTAssertEqual(NumiLocalized.string("subscription.reminder.body", "Music", "$3.00"), "Music will be billed tomorrow ($3.00)")
     }
 
+    func testSubscriptionBillingConfirmationActionIsLocalized() {
+        let expectedValues = [
+            "zh-Hans": "确认扣费",
+            "en": "Confirm Billing",
+            "zh-Hant": "確認扣款",
+            "ja": "請求を確認"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("subscription.record.billing", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+    }
+
+    func testSubscriptionConfirmationModeCopyIsLocalized() {
+        let expectedValues = [
+            "zh-Hans": (title: "扣费需确认", detail: "开启后，到期订阅不会自动记账，需要手动确认。"),
+            "en": (title: "Confirm Billing Manually", detail: "When enabled, due subscriptions wait for your confirmation before recording."),
+            "zh-Hant": (title: "扣款需確認", detail: "開啟後，到期訂閱不會自動記帳，需要手動確認。"),
+            "ja": (title: "請求を手動確認", detail: "有効にすると、期限のサブスクは確認するまで自動記録されません。")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("subscription.confirmation.mode", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("subscription.confirmation.mode.detail", locale: locale), expected.detail)
+        }
+    }
+
     func testFormattedLookupUsesCatalogKeyAndArguments() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.string("setting.ai.test.fail", 401), "连接失败：401")

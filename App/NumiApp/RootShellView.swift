@@ -11,6 +11,7 @@ struct RootShellView: View {
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
     @AppStorage("app.privacy.hideAmounts") private var isAmountDisplayHidden = false
+    @AppStorage("app.subscription.requiresConfirmation") private var requiresSubscriptionConfirmation = false
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @AppStorage("app.currentLedgerID") private var currentLedgerIDString: String = ""
     @AppStorage(NumiAppLanguage.pendingToastDefaultsKey) private var pendingLanguageToastCode: String = ""
@@ -148,10 +149,12 @@ struct RootShellView: View {
             PrivacyAmountDisplayPolicy(isHidden: isAmountDisplayHidden)
         )
         .task {
-            do {
-                try store.processDueSubscriptions()
-            } catch {
-                initializationError = error.localizedDescription
+            if !requiresSubscriptionConfirmation {
+                do {
+                    try store.processDueSubscriptions()
+                } catch {
+                    initializationError = error.localizedDescription
+                }
             }
             await SubscriptionReminderScheduler.schedule(subscriptions: store.subscriptions)
             await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
@@ -211,10 +214,12 @@ struct RootShellView: View {
             lockTimer?.invalidate()
             lockTimer = nil
 
-            do {
-                try store.processDueSubscriptions()
-            } catch {
-                initializationError = error.localizedDescription
+            if !requiresSubscriptionConfirmation {
+                do {
+                    try store.processDueSubscriptions()
+                } catch {
+                    initializationError = error.localizedDescription
+                }
             }
 
             Task {
@@ -553,6 +558,18 @@ struct RootShellView: View {
                     Task {
                         guard await SubscriptionReminderScheduler.requestAuthorization() else { return }
                         await SubscriptionReminderScheduler.schedule(subscription: subscription)
+                    }
+                },
+                onRecordSubscriptionBilling: { id in
+                    do {
+                        _ = try store.recordNextSubscriptionBilling(id: id)
+                        if let subscription = store.subscriptions.first(where: { $0.id == id }) {
+                            Task {
+                                await SubscriptionReminderScheduler.schedule(subscription: subscription)
+                            }
+                        }
+                    } catch {
+                        initializationError = error.localizedDescription
                     }
                 },
                 onAddInstallmentPlan: { plan in

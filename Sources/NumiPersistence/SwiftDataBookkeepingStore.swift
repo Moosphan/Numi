@@ -499,6 +499,40 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         return true
     }
 
+    public func recordNextSubscriptionBilling(
+        id: UUID,
+        asOf date: Date = Date(),
+        calendar: Calendar = .current
+    ) throws -> Transaction? {
+        guard let ledger = ledgers.first,
+              let subscription = subscriptions.first(where: { $0.id == id }),
+              subscription.isEnabled,
+              subscription.nextBillingDate <= date,
+              let accountID = subscription.accountID ?? accounts.first?.id,
+              let account = accounts.first(where: { $0.id == accountID }),
+              account.balance.currencyCode == subscription.amount.currencyCode,
+              account.balance.currencyCode == ledger.currencyCode else {
+            return nil
+        }
+
+        let transaction = try createTransaction(
+            type: .expense,
+            amount: subscription.amount,
+            categoryID: subscription.categoryID,
+            accountID: accountID,
+            ledgerID: ledger.id,
+            note: subscription.note.isEmpty ? subscription.name : subscription.note,
+            occurredAt: subscription.nextBillingDate
+        )
+        if let entity = fetchSubscriptionEntities().first(where: { $0.id == id }) {
+            entity.nextBillingDate = subscription.nextBillingDateAfter(subscription.nextBillingDate, calendar: calendar)
+            try save()
+            changeRevision += 1
+            objectWillChange.send()
+        }
+        return transaction
+    }
+
     @discardableResult
     public func processDueSubscriptions(asOf date: Date = Date(), calendar: Calendar = .current) throws -> Int {
         guard let ledger = ledgers.first else { return 0 }

@@ -44,6 +44,7 @@ public struct BudgetCardModel: Identifiable, Equatable {
 
 public struct PlansView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
+    @AppStorage("app.subscription.requiresConfirmation") private var requiresSubscriptionConfirmation = false
     @State private var editingDraft: BudgetDraft?
     @State private var showAddSubscription = false
     @State private var showAddInstallment = false
@@ -67,6 +68,7 @@ public struct PlansView: View {
     private let onDeleteSubscription: (UUID) -> Void
     private let onSkipSubscriptionBilling: (UUID) -> Void
     private let onEnableSubscriptionReminder: (UUID) -> Void
+    private let onRecordSubscriptionBilling: (UUID) -> Void
     private let onAddInstallmentPlan: (InstallmentPlan) -> Void
     private let onUpdateInstallmentPlan: (InstallmentPlan) -> Void
     private let onDeleteInstallmentPlan: (UUID) -> Void
@@ -88,6 +90,7 @@ public struct PlansView: View {
         onDeleteSubscription: @escaping (UUID) -> Void = { _ in },
         onSkipSubscriptionBilling: @escaping (UUID) -> Void = { _ in },
         onEnableSubscriptionReminder: @escaping (UUID) -> Void = { _ in },
+        onRecordSubscriptionBilling: @escaping (UUID) -> Void = { _ in },
         onAddInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onUpdateInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onDeleteInstallmentPlan: @escaping (UUID) -> Void = { _ in },
@@ -108,6 +111,7 @@ public struct PlansView: View {
         self.onDeleteSubscription = onDeleteSubscription
         self.onSkipSubscriptionBilling = onSkipSubscriptionBilling
         self.onEnableSubscriptionReminder = onEnableSubscriptionReminder
+        self.onRecordSubscriptionBilling = onRecordSubscriptionBilling
         self.onAddInstallmentPlan = onAddInstallmentPlan
         self.onUpdateInstallmentPlan = onUpdateInstallmentPlan
         self.onDeleteInstallmentPlan = onDeleteInstallmentPlan
@@ -274,6 +278,22 @@ public struct PlansView: View {
                 accessibilityIdentifier: "plans.section.subscriptions"
             )
 
+            Toggle(isOn: $requiresSubscriptionConfirmation) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("subscription.confirmation.mode")
+                        .font(NumiFont.bodyStrong)
+                        .foregroundStyle(NumiColor.textPrimary)
+                    Text("subscription.confirmation.mode.detail")
+                        .font(NumiFont.caption)
+                        .foregroundStyle(NumiColor.textSecondary)
+                }
+            }
+            .tint(NumiColor.accentDeep)
+            .padding(NumiSpacing.s4)
+            .background(NumiColor.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+            .accessibilityIdentifier("plans.subscription.confirmationMode")
+
             if subscriptions.isEmpty {
                 PlanEmptyStateCard(
                     iconName: "repeat",
@@ -355,6 +375,14 @@ public struct PlansView: View {
             }
 
             if sub.isEnabled {
+                if sub.nextBillingDate <= Date() {
+                    Button {
+                        onRecordSubscriptionBilling(sub.id)
+                    } label: {
+                        Label("subscription.record.billing", systemImage: "checkmark.circle")
+                    }
+                }
+
                 Button {
                     onEnableSubscriptionReminder(sub.id)
                 } label: {

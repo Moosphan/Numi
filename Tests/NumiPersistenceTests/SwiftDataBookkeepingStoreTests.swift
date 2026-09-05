@@ -331,6 +331,33 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testRecordingNextSubscriptionBillingCreatesOneExpenseAndAdvancesDate() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 1)))
+        let subscription = Subscription(
+            name: "Monthly",
+            amount: Money(minorUnits: 1000, currencyCode: account.balance.currencyCode),
+            cycle: .monthly,
+            accountID: account.id,
+            nextBillingDate: start
+        )
+        try store.createSubscription(subscription)
+
+        let transaction = try XCTUnwrap(
+            try store.recordNextSubscriptionBilling(id: subscription.id, asOf: start, calendar: calendar)
+        )
+        XCTAssertEqual(transaction.type, .expense)
+        XCTAssertEqual(transaction.occurredAt, start)
+        XCTAssertEqual(store.visibleTransactions.count, 1)
+        XCTAssertEqual(store.subscriptions.first?.nextBillingDate, calendar.date(byAdding: .month, value: 1, to: start))
+        XCTAssertNil(try store.recordNextSubscriptionBilling(id: subscription.id, asOf: start, calendar: calendar))
+    }
+
+    @MainActor
     func testRecordingInstallmentPaymentCreatesAndBindsExpenseTransaction() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
