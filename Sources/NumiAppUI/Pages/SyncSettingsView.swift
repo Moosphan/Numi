@@ -60,6 +60,13 @@ public enum SyncPreflight {
     }
 }
 
+public enum SyncExecutionPolicy {
+    public static func canStart(status: SyncStatus) -> Bool {
+        if case .syncing = status { return false }
+        return true
+    }
+}
+
 public enum iCloudAccountStatusEvaluator {
     public static func isUsable(_ status: CKAccountStatus) -> Bool {
         status == .available
@@ -139,6 +146,7 @@ public class iCloudSyncService: ObservableObject {
 
     public func performSync() async {
         guard isSyncEnabled else { return }
+        guard SyncExecutionPolicy.canStart(status: syncStatus) else { return }
         if let failure = SyncPreflight.failure(
             isNetworkAvailable: isNetworkAvailable,
             isICloudAvailable: isiCloudAvailable,

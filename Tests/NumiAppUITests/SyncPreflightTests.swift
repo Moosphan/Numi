@@ -2,6 +2,13 @@ import XCTest
 @testable import NumiAppUI
 
 final class SyncPreflightTests: XCTestCase {
+    func testExecutionPolicyRejectsConcurrentSync() {
+        XCTAssertFalse(SyncExecutionPolicy.canStart(status: .syncing))
+        XCTAssertTrue(SyncExecutionPolicy.canStart(status: .idle))
+        XCTAssertTrue(SyncExecutionPolicy.canStart(status: .success(Date())))
+        XCTAssertTrue(SyncExecutionPolicy.canStart(status: .failure(.syncFailed)))
+    }
+
     func testPreflightReportsNetworkBeforeCloudAndCellularFailures() {
         XCTAssertEqual(
             SyncPreflight.failure(
