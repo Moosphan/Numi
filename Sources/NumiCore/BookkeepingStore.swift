@@ -95,6 +95,7 @@ public struct BookkeepingSnapshot: Codable, Equatable, Sendable {
     public var subscriptions: [Subscription]
     public var installmentPlans: [InstallmentPlan]
     public var installmentPeriods: [InstallmentPeriod]
+    public var exchangeRateHistory: ExchangeRateHistory?
     public let exportedAt: Date
 
     public init(
@@ -106,6 +107,7 @@ public struct BookkeepingSnapshot: Codable, Equatable, Sendable {
         subscriptions: [Subscription] = [],
         installmentPlans: [InstallmentPlan] = [],
         installmentPeriods: [InstallmentPeriod] = [],
+        exchangeRateHistory: ExchangeRateHistory? = nil,
         exportedAt: Date = Date()
     ) {
         self.ledgers = ledgers
@@ -116,6 +118,7 @@ public struct BookkeepingSnapshot: Codable, Equatable, Sendable {
         self.subscriptions = subscriptions
         self.installmentPlans = installmentPlans
         self.installmentPeriods = installmentPeriods
+        self.exchangeRateHistory = exchangeRateHistory
         self.exportedAt = exportedAt
     }
 }

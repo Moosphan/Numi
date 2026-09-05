@@ -680,8 +680,17 @@ struct RootShellView: View {
                 ledgers: store.ledgers,
                 currentLedgerID: currentLedger?.id,
                 ledgerTransactionCounts: ledgerTransactionCounts,
-                exportSnapshot: { store.exportSnapshot() },
-                importSnapshot: { snapshot in try store.importSnapshot(snapshot) },
+                exportSnapshot: {
+                    var snapshot = store.exportSnapshot()
+                    snapshot.exchangeRateHistory = rateService.history
+                    return snapshot
+                },
+                importSnapshot: { snapshot in
+                    try store.importSnapshot(snapshot)
+                    if let history = snapshot.exchangeRateHistory {
+                        rateService.replaceHistory(history)
+                    }
+                },
                 appendTransactions: { transactions in try store.appendTransactions(transactions) },
                 onManageLedgers: {
                     isManagingLedgers = true

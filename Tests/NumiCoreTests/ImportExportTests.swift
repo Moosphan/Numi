@@ -23,6 +23,20 @@ final class ImportExportTests: XCTestCase {
         XCTAssertEqual(imported.transactions[0].note, "咖啡")
     }
 
+    func testJSONExportRoundTripsExchangeRateHistory() throws {
+        let effectiveDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let history = ExchangeRateHistory(snapshots: [
+            ExchangeRateSnapshot(baseCode: "CNY", rates: ["CNY": 1, "USD": 0.14], effectiveDate: effectiveDate)
+        ])
+        var snapshot = BookkeepingSnapshot()
+        snapshot.exchangeRateHistory = history
+
+        let data = try NumiJSONExporter.exportSnapshot(from: snapshot)
+        let imported = try NumiJSONExporter.importSnapshot(from: data)
+
+        XCTAssertEqual(imported.exchangeRateHistory, history)
+    }
+
     func testCSVExportIncludesHeaderAndRows() throws {
         let transaction = Transaction.sample(
             type: .expense,

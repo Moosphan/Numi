@@ -193,6 +193,16 @@ public final class ExchangeRateService: ObservableObject {
         return amount * rate
     }
 
+    public func replaceHistory(_ history: ExchangeRateHistory) {
+        self.history = history
+        if let latest = history.snapshots.last {
+            rateData = ExchangeRateData(baseCode: latest.baseCode, rates: latest.rates, lastUpdated: latest.effectiveDate)
+        }
+        if let rateData {
+            saveCache(rateData)
+        }
+    }
+
     // MARK: - Persistence
 
     private func loadCached() {
