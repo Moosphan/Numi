@@ -123,4 +123,20 @@ final class ImportExportTests: XCTestCase {
         XCTAssertEqual(result.transactions.count, 1)
         XCTAssertEqual(result.transactions.first?.id, transactionID)
     }
+
+    func testCSVRoundTripPreservesReimbursementAndRefundLinks() throws {
+        let reimbursementID = UUID(uuidString: "11111111-2222-3333-4444-555555555555")!
+        let refundID = UUID(uuidString: "66666666-7777-8888-9999-AAAAAAAAAAAA")!
+        let transaction = Transaction(
+            type: .expense,
+            amount: try Money(decimalString: "12.30", currencyCode: "USD"),
+            reimbursementID: reimbursementID,
+            refundOfTransactionID: refundID
+        )
+        let csv = NumiCSVExporter.exportTransactions([transaction])
+        let result = NumiCSVImporter.importTransactions(csv: csv)
+
+        XCTAssertEqual(result.transactions.first?.reimbursementID, reimbursementID)
+        XCTAssertEqual(result.transactions.first?.refundOfTransactionID, refundID)
+    }
 }

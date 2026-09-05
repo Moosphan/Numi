@@ -17,7 +17,7 @@ public enum NumiJSONExporter {
 
 public enum NumiCSVExporter {
     public static func exportTransactions(_ transactions: [Transaction]) -> String {
-        let header = "id,type,amount,currency,occurredAt,categoryID,accountID,targetAccountID,note"
+        let header = "id,type,amount,currency,occurredAt,categoryID,accountID,targetAccountID,note,reimbursementID,refundOfTransactionID"
         let rows = transactions.map { transaction in
             [
                 transaction.id.uuidString,
@@ -28,7 +28,9 @@ public enum NumiCSVExporter {
                 transaction.categoryID?.uuidString ?? "",
                 transaction.accountID?.uuidString ?? "",
                 transaction.targetAccountID?.uuidString ?? "",
-                escape(transaction.note)
+                escape(transaction.note),
+                transaction.reimbursementID?.uuidString ?? "",
+                transaction.refundOfTransactionID?.uuidString ?? ""
             ].joined(separator: ",")
         }
         return ([header] + rows).joined(separator: "\n")
@@ -78,6 +80,8 @@ public enum CSVImportField: String, CaseIterable, Identifiable, Sendable {
     case category
     case account
     case note
+    case reimbursementID
+    case refundOfTransactionID
 
     public var id: String { rawValue }
 }
@@ -115,6 +119,8 @@ public struct CSVImportMapping: Equatable, Sendable {
         case "category", "category_name", "分类": return .category
         case "account", "wallet", "账户": return .account
         case "note", "memo", "备注": return .note
+        case "reimbursementid", "报销标识": return .reimbursementID
+        case "refundoftransactionid", "退款原交易标识": return .refundOfTransactionID
         default: return .ignored
         }
     }
@@ -270,6 +276,14 @@ public enum NumiCSVImporter {
                     from: value(for: .account, in: values, mapping: mapping),
                     accounts: context.accounts
                 )
+                let reimbursementID = try resolvedOptionalUUID(
+                    from: value(for: .reimbursementID, in: values, mapping: mapping),
+                    fieldName: "reimbursementID"
+                )
+                let refundOfTransactionID = try resolvedOptionalUUID(
+                    from: value(for: .refundOfTransactionID, in: values, mapping: mapping),
+                    fieldName: "refundOfTransactionID"
+                )
                 transactions.append(Transaction(
                     id: transactionID,
                     type: type,
@@ -278,7 +292,9 @@ public enum NumiCSVImporter {
                     categoryID: categoryID,
                     accountID: accountID,
                     ledgerID: context.ledger.id,
-                    note: value(for: .note, in: values, mapping: mapping) ?? ""
+                    note: value(for: .note, in: values, mapping: mapping) ?? "",
+                    reimbursementID: reimbursementID,
+                    refundOfTransactionID: refundOfTransactionID
                 ))
             } catch {
                 errors.append(CSVImportError(lineNumber: row.lineNumber, message: "\(error)"))
@@ -312,6 +328,12 @@ public enum NumiCSVImporter {
     private static func resolvedTransactionID(from value: String?) throws -> UUID {
         guard let value else { return UUID() }
         guard let id = UUID(uuidString: value) else { throw ImportFailure("Invalid id") }
+        return id
+    }
+
+    private static func resolvedOptionalUUID(from value: String?, fieldName: String) throws -> UUID? {
+        guard let value else { return nil }
+        guard let id = UUID(uuidString: value) else { throw ImportFailure("Invalid \(fieldName)") }
         return id
     }
 
