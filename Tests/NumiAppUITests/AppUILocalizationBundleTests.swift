@@ -132,6 +132,33 @@ final class AppUILocalizationBundleTests: XCTestCase {
         XCTAssertEqual(NumiLocalized.string("subscription.reminder.body", "Music", "$3.00"), "Music will be billed tomorrow ($3.00)")
     }
 
+    func testInstallmentReminderCopyIsLocalized() {
+        let expectedValues = [
+            "zh-Hans": (title: "分期提醒", enable: "开启分期提醒", body: "Plan的第 2 期将于明天到期（$40.00）"),
+            "en": (title: "Installment Reminder", enable: "Enable Installment Reminder", body: "Plan Period 2 is due tomorrow ($40.00)"),
+            "zh-Hant": (title: "分期提醒", enable: "開啟分期提醒", body: "Plan的第 2 期將於明天到期（$40.00）"),
+            "ja": (title: "分割払いのリマインダー", enable: "分割払いリマインダーを有効化", body: "Planの第2回は明日が支払期日です（$40.00）")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("installment.reminder.title", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("installment.reminder.enable", locale: locale), expected.enable)
+            XCTAssertEqual(
+                NumiLocalized.format(
+                    "installment.reminder.body",
+                    arguments: [
+                        "Plan",
+                        NumiLocalized.format("installment.period.n", arguments: [2], locale: locale),
+                        "$40.00"
+                    ],
+                    locale: locale
+                ),
+                expected.body
+            )
+        }
+    }
+
     func testSubscriptionBillingConfirmationActionIsLocalized() {
         let expectedValues = [
             "zh-Hans": "确认扣费",

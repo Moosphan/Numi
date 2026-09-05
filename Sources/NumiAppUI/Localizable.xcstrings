@@ -4828,6 +4828,33 @@
         "ja": { "stringUnit": { "state": "translated", "value": "日付を保存" } }
       }
     },
+    "installment.reminder.enable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "开启分期提醒" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Enable Installment Reminder" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "開啟分期提醒" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "分割払いリマインダーを有効化" } }
+      }
+    },
+    "installment.reminder.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "分期提醒" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Installment Reminder" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "分期提醒" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "分割払いのリマインダー" } }
+      }
+    },
+    "installment.reminder.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%@的%@将于明天到期（%@）" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%@ %@ is due tomorrow (%@)" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "%@的%@將於明天到期（%@）" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%@の%@は明日が支払期日です（%@）" } }
+      }
+    },
     "installment.name": {
       "extractionState": "manual",
       "localizations": {

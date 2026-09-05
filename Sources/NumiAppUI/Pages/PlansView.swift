@@ -69,6 +69,7 @@ public struct PlansView: View {
     private let onSkipSubscriptionBilling: (UUID) -> Void
     private let onEnableSubscriptionReminder: (UUID) -> Void
     private let onRecordSubscriptionBilling: (UUID) -> Void
+    private let onEnableInstallmentReminder: (UUID) -> Void
     private let onAddInstallmentPlan: (InstallmentPlan) -> Void
     private let onUpdateInstallmentPlan: (InstallmentPlan) -> Void
     private let onDeleteInstallmentPlan: (UUID) -> Void
@@ -91,6 +92,7 @@ public struct PlansView: View {
         onSkipSubscriptionBilling: @escaping (UUID) -> Void = { _ in },
         onEnableSubscriptionReminder: @escaping (UUID) -> Void = { _ in },
         onRecordSubscriptionBilling: @escaping (UUID) -> Void = { _ in },
+        onEnableInstallmentReminder: @escaping (UUID) -> Void = { _ in },
         onAddInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onUpdateInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onDeleteInstallmentPlan: @escaping (UUID) -> Void = { _ in },
@@ -112,6 +114,7 @@ public struct PlansView: View {
         self.onSkipSubscriptionBilling = onSkipSubscriptionBilling
         self.onEnableSubscriptionReminder = onEnableSubscriptionReminder
         self.onRecordSubscriptionBilling = onRecordSubscriptionBilling
+        self.onEnableInstallmentReminder = onEnableInstallmentReminder
         self.onAddInstallmentPlan = onAddInstallmentPlan
         self.onUpdateInstallmentPlan = onUpdateInstallmentPlan
         self.onDeleteInstallmentPlan = onDeleteInstallmentPlan
@@ -542,6 +545,14 @@ public struct PlansView: View {
                 editingInstallment = plan
             } label: {
                 Label("common.edit", systemImage: "square.and.pencil")
+            }
+
+            if periods.contains(where: { $0.planID == plan.id && !$0.isPaid && !$0.isSkipped }) {
+                Button {
+                    onEnableInstallmentReminder(plan.id)
+                } label: {
+                    Label("installment.reminder.enable", systemImage: "bell.badge")
+                }
             }
 
             Button {

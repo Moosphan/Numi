@@ -50,6 +50,12 @@ public struct InstallmentPlan: Identifiable, Codable, Equatable, Hashable, Senda
             calendar.date(byAdding: .month, value: index, to: firstPaymentDate)
         }
     }
+
+    public func nextPendingInstallmentPeriod(from periods: [InstallmentPeriod]) -> InstallmentPeriod? {
+        periods
+            .filter { $0.planID == id && !$0.isPaid && !$0.isSkipped }
+            .min { $0.periodIndex < $1.periodIndex }
+    }
 }
 
 // MARK: - Installment Period
@@ -86,5 +92,10 @@ public struct InstallmentPeriod: Identifiable, Codable, Equatable, Sendable {
 
     public func isOverdue(asOf date: Date = Date()) -> Bool {
         !isPaid && !isSkipped && dueDate < date
+    }
+
+    public func reminderDate(daysBefore: Int = 1, calendar: Calendar = .current) -> Date? {
+        guard !isPaid, !isSkipped, daysBefore >= 0 else { return nil }
+        return calendar.date(byAdding: .day, value: -daysBefore, to: dueDate)
     }
 }

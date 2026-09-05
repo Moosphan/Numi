@@ -157,6 +157,10 @@ struct RootShellView: View {
                 }
             }
             await SubscriptionReminderScheduler.schedule(subscriptions: store.subscriptions)
+            await InstallmentReminderScheduler.schedule(
+                plans: store.installmentPlans,
+                periods: store.installmentPeriods
+            )
             await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("NumiIncomingURL"))) { notification in
@@ -572,6 +576,16 @@ struct RootShellView: View {
                         initializationError = error.localizedDescription
                     }
                 },
+                onEnableInstallmentReminder: { id in
+                    guard let plan = store.installmentPlans.first(where: { $0.id == id }) else { return }
+                    Task {
+                        guard await SubscriptionReminderScheduler.requestAuthorization() else { return }
+                        await InstallmentReminderScheduler.schedule(
+                            plan: plan,
+                            periods: store.installmentPeriods
+                        )
+                    }
+                },
                 onAddInstallmentPlan: { plan in
                     do {
                         try store.createInstallmentPlan(plan)
@@ -590,6 +604,7 @@ struct RootShellView: View {
                 onDeleteInstallmentPlan: { id in
                     do {
                         try store.deleteInstallmentPlan(id: id)
+                        InstallmentReminderScheduler.cancel(planID: id)
                     } catch {
                         initializationError = error.localizedDescription
                     }
@@ -597,6 +612,14 @@ struct RootShellView: View {
                 onUpdateInstallmentPeriod: { period in
                     do {
                         try store.updateInstallmentPeriod(period)
+                        if let plan = store.installmentPlans.first(where: { $0.id == period.planID }) {
+                            Task {
+                                await InstallmentReminderScheduler.schedule(
+                                    plan: plan,
+                                    periods: store.installmentPeriods
+                                )
+                            }
+                        }
                     } catch {
                         initializationError = error.localizedDescription
                     }
