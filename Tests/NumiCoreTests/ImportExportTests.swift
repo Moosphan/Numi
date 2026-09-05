@@ -99,4 +99,14 @@ final class ImportExportTests: XCTestCase {
         XCTAssertEqual(result.transactions.count, 1)
         XCTAssertEqual(result.errors.map(\.lineNumber), [2, 3])
     }
+
+    func testCSVImporterPreservesTransactionIDWhenProvided() throws {
+        let transactionID = UUID(uuidString: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")!
+        let csv = "id,type,amount,currency\n\(transactionID.uuidString),expense,12.30,USD"
+
+        let result = NumiCSVImporter.importTransactions(csv: csv)
+
+        XCTAssertEqual(result.transactions.count, 1)
+        XCTAssertEqual(result.transactions.first?.id, transactionID)
+    }
 }

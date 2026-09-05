@@ -70,6 +70,7 @@ public struct CSVImportResult: Equatable, Sendable {
 
 public enum CSVImportField: String, CaseIterable, Identifiable, Sendable {
     case ignored
+    case id
     case type
     case amount
     case currency
@@ -106,6 +107,7 @@ public struct CSVImportMapping: Equatable, Sendable {
 
     private static func defaultField(for header: String) -> CSVImportField {
         switch header.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        case "id", "uuid", "标识": return .id
         case "type", "kind", "类型": return .type
         case "amount", "total", "金额": return .amount
         case "currency", "币种": return .currency
@@ -254,6 +256,7 @@ public enum NumiCSVImporter {
                     throw ImportFailure("Column count does not match header")
                 }
                 let values = Dictionary(uniqueKeysWithValues: zip(document.headers, row.values))
+                let transactionID = try resolvedTransactionID(from: value(for: .id, in: values, mapping: mapping))
                 let type = try transactionType(from: value(for: .type, in: values, mapping: mapping))
                 let amount = try requiredValue(for: .amount, in: values, mapping: mapping)
                 let currency = value(for: .currency, in: values, mapping: mapping) ?? context.ledger.currencyCode
@@ -268,6 +271,7 @@ public enum NumiCSVImporter {
                     accounts: context.accounts
                 )
                 transactions.append(Transaction(
+                    id: transactionID,
                     type: type,
                     amount: money,
                     occurredAt: try date(from: value(for: .date, in: values, mapping: mapping)),
@@ -303,6 +307,12 @@ public enum NumiCSVImporter {
             throw ImportFailure("Missing \(field.rawValue)")
         }
         return value
+    }
+
+    private static func resolvedTransactionID(from value: String?) throws -> UUID {
+        guard let value else { return UUID() }
+        guard let id = UUID(uuidString: value) else { throw ImportFailure("Invalid id") }
+        return id
     }
 
     private static func transactionType(from value: String?) throws -> TransactionType {
