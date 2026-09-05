@@ -101,6 +101,30 @@ final class SubscriptionTests: XCTestCase {
         )
     }
 
+    func testMonthEndCycleAdvancesToLastDayOfFollowingMonth() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let januaryEnd = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 31)))
+        let februaryEnd = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 2, day: 28)))
+        let subscription = Subscription(
+            name: "Month end",
+            amount: Money(minorUnits: 1000, currencyCode: "CNY"),
+            cycle: .monthEnd,
+            nextBillingDate: januaryEnd
+        )
+
+        XCTAssertEqual(subscription.nextBillingDateAfter(januaryEnd, calendar: calendar), februaryEnd)
+    }
+
+    func testMonthEndDateUsesLeapYearFebruary() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let date = try XCTUnwrap(calendar.date(from: DateComponents(year: 2024, month: 2, day: 1)))
+        let expected = try XCTUnwrap(calendar.date(from: DateComponents(year: 2024, month: 2, day: 29)))
+
+        XCTAssertEqual(Subscription.monthEndDate(containing: date, calendar: calendar), expected)
+    }
+
     func testQuarterlyCycleIsLocalizedInAllSupportedLanguages() {
         let expectedValues = [
             "zh-Hans": "每季度",
@@ -112,6 +136,22 @@ final class SubscriptionTests: XCTestCase {
         for (language, expected) in expectedValues {
             XCTAssertEqual(
                 NumiLocalized.lookup("subscription.cycle.quarterly", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+    }
+
+    func testMonthEndCycleIsLocalizedInAllSupportedLanguages() {
+        let expectedValues = [
+            "zh-Hans": "每月末",
+            "zh-Hant": "每月末",
+            "en": "Month End",
+            "ja": "毎月末"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("subscription.cycle.month.end", locale: Locale(identifier: language)),
                 expected
             )
         }

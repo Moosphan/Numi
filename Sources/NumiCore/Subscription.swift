@@ -6,6 +6,7 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
     case daily = "daily"
     case weekly = "weekly"
     case monthly = "monthly"
+    case monthEnd = "monthEnd"
     case quarterly = "quarterly"
     case yearly = "yearly"
     case custom = "custom"
@@ -15,6 +16,7 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
         case .daily: return NumiLocalized.string( "subscription.cycle.daily")
         case .weekly: return NumiLocalized.string( "subscription.cycle.weekly")
         case .monthly: return NumiLocalized.string( "subscription.cycle.monthly")
+        case .monthEnd: return NumiLocalized.string("subscription.cycle.month.end")
         case .quarterly: return NumiLocalized.string("subscription.cycle.quarterly")
         case .yearly: return NumiLocalized.string( "subscription.cycle.yearly")
         case .custom: return NumiLocalized.string("subscription.cycle.custom")
@@ -93,6 +95,9 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
         case .daily: return calendar.date(byAdding: .day, value: 1, to: date) ?? date
         case .weekly: return calendar.date(byAdding: .weekOfYear, value: 1, to: date) ?? date
         case .monthly: return calendar.date(byAdding: .month, value: 1, to: date) ?? date
+        case .monthEnd:
+            guard let followingMonth = calendar.date(byAdding: .month, value: 1, to: date) else { return date }
+            return Self.monthEndDate(containing: followingMonth, calendar: calendar)
         case .quarterly: return calendar.date(byAdding: .month, value: 3, to: date) ?? date
         case .yearly: return calendar.date(byAdding: .year, value: 1, to: date) ?? date
         case .custom:
@@ -104,6 +109,14 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
             case .year: return calendar.date(byAdding: .year, value: customInterval.value, to: date) ?? date
             }
         }
+    }
+
+    public static func monthEndDate(containing date: Date, calendar: Calendar = .current) -> Date {
+        guard let dayCount = calendar.range(of: .day, in: .month, for: date)?.count,
+              let monthEnd = calendar.date(bySetting: .day, value: dayCount, of: date) else {
+            return date
+        }
+        return monthEnd
     }
 
     public func dueDates(through date: Date, calendar: Calendar = .current) -> [Date] {

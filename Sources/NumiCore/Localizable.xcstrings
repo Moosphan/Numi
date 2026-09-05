@@ -668,6 +668,15 @@
         }
       }
     },
+    "subscription.cycle.month.end": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每月末" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Month End" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "每月末" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "毎月末" } }
+      }
+    },
     "subscription.cycle.quarterly": {
       "extractionState": "manual",
       "localizations": {

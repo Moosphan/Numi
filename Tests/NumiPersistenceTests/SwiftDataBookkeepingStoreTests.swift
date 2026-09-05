@@ -379,6 +379,28 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testSkippingMonthEndSubscriptionAdvancesToFollowingMonthEnd() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let januaryEnd = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 31)))
+        let februaryEnd = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 2, day: 28)))
+        let subscription = Subscription(
+            name: "Month end",
+            amount: Money(minorUnits: 1000, currencyCode: account.balance.currencyCode),
+            cycle: .monthEnd,
+            accountID: account.id,
+            nextBillingDate: januaryEnd
+        )
+        try store.createSubscription(subscription)
+
+        XCTAssertTrue(try store.skipNextSubscriptionBilling(id: subscription.id, calendar: calendar))
+        XCTAssertEqual(store.subscriptions.first?.nextBillingDate, februaryEnd)
+    }
+
+    @MainActor
     func testCustomSubscriptionIntervalPersists() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         let interval = try XCTUnwrap(SubscriptionInterval(value: 2, unit: .month))

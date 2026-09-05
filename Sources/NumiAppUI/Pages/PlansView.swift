@@ -1235,7 +1235,9 @@ private struct SubscriptionFormView: View {
                             customInterval: cycle == .custom ? customInterval : nil,
                             categoryID: categoryID,
                             accountID: accountID,
-                            nextBillingDate: nextBillingDate,
+                            nextBillingDate: cycle == .monthEnd
+                                ? Subscription.monthEndDate(containing: nextBillingDate)
+                                : nextBillingDate,
                             isEnabled: isEnabled
                         )
                         onSave(sub)
