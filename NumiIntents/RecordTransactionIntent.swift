@@ -22,12 +22,9 @@ struct RecordTransactionIntent: AppIntent {
             return .result(dialog: IntentDialog(LocalizedStringResource("intent.error.no.categories")))
         }
 
-        let apiKey = Config.llmAPIKey
-        guard !apiKey.isEmpty else {
+        guard let parser = Config.transactionParser() else {
             return .result(dialog: IntentDialog(LocalizedStringResource("intent.error.no.key")))
         }
-
-        let parser = ClaudeTransactionParser(apiKey: apiKey)
 
         do {
             let parsed = try await parser.parseTransaction(text, categories: categories)
