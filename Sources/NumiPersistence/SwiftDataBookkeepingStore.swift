@@ -488,6 +488,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             nextDate = calendar.date(byAdding: .weekOfYear, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
         case .monthly:
             nextDate = calendar.date(byAdding: .month, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
+        case .quarterly:
+            nextDate = calendar.date(byAdding: .month, value: 3, to: entity.nextBillingDate) ?? entity.nextBillingDate
         case .yearly:
             nextDate = calendar.date(byAdding: .year, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
         }

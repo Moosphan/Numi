@@ -358,6 +358,27 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testSkippingQuarterlySubscriptionAdvancesDateByThreeMonths() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 1)))
+        let subscription = Subscription(
+            name: "Quarterly",
+            amount: Money(minorUnits: 1000, currencyCode: account.balance.currencyCode),
+            cycle: .quarterly,
+            accountID: account.id,
+            nextBillingDate: start
+        )
+        try store.createSubscription(subscription)
+
+        XCTAssertTrue(try store.skipNextSubscriptionBilling(id: subscription.id, calendar: calendar))
+        XCTAssertEqual(store.subscriptions.first?.nextBillingDate, calendar.date(byAdding: .month, value: 3, to: start))
+    }
+
+    @MainActor
     func testReschedulingPendingInstallmentPeriodPersistsDueDate() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

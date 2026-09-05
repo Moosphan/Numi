@@ -2,6 +2,39 @@ import XCTest
 @testable import NumiCore
 
 final class SubscriptionTests: XCTestCase {
+    func testQuarterlyCycleAdvancesBillingDateByThreeMonths() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let billingDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let subscription = Subscription(
+            name: "Quarterly Service",
+            amount: try Money(decimalString: "10", currencyCode: "USD"),
+            cycle: .quarterly,
+            nextBillingDate: billingDate
+        )
+
+        XCTAssertEqual(
+            subscription.nextBillingDateAfter(billingDate, calendar: calendar),
+            calendar.date(byAdding: .month, value: 3, to: billingDate)
+        )
+    }
+
+    func testQuarterlyCycleIsLocalizedInAllSupportedLanguages() {
+        let expectedValues = [
+            "zh-Hans": "每季度",
+            "en": "Quarterly",
+            "zh-Hant": "每季",
+            "ja": "四半期ごと"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("subscription.cycle.quarterly", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+    }
+
     func testDueDatesIncludesEachOccurrenceThroughReferenceDate() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!

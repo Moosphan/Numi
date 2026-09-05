@@ -6,6 +6,7 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
     case daily = "daily"
     case weekly = "weekly"
     case monthly = "monthly"
+    case quarterly = "quarterly"
     case yearly = "yearly"
 
     public var displayName: String {
@@ -13,6 +14,7 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
         case .daily: return NumiLocalized.string( "subscription.cycle.daily")
         case .weekly: return NumiLocalized.string( "subscription.cycle.weekly")
         case .monthly: return NumiLocalized.string( "subscription.cycle.monthly")
+        case .quarterly: return NumiLocalized.string("subscription.cycle.quarterly")
         case .yearly: return NumiLocalized.string( "subscription.cycle.yearly")
         }
     }
@@ -59,6 +61,7 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
         case .daily: return calendar.date(byAdding: .day, value: 1, to: date) ?? date
         case .weekly: return calendar.date(byAdding: .weekOfYear, value: 1, to: date) ?? date
         case .monthly: return calendar.date(byAdding: .month, value: 1, to: date) ?? date
+        case .quarterly: return calendar.date(byAdding: .month, value: 3, to: date) ?? date
         case .yearly: return calendar.date(byAdding: .year, value: 1, to: date) ?? date
         }
     }
