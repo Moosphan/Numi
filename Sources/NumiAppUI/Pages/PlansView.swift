@@ -1301,6 +1301,7 @@ private struct InstallmentFormView: View {
     @State private var totalAmountText = ""
     @State private var periodCountText = "12"
     @State private var feePerPeriodText = "0"
+    @State private var note = ""
     @State private var firstPaymentDate = Date()
     @State private var accountID: UUID?
     @State private var categoryID: UUID?
@@ -1322,6 +1323,7 @@ private struct InstallmentFormView: View {
             _totalAmountText = State(initialValue: Self.decimalText(for: plan.totalAmount))
             _periodCountText = State(initialValue: "\(plan.periodCount)")
             _feePerPeriodText = State(initialValue: Self.decimalText(for: plan.feePerPeriod))
+            _note = State(initialValue: plan.note)
             _firstPaymentDate = State(initialValue: plan.firstPaymentDate)
             _accountID = State(initialValue: plan.accountID)
             _categoryID = State(initialValue: plan.categoryID)
@@ -1343,6 +1345,8 @@ private struct InstallmentFormView: View {
                         #endif
                         .monospacedDigit()
                         .accessibilityIdentifier("input.installmentTotal")
+                    TextField("record.note", text: $note)
+                        .accessibilityIdentifier("input.installmentNote")
                 } header: {
                     Text("installment.info")
                 }
@@ -1391,7 +1395,8 @@ private struct InstallmentFormView: View {
                             periodCount: count,
                             firstPaymentDate: firstPaymentDate,
                             accountID: accountID,
-                            categoryID: categoryID
+                            categoryID: categoryID,
+                            note: note
                         )
                         onSave(plan)
                     }

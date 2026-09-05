@@ -635,8 +635,16 @@ struct RootShellView: View {
                 },
                 onUpdateInstallmentPlan: { plan in
                     do {
-                        try store.deleteInstallmentPlan(id: plan.id)
-                        try store.createInstallmentPlan(plan)
+                        try store.updateInstallmentPlan(plan)
+                        if let updatedPlan = store.installmentPlans.first(where: { $0.id == plan.id }) {
+                            Task {
+                                await InstallmentReminderScheduler.schedule(
+                                    plan: updatedPlan,
+                                    periods: store.installmentPeriods,
+                                    daysBefore: installmentReminderDaysBefore
+                                )
+                            }
+                        }
                     } catch {
                         initializationError = error.localizedDescription
                     }

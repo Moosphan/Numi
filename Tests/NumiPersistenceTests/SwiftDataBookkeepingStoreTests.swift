@@ -509,6 +509,45 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testUpdatingInstallmentPlanPreservesRecordedPeriodsAndTransactions() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let categoryID = try XCTUnwrap(store.categories.first(where: { $0.kind == .expense })?.id)
+        let plan = InstallmentPlan(
+            name: "Phone",
+            totalAmount: Money(minorUnits: 10_000, currencyCode: account.balance.currencyCode),
+            feePerPeriod: .zero(currencyCode: account.balance.currencyCode),
+            periodCount: 2,
+            firstPaymentDate: Date(timeIntervalSince1970: 1_700_000_000),
+            accountID: account.id,
+            categoryID: categoryID,
+            note: "old note"
+        )
+        try store.createInstallmentPlan(plan)
+        let firstPeriod = try XCTUnwrap(store.installmentPeriods.first(where: { $0.periodIndex == 0 }))
+        let secondPeriod = try XCTUnwrap(store.installmentPeriods.first(where: { $0.periodIndex == 1 }))
+        let adjustedSecondDueDate = secondPeriod.dueDate.addingTimeInterval(86_400 * 3)
+        XCTAssertTrue(try store.rescheduleInstallmentPeriod(periodID: secondPeriod.id, dueDate: adjustedSecondDueDate))
+        let recordedTransaction = try store.recordInstallmentPayment(periodID: firstPeriod.id, ledgerID: ledgerID)
+
+        var updatedPlan = plan
+        updatedPlan.name = "Renamed phone"
+        updatedPlan.totalAmount = Money(minorUnits: 12_000, currencyCode: account.balance.currencyCode)
+        updatedPlan.note = "new note"
+        try store.updateInstallmentPlan(updatedPlan)
+
+        XCTAssertEqual(store.installmentPlans.first?.name, "Renamed phone")
+        XCTAssertEqual(store.installmentPlans.first?.note, "new note")
+        XCTAssertEqual(store.installmentPeriods.count, 2)
+        XCTAssertEqual(store.installmentPeriods.first(where: { $0.id == firstPeriod.id })?.transactionID, recordedTransaction.id)
+        XCTAssertTrue(store.installmentPeriods.first(where: { $0.id == firstPeriod.id })?.isPaid == true)
+        XCTAssertEqual(store.installmentPeriods.first(where: { $0.id == secondPeriod.id })?.dueDate, adjustedSecondDueDate)
+        XCTAssertEqual(store.visibleTransactions.map(\.id), [recordedTransaction.id])
+    }
+
+    @MainActor
     func testRecordingInstallmentPaymentCreatesAndBindsExpenseTransaction() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

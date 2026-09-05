@@ -621,6 +621,67 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         objectWillChange.send()
     }
 
+    public func updateInstallmentPlan(_ plan: InstallmentPlan) throws {
+        guard let entity = fetchInstallmentPlanEntities().first(where: { $0.id == plan.id }) else {
+            throw SwiftDataBookkeepingStoreError.installmentPlanNotFound
+        }
+
+        let periods = fetchInstallmentPeriodEntities().filter { $0.planID == plan.id }
+        let lockedPeriodCount = periods
+            .filter { $0.isPaid || $0.isSkipped || $0.transactionID != nil }
+            .map { $0.periodIndex + 1 }
+            .max() ?? 0
+        let effectivePeriodCount = max(plan.periodCount, lockedPeriodCount)
+        var effectivePlan = plan
+        effectivePlan.periodCount = effectivePeriodCount
+        let dueDates = effectivePlan.generateDueDates()
+        let shouldReschedulePendingPeriods = entity.firstPaymentDate != effectivePlan.firstPaymentDate
+
+        for period in periods where period.periodIndex >= effectivePeriodCount {
+            context.delete(period)
+        }
+
+        let existingPeriodIndexes = Set(
+            periods
+                .filter { $0.periodIndex < effectivePeriodCount }
+                .map(\.periodIndex)
+        )
+        for index in 0 ..< effectivePeriodCount where !existingPeriodIndexes.contains(index) {
+            context.insert(
+                InstallmentPeriodEntity(
+                    id: UUID(),
+                    planID: effectivePlan.id,
+                    periodIndex: index,
+                    dueDate: dueDates[index],
+                    isRecorded: false,
+                    isPaid: false,
+                    isSkipped: false,
+                    transactionID: nil
+                )
+            )
+        }
+
+        if shouldReschedulePendingPeriods {
+            for period in periods where period.periodIndex < effectivePeriodCount {
+                guard !period.isPaid, !period.isSkipped, period.transactionID == nil else { continue }
+                period.dueDate = dueDates[period.periodIndex]
+            }
+        }
+
+        entity.name = effectivePlan.name
+        entity.totalAmountMinorUnits = effectivePlan.totalAmount.minorUnits
+        entity.currencyCode = effectivePlan.totalAmount.currencyCode
+        entity.feePerPeriodMinorUnits = effectivePlan.feePerPeriod.minorUnits
+        entity.periodCount = effectivePlan.periodCount
+        entity.firstPaymentDate = effectivePlan.firstPaymentDate
+        entity.accountID = effectivePlan.accountID
+        entity.categoryID = effectivePlan.categoryID
+        entity.note = effectivePlan.note
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
     public func deleteInstallmentPlan(id: UUID) throws {
         // 删除关联的期次
         let periods = fetchInstallmentPeriodEntities().filter { $0.planID == id }
