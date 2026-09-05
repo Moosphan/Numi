@@ -75,7 +75,7 @@ public struct PlansView: View {
     private let onUpdateInstallmentPlan: (InstallmentPlan) -> Void
     private let onDeleteInstallmentPlan: (UUID) -> Void
     private let onUpdateInstallmentPeriod: (InstallmentPeriod) -> Void
-    private let onRecordInstallmentPayment: (InstallmentPeriod) -> Void
+    private let onRecordInstallmentPayment: (InstallmentPeriod, Date) -> Void
     private let onSettleInstallmentPlan: (InstallmentPlan) -> Void
     private let onSkipInstallmentPeriod: (InstallmentPeriod) -> Void
 
@@ -99,7 +99,7 @@ public struct PlansView: View {
         onUpdateInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onDeleteInstallmentPlan: @escaping (UUID) -> Void = { _ in },
         onUpdateInstallmentPeriod: @escaping (InstallmentPeriod) -> Void = { _ in },
-        onRecordInstallmentPayment: @escaping (InstallmentPeriod) -> Void = { _ in },
+        onRecordInstallmentPayment: @escaping (InstallmentPeriod, Date) -> Void = { _, _ in },
         onSettleInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onSkipInstallmentPeriod: @escaping (InstallmentPeriod) -> Void = { _ in }
     ) {
@@ -1469,6 +1469,41 @@ private struct InstallmentPeriodDateEditor: View {
     }
 }
 
+private struct InstallmentPaymentDateEditor: View {
+    let period: InstallmentPeriod
+    let onSave: (Date) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var occurredAt: Date
+
+    init(period: InstallmentPeriod, onSave: @escaping (Date) -> Void) {
+        self.period = period
+        self.onSave = onSave
+        _occurredAt = State(initialValue: period.dueDate)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                DatePicker("record.date", selection: $occurredAt, displayedComponents: .date)
+                    .accessibilityIdentifier("picker.installmentPaymentDate")
+            }
+            .navigationTitle("installment.record.payment")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("installment.record.payment") {
+                        onSave(occurredAt)
+                    }
+                    .accessibilityIdentifier("action.saveInstallmentPaymentDate")
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Subscription Detail View
 
 private struct SubscriptionDetailView: View {
@@ -1608,7 +1643,7 @@ private struct InstallmentDetailView: View {
     let periods: [InstallmentPeriod]
     let categories: [NumiCore.Category]
     let onUpdatePeriod: (InstallmentPeriod) -> Void
-    let onRecordPayment: (InstallmentPeriod) -> Void
+    let onRecordPayment: (InstallmentPeriod, Date) -> Void
     let onSettlePlan: (InstallmentPlan) -> Void
     let onSkipPeriod: (InstallmentPeriod) -> Void
     let onEdit: () -> Void
@@ -1618,6 +1653,7 @@ private struct InstallmentDetailView: View {
     @State private var showDeleteConfirm = false
     @State private var showSettleConfirm = false
     @State private var editingPeriod: InstallmentPeriod?
+    @State private var recordingPeriod: InstallmentPeriod?
 
     private var sortedPeriods: [InstallmentPeriod] {
         periods.sorted { $0.periodIndex < $1.periodIndex }
@@ -1745,7 +1781,7 @@ private struct InstallmentDetailView: View {
                                     .accessibilityIdentifier("installment.period.\(period.periodIndex).adjustDate")
 
                                     Button {
-                                        onRecordPayment(period)
+                                        recordingPeriod = period
                                     } label: {
                                         Image(systemName: "checkmark.circle")
                                             .font(.system(size: 18, weight: .semibold))
@@ -1833,6 +1869,12 @@ private struct InstallmentDetailView: View {
                 updated.dueDate = updatedDate
                 onUpdatePeriod(updated)
                 editingPeriod = nil
+            }
+        }
+        .sheet(item: $recordingPeriod) { period in
+            InstallmentPaymentDateEditor(period: period) { occurredAt in
+                onRecordPayment(period, occurredAt)
+                recordingPeriod = nil
             }
         }
         .confirmationDialog(NumiLocalized.string("installment.delete.confirm", plan.name), isPresented: $showDeleteConfirm, titleVisibility: .visible) {

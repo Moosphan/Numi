@@ -673,13 +673,13 @@ struct RootShellView: View {
                         initializationError = error.localizedDescription
                     }
                 },
-                onRecordInstallmentPayment: { period in
+                onRecordInstallmentPayment: { period, occurredAt in
                     do {
                         guard let ledgerID = currentLedger?.id else {
                             initializationError = SwiftDataBookkeepingStoreError.ledgerNotFound.localizedDescription
                             return
                         }
-                        try store.recordInstallmentPayment(periodID: period.id, ledgerID: ledgerID)
+                        try store.recordInstallmentPayment(periodID: period.id, ledgerID: ledgerID, occurredAt: occurredAt)
                         if let plan = store.installmentPlans.first(where: { $0.id == period.planID }) {
                             Task {
                                 await InstallmentReminderScheduler.schedule(
