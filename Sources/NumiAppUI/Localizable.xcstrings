@@ -4352,6 +4352,15 @@
         "ja": { "stringUnit": { "state": "translated", "value": "請求リマインダーを有効化" } }
       }
     },
+    "reminder.permission.denied": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未获得通知权限，请在系统设置中开启通知后重试。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Notifications are not allowed. Enable them in Settings and try again." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未取得通知權限，請在系統設定中開啟通知後再試。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "通知が許可されていません。設定で通知を有効にしてからもう一度お試しください。" } }
+      }
+    },
     "subscription.reminder.title": {
       "extractionState": "manual",
       "localizations": {

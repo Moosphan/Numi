@@ -147,6 +147,22 @@ final class AppUILocalizationBundleTests: XCTestCase {
         XCTAssertEqual(NumiLocalized.string("subscription.reminder.body", "Music", "$3.00"), "Music will be billed tomorrow ($3.00)")
     }
 
+    func testReminderPermissionDeniedCopyIsLocalized() {
+        let expectedValues = [
+            "zh-Hans": "未获得通知权限，请在系统设置中开启通知后重试。",
+            "en": "Notifications are not allowed. Enable them in Settings and try again.",
+            "zh-Hant": "未取得通知權限，請在系統設定中開啟通知後再試。",
+            "ja": "通知が許可されていません。設定で通知を有効にしてからもう一度お試しください。"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("reminder.permission.denied", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+    }
+
     func testInstallmentReminderCopyIsLocalized() {
         let expectedValues = [
             "zh-Hans": (title: "分期提醒", enable: "开启分期提醒", body: "Plan的第 2 期将于明天到期（$40.00）"),

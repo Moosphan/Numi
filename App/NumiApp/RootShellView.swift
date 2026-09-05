@@ -586,7 +586,10 @@ struct RootShellView: View {
                 onEnableSubscriptionReminder: { id in
                     guard let subscription = store.subscriptions.first(where: { $0.id == id }) else { return }
                     Task {
-                        guard await SubscriptionReminderScheduler.requestAuthorization() else { return }
+                        guard await SubscriptionReminderScheduler.requestAuthorization() else {
+                            showToast(NumiLocalized.string("reminder.permission.denied"), isError: true)
+                            return
+                        }
                         await SubscriptionReminderScheduler.schedule(subscription: subscription, daysBefore: subscriptionReminderDaysBefore)
                     }
                 },
@@ -605,7 +608,10 @@ struct RootShellView: View {
                 onEnableInstallmentReminder: { id in
                     guard let plan = store.installmentPlans.first(where: { $0.id == id }) else { return }
                     Task {
-                        guard await SubscriptionReminderScheduler.requestAuthorization() else { return }
+                        guard await SubscriptionReminderScheduler.requestAuthorization() else {
+                            showToast(NumiLocalized.string("reminder.permission.denied"), isError: true)
+                            return
+                        }
                         await InstallmentReminderScheduler.schedule(
                             plan: plan,
                             periods: store.installmentPeriods,
