@@ -4325,6 +4325,33 @@
         "ja": { "stringUnit": { "state": "translated", "value": "サブスクを再開" } }
       }
     },
+    "subscription.reminder.enable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "开启到期提醒" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Enable Billing Reminder" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "開啟到期提醒" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "請求リマインダーを有効化" } }
+      }
+    },
+    "subscription.reminder.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅提醒" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Subscription Reminder" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱提醒" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクのリマインダー" } }
+      }
+    },
+    "subscription.reminder.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%@将于明天扣费（%@）" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%@ will be billed tomorrow (%@)" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "%@將於明天扣款（%@）" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%@は明日請求されます（%@）" } }
+      }
+    },
     "subscription.delete.title": {
       "extractionState": "manual",
       "localizations": {

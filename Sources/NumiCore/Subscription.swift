@@ -75,4 +75,9 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
         }
         return dates
     }
+
+    public func reminderDate(daysBefore: Int = 1, calendar: Calendar = .current) -> Date? {
+        guard isEnabled, daysBefore >= 0 else { return nil }
+        return calendar.date(byAdding: .day, value: -daysBefore, to: nextBillingDate)
+    }
 }

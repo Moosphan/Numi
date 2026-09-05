@@ -40,4 +40,31 @@ final class SubscriptionTests: XCTestCase {
         XCTAssertTrue(disabled.dueDates(through: Date()).isEmpty)
         XCTAssertTrue(upcoming.dueDates(through: Date()).isEmpty)
     }
+
+    func testReminderDateIsOneDayBeforeNextBillingForEnabledSubscription() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let billingDate = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 10)))
+        let subscription = Subscription(
+            name: "Monthly",
+            amount: Money(minorUnits: 1000, currencyCode: "CNY"),
+            cycle: .monthly,
+            nextBillingDate: billingDate
+        )
+
+        XCTAssertEqual(
+            subscription.reminderDate(daysBefore: 1, calendar: calendar),
+            calendar.date(byAdding: .day, value: -1, to: billingDate)
+        )
+        XCTAssertNil(subscription.reminderDate(daysBefore: -1, calendar: calendar))
+        XCTAssertNil(
+            Subscription(
+                name: "Disabled",
+                amount: subscription.amount,
+                cycle: .monthly,
+                nextBillingDate: billingDate,
+                isEnabled: false
+            ).reminderDate(daysBefore: 1, calendar: calendar)
+        )
+    }
 }

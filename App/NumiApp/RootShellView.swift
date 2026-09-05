@@ -153,6 +153,7 @@ struct RootShellView: View {
             } catch {
                 initializationError = error.localizedDescription
             }
+            await SubscriptionReminderScheduler.schedule(subscriptions: store.subscriptions)
             await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("NumiIncomingURL"))) { notification in
@@ -214,6 +215,10 @@ struct RootShellView: View {
                 try store.processDueSubscriptions()
             } catch {
                 initializationError = error.localizedDescription
+            }
+
+            Task {
+                await SubscriptionReminderScheduler.schedule(subscriptions: store.subscriptions)
             }
 
             let shouldLock: Bool
@@ -521,6 +526,9 @@ struct RootShellView: View {
                 onUpdateSubscription: { sub in
                     do {
                         try store.updateSubscription(sub)
+                        Task {
+                            await SubscriptionReminderScheduler.schedule(subscription: sub)
+                        }
                     } catch {
                         initializationError = error.localizedDescription
                     }
@@ -528,6 +536,7 @@ struct RootShellView: View {
                 onDeleteSubscription: { id in
                     do {
                         try store.deleteSubscription(id: id)
+                        SubscriptionReminderScheduler.cancel(subscriptionID: id)
                     } catch {
                         initializationError = error.localizedDescription
                     }
@@ -537,6 +546,13 @@ struct RootShellView: View {
                         _ = try store.skipNextSubscriptionBilling(id: id)
                     } catch {
                         initializationError = error.localizedDescription
+                    }
+                },
+                onEnableSubscriptionReminder: { id in
+                    guard let subscription = store.subscriptions.first(where: { $0.id == id }) else { return }
+                    Task {
+                        guard await SubscriptionReminderScheduler.requestAuthorization() else { return }
+                        await SubscriptionReminderScheduler.schedule(subscription: subscription)
                     }
                 },
                 onAddInstallmentPlan: { plan in

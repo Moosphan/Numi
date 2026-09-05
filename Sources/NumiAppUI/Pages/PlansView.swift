@@ -66,6 +66,7 @@ public struct PlansView: View {
     private let onUpdateSubscription: (Subscription) -> Void
     private let onDeleteSubscription: (UUID) -> Void
     private let onSkipSubscriptionBilling: (UUID) -> Void
+    private let onEnableSubscriptionReminder: (UUID) -> Void
     private let onAddInstallmentPlan: (InstallmentPlan) -> Void
     private let onUpdateInstallmentPlan: (InstallmentPlan) -> Void
     private let onDeleteInstallmentPlan: (UUID) -> Void
@@ -86,6 +87,7 @@ public struct PlansView: View {
         onUpdateSubscription: @escaping (Subscription) -> Void = { _ in },
         onDeleteSubscription: @escaping (UUID) -> Void = { _ in },
         onSkipSubscriptionBilling: @escaping (UUID) -> Void = { _ in },
+        onEnableSubscriptionReminder: @escaping (UUID) -> Void = { _ in },
         onAddInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onUpdateInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onDeleteInstallmentPlan: @escaping (UUID) -> Void = { _ in },
@@ -105,6 +107,7 @@ public struct PlansView: View {
         self.onAddSubscription = onAddSubscription
         self.onDeleteSubscription = onDeleteSubscription
         self.onSkipSubscriptionBilling = onSkipSubscriptionBilling
+        self.onEnableSubscriptionReminder = onEnableSubscriptionReminder
         self.onAddInstallmentPlan = onAddInstallmentPlan
         self.onUpdateInstallmentPlan = onUpdateInstallmentPlan
         self.onDeleteInstallmentPlan = onDeleteInstallmentPlan
@@ -352,6 +355,12 @@ public struct PlansView: View {
             }
 
             if sub.isEnabled {
+                Button {
+                    onEnableSubscriptionReminder(sub.id)
+                } label: {
+                    Label("subscription.reminder.enable", systemImage: "bell.badge")
+                }
+
                 Button {
                     pendingSkipSubscription = sub
                 } label: {

@@ -120,6 +120,18 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testSubscriptionReminderCopyIsLocalized() {
+        UserDefaults.standard.set("zh-Hans", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("subscription.reminder.enable"), "开启到期提醒")
+        XCTAssertEqual(NumiLocalized.string("subscription.reminder.title"), "订阅提醒")
+        XCTAssertEqual(NumiLocalized.string("subscription.reminder.body", "音乐会员", "¥30.00"), "音乐会员将于明天扣费（¥30.00）")
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        XCTAssertEqual(NumiLocalized.lookup("subscription.reminder.enable"), "Enable Billing Reminder")
+        XCTAssertEqual(NumiLocalized.string("subscription.reminder.title"), "Subscription Reminder")
+        XCTAssertEqual(NumiLocalized.string("subscription.reminder.body", "Music", "$3.00"), "Music will be billed tomorrow ($3.00)")
+    }
+
     func testFormattedLookupUsesCatalogKeyAndArguments() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.string("setting.ai.test.fail", 401), "连接失败：401")
