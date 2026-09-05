@@ -1332,6 +1332,39 @@ private struct InstallmentFormView: View {
     }
 }
 
+private struct InstallmentPeriodDateEditor: View {
+    let period: InstallmentPeriod
+    let onSave: (Date) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var dueDate: Date
+
+    init(period: InstallmentPeriod, onSave: @escaping (Date) -> Void) {
+        self.period = period
+        self.onSave = onSave
+        _dueDate = State(initialValue: period.dueDate)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                DatePicker("installment.adjust.date", selection: $dueDate, displayedComponents: .date)
+            }
+            .navigationTitle("installment.adjust.date")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("installment.adjust.date.save") {
+                        onSave(dueDate)
+                    }
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Subscription Detail View
 
 private struct SubscriptionDetailView: View {
@@ -1480,6 +1513,7 @@ private struct InstallmentDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showDeleteConfirm = false
     @State private var showSettleConfirm = false
+    @State private var editingPeriod: InstallmentPeriod?
 
     private var sortedPeriods: [InstallmentPeriod] {
         periods.sorted { $0.periodIndex < $1.periodIndex }
@@ -1595,6 +1629,18 @@ private struct InstallmentDetailView: View {
 
                                 if !period.isPaid && !period.isSkipped && period.transactionID == nil {
                                     Button {
+                                        editingPeriod = period
+                                    } label: {
+                                        Image(systemName: "calendar.badge.clock")
+                                            .font(.system(size: 17, weight: .semibold))
+                                            .foregroundStyle(NumiColor.textSecondary)
+                                            .frame(width: 44, height: 44)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(NumiLocalized.string("installment.adjust.date"))
+                                    .accessibilityIdentifier("installment.period.\(period.periodIndex).adjustDate")
+
+                                    Button {
                                         onRecordPayment(period)
                                     } label: {
                                         Image(systemName: "checkmark.circle")
@@ -1677,6 +1723,14 @@ private struct InstallmentDetailView: View {
         .background(NumiColor.surfacePage)
         .navigationTitle("installment.detail")
         .modifier(LargeTitleNavigationChrome())
+        .sheet(item: $editingPeriod) { period in
+            InstallmentPeriodDateEditor(period: period) { updatedDate in
+                var updated = period
+                updated.dueDate = updatedDate
+                onUpdatePeriod(updated)
+                editingPeriod = nil
+            }
+        }
         .confirmationDialog(NumiLocalized.string("installment.delete.confirm", plan.name), isPresented: $showDeleteConfirm, titleVisibility: .visible) {
             Button("installment.delete.title", role: .destructive) { onDelete() }
             Button("common.cancel", role: .cancel) {}

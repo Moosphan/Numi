@@ -4810,6 +4810,24 @@
         }
       }
     },
+    "installment.adjust.date": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "调整到期日" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Adjust Due Date" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "調整到期日" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "支払期日を調整" } }
+      }
+    },
+    "installment.adjust.date.save": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "保存日期" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Save Date" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "儲存日期" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "日付を保存" } }
+      }
+    },
     "installment.name": {
       "extractionState": "manual",
       "localizations": {

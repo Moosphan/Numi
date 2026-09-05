@@ -358,6 +358,28 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testReschedulingPendingInstallmentPeriodPersistsDueDate() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let plan = InstallmentPlan(
+            name: "Phone",
+            totalAmount: try Money(decimalString: "80", currencyCode: account.balance.currencyCode),
+            feePerPeriod: .zero(currencyCode: account.balance.currencyCode),
+            periodCount: 2,
+            firstPaymentDate: Date(timeIntervalSince1970: 1_700_000_000),
+            accountID: account.id
+        )
+        try store.createInstallmentPlan(plan)
+        let period = try XCTUnwrap(store.installmentPeriods.first)
+        let newDate = period.dueDate.addingTimeInterval(86_400 * 3)
+
+        XCTAssertTrue(try store.rescheduleInstallmentPeriod(periodID: period.id, dueDate: newDate))
+        XCTAssertEqual(store.installmentPeriods.first?.dueDate, newDate)
+        XCTAssertFalse(try store.rescheduleInstallmentPeriod(periodID: UUID(), dueDate: newDate))
+    }
+
+    @MainActor
     func testRecordingInstallmentPaymentCreatesAndBindsExpenseTransaction() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

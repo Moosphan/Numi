@@ -648,12 +648,28 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         } else {
             entity.transactionID = period.transactionID
         }
+        entity.dueDate = period.dueDate
         entity.isRecorded = period.isRecorded
         entity.isPaid = period.isPaid
         entity.isSkipped = period.isSkipped
         try save()
         changeRevision += 1
         objectWillChange.send()
+    }
+
+    @discardableResult
+    public func rescheduleInstallmentPeriod(periodID: UUID, dueDate: Date) throws -> Bool {
+        guard let entity = fetchInstallmentPeriodEntities().first(where: { $0.id == periodID }) else {
+            return false
+        }
+        guard !entity.isPaid, !entity.isSkipped, entity.transactionID == nil else {
+            return false
+        }
+        entity.dueDate = dueDate
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+        return true
     }
 
     public func skipInstallmentPeriod(periodID: UUID) throws {
