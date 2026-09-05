@@ -659,6 +659,15 @@ struct RootShellView: View {
                             return
                         }
                         try store.recordInstallmentPayment(periodID: period.id, ledgerID: ledgerID)
+                        if let plan = store.installmentPlans.first(where: { $0.id == period.planID }) {
+                            Task {
+                                await InstallmentReminderScheduler.schedule(
+                                    plan: plan,
+                                    periods: store.installmentPeriods,
+                                    daysBefore: installmentReminderDaysBefore
+                                )
+                            }
+                        }
                     } catch {
                         showToast(NumiLocalized.string("error.installment.record.fail", error.localizedDescription), isError: true)
                     }
@@ -670,6 +679,13 @@ struct RootShellView: View {
                             return
                         }
                         _ = try store.settleInstallmentPlan(planID: plan.id, ledgerID: ledgerID)
+                        Task {
+                            await InstallmentReminderScheduler.schedule(
+                                plan: plan,
+                                periods: store.installmentPeriods,
+                                daysBefore: installmentReminderDaysBefore
+                            )
+                        }
                     } catch {
                         showToast(NumiLocalized.string("error.installment.settle.fail", error.localizedDescription), isError: true)
                     }
@@ -677,6 +693,15 @@ struct RootShellView: View {
                 onSkipInstallmentPeriod: { period in
                     do {
                         try store.skipInstallmentPeriod(periodID: period.id)
+                        if let plan = store.installmentPlans.first(where: { $0.id == period.planID }) {
+                            Task {
+                                await InstallmentReminderScheduler.schedule(
+                                    plan: plan,
+                                    periods: store.installmentPeriods,
+                                    daysBefore: installmentReminderDaysBefore
+                                )
+                            }
+                        }
                     } catch {
                         showToast(NumiLocalized.string("error.installment.skip.fail", error.localizedDescription), isError: true)
                     }

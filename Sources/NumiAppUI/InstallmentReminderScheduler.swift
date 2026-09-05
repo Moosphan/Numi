@@ -6,6 +6,21 @@ import UserNotifications
 #endif
 
 public enum InstallmentReminderScheduler {
+    public enum ReminderAction: Equatable, Sendable {
+        case schedule(InstallmentPeriod)
+        case cancel
+    }
+
+    public static func reminderAction(
+        plan: InstallmentPlan,
+        periods: [InstallmentPeriod]
+    ) -> ReminderAction {
+        guard let period = plan.nextPendingInstallmentPeriod(from: periods) else {
+            return .cancel
+        }
+        return .schedule(period)
+    }
+
     public static func schedule(
         plan: InstallmentPlan,
         periods: [InstallmentPeriod],
@@ -16,7 +31,7 @@ public enum InstallmentReminderScheduler {
         let identifier = notificationIdentifier(for: plan.id)
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
-        guard let period = plan.nextPendingInstallmentPeriod(from: periods),
+        guard case let .schedule(period) = reminderAction(plan: plan, periods: periods),
               let reminderDate = period.reminderDate(daysBefore: daysBefore, calendar: calendar),
               reminderDate > Date() else { return }
 
