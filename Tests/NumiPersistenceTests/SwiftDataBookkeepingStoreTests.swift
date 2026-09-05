@@ -423,6 +423,28 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testSkippingMonthlyFirstWeekdaySubscriptionAdvancesToFirstWeekdayOfFollowingMonth() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let mayFirst = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 5, day: 1)))
+        let juneSecond = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 6, day: 2)))
+        let subscription = Subscription(
+            name: "First weekday",
+            amount: Money(minorUnits: 1000, currencyCode: account.balance.currencyCode),
+            cycle: .monthlyFirstWeekday,
+            accountID: account.id,
+            nextBillingDate: mayFirst
+        )
+        try store.createSubscription(subscription)
+
+        XCTAssertTrue(try store.skipNextSubscriptionBilling(id: subscription.id, calendar: calendar))
+        XCTAssertEqual(store.subscriptions.first?.nextBillingDate, juneSecond)
+    }
+
+    @MainActor
     func testCustomSubscriptionIntervalPersists() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         let interval = try XCTUnwrap(SubscriptionInterval(value: 2, unit: .month))

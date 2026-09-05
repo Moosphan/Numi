@@ -1270,6 +1270,8 @@ private struct SubscriptionFormView: View {
 
     private var resolvedNextBillingDate: Date {
         switch cycle {
+        case .monthlyFirstWeekday:
+            Subscription.firstWeekdayDate(containing: nextBillingDate)
         case .monthEnd:
             Subscription.monthEndDate(containing: nextBillingDate)
         case .weekdays:

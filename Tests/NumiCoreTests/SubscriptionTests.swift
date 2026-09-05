@@ -149,6 +149,30 @@ final class SubscriptionTests: XCTestCase {
         XCTAssertEqual(Subscription.weekdayDate(onOrAfter: sunday, calendar: calendar), monday)
     }
 
+    func testMonthlyFirstWeekdayCycleSkipsWeekendAtBeginningOfFollowingMonth() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let mayFirst = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 5, day: 1)))
+        let juneSecond = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 6, day: 2)))
+        let subscription = Subscription(
+            name: "First weekday",
+            amount: Money(minorUnits: 1000, currencyCode: "CNY"),
+            cycle: .monthlyFirstWeekday,
+            nextBillingDate: mayFirst
+        )
+
+        XCTAssertEqual(subscription.nextBillingDateAfter(mayFirst, calendar: calendar), juneSecond)
+    }
+
+    func testFirstWeekdayDateSkipsWeekendAtBeginningOfMonth() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let juneFifteenth = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 6, day: 15)))
+        let juneSecond = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 6, day: 2)))
+
+        XCTAssertEqual(Subscription.firstWeekdayDate(containing: juneFifteenth, calendar: calendar), juneSecond)
+    }
+
     func testQuarterlyCycleIsLocalizedInAllSupportedLanguages() {
         let expectedValues = [
             "zh-Hans": "每季度",
@@ -192,6 +216,22 @@ final class SubscriptionTests: XCTestCase {
         for (language, expected) in expectedValues {
             XCTAssertEqual(
                 NumiLocalized.lookup("subscription.cycle.weekdays", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+    }
+
+    func testMonthlyFirstWeekdayCycleIsLocalizedInAllSupportedLanguages() {
+        let expectedValues = [
+            "zh-Hans": "每月首个工作日",
+            "zh-Hant": "每月首個工作日",
+            "en": "First weekday of month",
+            "ja": "毎月最初の平日"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("subscription.cycle.monthly.first.weekday", locale: Locale(identifier: language)),
                 expected
             )
         }

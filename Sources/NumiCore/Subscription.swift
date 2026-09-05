@@ -7,6 +7,7 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
     case weekdays = "weekdays"
     case weekly = "weekly"
     case monthly = "monthly"
+    case monthlyFirstWeekday = "monthlyFirstWeekday"
     case monthEnd = "monthEnd"
     case quarterly = "quarterly"
     case yearly = "yearly"
@@ -18,6 +19,7 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
         case .weekdays: return NumiLocalized.string("subscription.cycle.weekdays")
         case .weekly: return NumiLocalized.string( "subscription.cycle.weekly")
         case .monthly: return NumiLocalized.string( "subscription.cycle.monthly")
+        case .monthlyFirstWeekday: return NumiLocalized.string("subscription.cycle.monthly.first.weekday")
         case .monthEnd: return NumiLocalized.string("subscription.cycle.month.end")
         case .quarterly: return NumiLocalized.string("subscription.cycle.quarterly")
         case .yearly: return NumiLocalized.string( "subscription.cycle.yearly")
@@ -100,6 +102,9 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
             return Self.weekdayDate(onOrAfter: followingDay, calendar: calendar)
         case .weekly: return calendar.date(byAdding: .weekOfYear, value: 1, to: date) ?? date
         case .monthly: return calendar.date(byAdding: .month, value: 1, to: date) ?? date
+        case .monthlyFirstWeekday:
+            guard let followingMonth = calendar.date(byAdding: .month, value: 1, to: date) else { return date }
+            return Self.firstWeekdayDate(containing: followingMonth, calendar: calendar)
         case .monthEnd:
             guard let followingMonth = calendar.date(byAdding: .month, value: 1, to: date) else { return date }
             return Self.monthEndDate(containing: followingMonth, calendar: calendar)
@@ -132,6 +137,12 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
             candidate = followingDay
         }
         return candidate
+    }
+
+    public static func firstWeekdayDate(containing date: Date, calendar: Calendar = .current) -> Date {
+        let monthComponents = calendar.dateComponents([.year, .month], from: date)
+        guard let firstDay = calendar.date(from: monthComponents) else { return date }
+        return weekdayDate(onOrAfter: firstDay, calendar: calendar)
     }
 
     public func dueDates(through date: Date, calendar: Calendar = .current) -> [Date] {

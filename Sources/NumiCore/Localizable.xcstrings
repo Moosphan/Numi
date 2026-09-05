@@ -677,6 +677,15 @@
         }
       }
     },
+    "subscription.cycle.monthly.first.weekday": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每月首个工作日" } },
+        "en": { "stringUnit": { "state": "translated", "value": "First weekday of month" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "每月首個工作日" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "毎月最初の平日" } }
+      }
+    },
     "subscription.cycle.month.end": {
       "extractionState": "manual",
       "localizations": {
