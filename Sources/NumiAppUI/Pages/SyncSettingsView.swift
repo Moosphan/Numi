@@ -46,6 +46,20 @@ public enum SyncFailureReason: Equatable {
     }
 }
 
+public enum SyncPreflight {
+    public static func failure(
+        isNetworkAvailable: Bool,
+        isICloudAvailable: Bool,
+        networkType: NetworkType,
+        isCellularSyncEnabled: Bool
+    ) -> SyncFailureReason? {
+        guard isNetworkAvailable else { return .networkUnavailable }
+        guard isICloudAvailable else { return .iCloudUnavailable }
+        guard networkType != .cellular || isCellularSyncEnabled else { return .cellularDisabled }
+        return nil
+    }
+}
+
 public enum iCloudAccountStatusEvaluator {
     public static func isUsable(_ status: CKAccountStatus) -> Bool {
         status == .available
@@ -125,17 +139,14 @@ public class iCloudSyncService: ObservableObject {
 
     public func performSync() async {
         guard isSyncEnabled else { return }
-        guard isNetworkAvailable else {
-            syncStatus = .failure(.networkUnavailable)
-            return
-        }
-        guard isiCloudAvailable else {
-            syncStatus = .failure(.iCloudUnavailable)
-            return
-        }
-
-        if networkType == .cellular && !isCellularSyncEnabled {
-            syncStatus = .failure(.cellularDisabled)
+        if let failure = SyncPreflight.failure(
+            isNetworkAvailable: isNetworkAvailable,
+            isICloudAvailable: isiCloudAvailable,
+            networkType: networkType,
+            isCellularSyncEnabled: isCellularSyncEnabled
+        ) {
+            syncProgress = 0
+            syncStatus = .failure(failure)
             return
         }
 
@@ -151,9 +162,11 @@ public class iCloudSyncService: ObservableObject {
                 syncStatus = .success(now)
                 syncProgress = 1.0
             } else {
+                syncProgress = 0
                 syncStatus = .failure(.syncFailed)
             }
         } else {
+            syncProgress = 0
             syncStatus = .failure(.syncFailed)
         }
     }
