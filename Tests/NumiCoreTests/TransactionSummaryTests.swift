@@ -71,4 +71,27 @@ final class TransactionSummaryTests: XCTestCase {
             XCTAssertEqual(error as? TransactionSummaryError, .missingExchangeRate(sourceCurrencyCode: "USD", targetCurrencyCode: "CNY"))
         }
     }
+
+    func testMonthlySummaryForFiftyThousandTransactionsCompletesWithinOneSecond() throws {
+        let ledgerID = UUID()
+        let occurredAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let transactions = (0 ..< 50_000).map { index in
+            Transaction(
+                type: index.isMultiple(of: 2) ? .expense : .income,
+                amount: Money(minorUnits: index.isMultiple(of: 2) ? 100 : 200, currencyCode: "CNY"),
+                occurredAt: occurredAt,
+                ledgerID: ledgerID
+            )
+        }
+
+        let startedAt = Date()
+        let summary = try TransactionSummary.monthly(transactions: transactions, currencyCode: "CNY")
+        let elapsed = Date().timeIntervalSince(startedAt)
+
+        XCTAssertEqual(summary.recordCount, 50_000)
+        XCTAssertEqual(summary.expense, Money(minorUnits: 2_500_000, currencyCode: "CNY"))
+        XCTAssertEqual(summary.income, Money(minorUnits: 5_000_000, currencyCode: "CNY"))
+        print("50,000-record monthly summary: \(elapsed)s")
+        XCTAssertLessThanOrEqual(elapsed, 1, "50,000-record monthly summary took \(elapsed)s")
+    }
 }

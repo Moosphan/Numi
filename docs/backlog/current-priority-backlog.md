@@ -48,7 +48,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 | --- | --- | --- | --- | --- | --- |
 | P0C-01 | P0 UI Test 稳定通过 | Partial | 2026-09-04 iPhone 15 验证入口已稳定覆盖 11 个流程：首次启动、新增、编辑、删除撤销、语言切换、转账、隐藏金额、备份密码门槛、恢复点、CSV 入口、JSON/CSV 导入导出入口；搜索相关 3 个测试仍受全屏页面 accessibility 查询不稳定影响 | 修复并重新纳入搜索/筛选 UI 测试，随后补齐视觉截图与大字体回归 | 固定模拟器上的关键 UI Test 可重复通过 |
 | P0C-02 | 视觉截图基线与非空校验 | Partial | UI Test 有截图 showcase seed profile；原 backlog 要求固定截图与非空校验 | 输出稳定截图目录、命名规则、空白/全黑/主要元素缺失检测 | 明细、记账、洞悉、计划、设置、数据管理、深色、大字体均有基线 |
-| P0C-03 | 性能压测 | Not Started | PRD 要求 10000 条 60fps、50000 条统计 1 秒或渐进加载；未见性能压测入口 | 增加 10k/50k seed profile、统计耗时度量、列表滚动基准 | 性能结果有记录；超时路径显示加载或降级策略 |
+| P0C-03 | 性能压测 | Partial | 2026-09-05：新增 `TransactionSummaryTests.testMonthlySummaryForFiftyThousandTransactionsCompletesWithinOneSecond`，以 50000 条同币种收支记录验证月度汇总正确性且不超过 1 秒；本机聚焦运行聚合耗时约 0.024 秒 | 增加 10000 条列表滚动 profile/60fps 基准；如真实数据超时则补加载或降级策略 | 性能结果有记录；超时路径显示加载或降级策略 |
 | P0C-04 | README、隐私说明、数据格式说明 | Done | README 已补齐运行与验证入口、默认本地存储与可选 iCloud 同步边界；新增 `docs/data-management.md`，说明 SwiftData 本地存储、完整快照、JSON/CSV、加密备份、导入恢复点、CSV 字段映射与多账本注意事项 | 后续功能变更时同步更新数据格式说明；发布前按 TestFlight 检查清单复核隐私披露 | 新开发者可按 README 启动；用户能理解数据保存位置和导出恢复方式 |
 | P0C-05 | TestFlight 检查清单 | Partial | 新增 `docs/release/testflight-checklist.md`；已核对 App Icon、版本、entitlements 与 `PrivacyInfo.xcprivacy`，并将签名、生产标识符、App Privacy 标签、隐私政策 URL、archive 上传、真机/外部测试及已知同步风险列为可执行发布门槛 | 发布负责人完成 App Store Connect、生产签名、真实设备与 TestFlight 人工检查；核对 Release archive 中 App Intents 元数据归档 | 可进入 TestFlight 提交流程 |
 
