@@ -1199,6 +1199,13 @@ private struct SubscriptionFormView: View {
                         .accessibilityIdentifier("picker.subscriptionCustomIntervalUnit")
                     }
 
+                    NumiAccountPickerRow(
+                        title: NumiLocalized.string("record.account"),
+                        accounts: compatibleAccounts,
+                        selectedAccountID: $accountID,
+                        accessibilityIdentifier: "picker.subscriptionAccount"
+                    )
+
                     DatePicker("subscription.next.billing", selection: $nextBillingDate, displayedComponents: .date)
                         .accessibilityIdentifier("picker.subscriptionNextDate")
                 } header: {
@@ -1255,6 +1262,10 @@ private struct SubscriptionFormView: View {
             existingCurrencyCode: existing?.amount.currencyCode,
             defaultCurrencyCode: defaultCurrencyCode
         )
+    }
+
+    private var compatibleAccounts: [Account] {
+        PlanFormCurrencyResolver.compatibleAccounts(accounts, currencyCode: currencyCode)
     }
 
     private static func decimalText(for money: Money) -> String {
@@ -1335,6 +1346,12 @@ private struct InstallmentFormView: View {
                         #endif
                         .monospacedDigit()
                         .accessibilityIdentifier("input.installmentFee")
+                    NumiAccountPickerRow(
+                        title: NumiLocalized.string("record.account"),
+                        accounts: compatibleAccounts,
+                        selectedAccountID: $accountID,
+                        accessibilityIdentifier: "picker.installmentAccount"
+                    )
                     DatePicker("installment.first.date", selection: $firstPaymentDate, displayedComponents: .date)
                         .accessibilityIdentifier("picker.installmentFirstDate")
                 } header: {
@@ -1383,6 +1400,10 @@ private struct InstallmentFormView: View {
             existingCurrencyCode: existing?.totalAmount.currencyCode,
             defaultCurrencyCode: defaultCurrencyCode
         )
+    }
+
+    private var compatibleAccounts: [Account] {
+        PlanFormCurrencyResolver.compatibleAccounts(accounts, currencyCode: currencyCode)
     }
 
     private static func decimalText(for money: Money) -> String {
