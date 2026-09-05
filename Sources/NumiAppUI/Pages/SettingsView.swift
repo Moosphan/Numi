@@ -57,6 +57,7 @@ public struct SettingsView: View {
     @State private var passcodeMode: PasscodeMode = .setup
     @State private var showLanguageSheet = false
     @AppStorage("app.language") private var languageCode: String = "system"
+    @AppStorage("app.installment.reminder.daysBefore") private var installmentReminderDaysBefore = 1
 
     @AppStorage("app.ai.provider") private var aiProvider: String = "claude"
     @AppStorage("app.ai.claudeAPIKey") private var claudeAPIKey: String = ""
@@ -246,6 +247,26 @@ public struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.theme")
+                }
+
+                settingsSection(
+                    title: NumiLocalized.string("setting.reminders"),
+                    accessibilityID: "settings.section.reminders",
+                    cardAccessibilityID: "settings.card.reminders"
+                ) {
+                    Picker(selection: $installmentReminderDaysBefore) {
+                        ForEach([0, 1, 3, 7], id: \.self) { days in
+                            Text(NumiLocalized.string("setting.installment.reminder.days.value", days))
+                                .tag(days)
+                        }
+                    } label: {
+                        settingsRow(
+                            NumiLocalized.string("setting.installment.reminder.days"),
+                            icon: "bell.badge",
+                            trailingText: NumiLocalized.string("setting.installment.reminder.days.value", installmentReminderDaysBefore)
+                        )
+                    }
+                    .accessibilityIdentifier("settings.installmentReminderDays")
                 }
 
                 settingsSection(

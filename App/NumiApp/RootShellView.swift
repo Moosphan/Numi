@@ -12,6 +12,7 @@ struct RootShellView: View {
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
     @AppStorage("app.privacy.hideAmounts") private var isAmountDisplayHidden = false
     @AppStorage("app.subscription.requiresConfirmation") private var requiresSubscriptionConfirmation = false
+    @AppStorage("app.installment.reminder.daysBefore") private var installmentReminderDaysBefore = 1
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @AppStorage("app.currentLedgerID") private var currentLedgerIDString: String = ""
     @AppStorage(NumiAppLanguage.pendingToastDefaultsKey) private var pendingLanguageToastCode: String = ""
@@ -159,9 +160,19 @@ struct RootShellView: View {
             await SubscriptionReminderScheduler.schedule(subscriptions: store.subscriptions)
             await InstallmentReminderScheduler.schedule(
                 plans: store.installmentPlans,
-                periods: store.installmentPeriods
+                periods: store.installmentPeriods,
+                daysBefore: installmentReminderDaysBefore
             )
             await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
+        }
+        .onChange(of: installmentReminderDaysBefore) { _, _ in
+            Task {
+                await InstallmentReminderScheduler.schedule(
+                    plans: store.installmentPlans,
+                    periods: store.installmentPeriods,
+                    daysBefore: installmentReminderDaysBefore
+                )
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("NumiIncomingURL"))) { notification in
             if let url = notification.object as? URL {
@@ -582,7 +593,8 @@ struct RootShellView: View {
                         guard await SubscriptionReminderScheduler.requestAuthorization() else { return }
                         await InstallmentReminderScheduler.schedule(
                             plan: plan,
-                            periods: store.installmentPeriods
+                            periods: store.installmentPeriods,
+                            daysBefore: installmentReminderDaysBefore
                         )
                     }
                 },
@@ -616,7 +628,8 @@ struct RootShellView: View {
                             Task {
                                 await InstallmentReminderScheduler.schedule(
                                     plan: plan,
-                                    periods: store.installmentPeriods
+                                    periods: store.installmentPeriods,
+                                    daysBefore: installmentReminderDaysBefore
                                 )
                             }
                         }

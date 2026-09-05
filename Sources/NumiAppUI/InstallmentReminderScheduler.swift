@@ -9,6 +9,7 @@ public enum InstallmentReminderScheduler {
     public static func schedule(
         plan: InstallmentPlan,
         periods: [InstallmentPeriod],
+        daysBefore: Int = 1,
         calendar: Calendar = .current
     ) async {
         #if canImport(UserNotifications)
@@ -16,7 +17,7 @@ public enum InstallmentReminderScheduler {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
         guard let period = plan.nextPendingInstallmentPeriod(from: periods),
-              let reminderDate = period.reminderDate(calendar: calendar),
+              let reminderDate = period.reminderDate(daysBefore: daysBefore, calendar: calendar),
               reminderDate > Date() else { return }
 
         let content = UNMutableNotificationContent()
@@ -39,10 +40,11 @@ public enum InstallmentReminderScheduler {
     public static func schedule(
         plans: [InstallmentPlan],
         periods: [InstallmentPeriod],
+        daysBefore: Int = 1,
         calendar: Calendar = .current
     ) async {
         for plan in plans {
-            await schedule(plan: plan, periods: periods, calendar: calendar)
+            await schedule(plan: plan, periods: periods, daysBefore: daysBefore, calendar: calendar)
         }
     }
 

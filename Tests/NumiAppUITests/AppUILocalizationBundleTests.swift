@@ -159,6 +159,25 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testInstallmentReminderPreferenceCopyIsLocalized() {
+        let expectedValues = [
+            "zh-Hans": (section: "提醒", label: "分期提前提醒", value: "提前 3 天"),
+            "en": (section: "Reminders", label: "Installment Reminder", value: "3 days before"),
+            "zh-Hant": (section: "提醒", label: "分期提前提醒", value: "提前 3 天"),
+            "ja": (section: "リマインダー", label: "分割払いの事前通知", value: "3日前")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("setting.reminders", locale: locale), expected.section)
+            XCTAssertEqual(NumiLocalized.lookup("setting.installment.reminder.days", locale: locale), expected.label)
+            XCTAssertEqual(
+                NumiLocalized.format("setting.installment.reminder.days.value", arguments: [3], locale: locale),
+                expected.value
+            )
+        }
+    }
+
     func testSubscriptionBillingConfirmationActionIsLocalized() {
         let expectedValues = [
             "zh-Hans": "确认扣费",
