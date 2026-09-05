@@ -379,6 +379,48 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testCustomSubscriptionIntervalPersists() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        let interval = try XCTUnwrap(SubscriptionInterval(value: 2, unit: .month))
+        let subscription = Subscription(
+            name: "Bi-monthly",
+            amount: Money(minorUnits: 1200, currencyCode: "CNY"),
+            cycle: .custom,
+            customInterval: interval,
+            nextBillingDate: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+
+        try store.createSubscription(subscription)
+
+        XCTAssertEqual(store.subscriptions.first?.customInterval, interval)
+    }
+
+    @MainActor
+    func testSkippingCustomSubscriptionBillingAdvancesByConfiguredInterval() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 1)))
+        let subscription = Subscription(
+            name: "Every two weeks",
+            amount: Money(minorUnits: 1000, currencyCode: account.balance.currencyCode),
+            cycle: .custom,
+            customInterval: try XCTUnwrap(SubscriptionInterval(value: 2, unit: .week)),
+            accountID: account.id,
+            nextBillingDate: start
+        )
+        try store.createSubscription(subscription)
+
+        XCTAssertTrue(try store.skipNextSubscriptionBilling(id: subscription.id, calendar: calendar))
+        XCTAssertEqual(
+            store.subscriptions.first?.nextBillingDate,
+            calendar.date(byAdding: .weekOfYear, value: 2, to: start)
+        )
+    }
+
+    @MainActor
     func testReschedulingPendingInstallmentPeriodPersistsDueDate() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

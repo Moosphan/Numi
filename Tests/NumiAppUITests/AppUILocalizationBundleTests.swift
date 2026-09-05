@@ -120,6 +120,21 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testCustomSubscriptionIntervalFormLabelsAreLocalized() {
+        let expectedValues = [
+            "zh-Hans": (value: "每隔", unit: "单位"),
+            "en": (value: "Every", unit: "Unit"),
+            "zh-Hant": (value: "每隔", unit: "單位"),
+            "ja": (value: "間隔", unit: "単位")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("subscription.interval.value", locale: locale), expected.value)
+            XCTAssertEqual(NumiLocalized.lookup("subscription.interval.unit", locale: locale), expected.unit)
+        }
+    }
+
     func testSubscriptionReminderCopyIsLocalized() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.lookup("subscription.reminder.enable"), "开启到期提醒")

@@ -145,18 +145,22 @@ final class SubscriptionEntity {
     var amountMinorUnits: Int64
     var currencyCode: String
     var cycleRawValue: String
+    var customIntervalValue: Int?
+    var customIntervalUnitRawValue: String?
     var categoryID: UUID?
     var accountID: UUID?
     var nextBillingDate: Date
     var isEnabled: Bool
     var note: String
 
-    init(id: UUID, name: String, amountMinorUnits: Int64, currencyCode: String, cycleRawValue: String, categoryID: UUID?, accountID: UUID?, nextBillingDate: Date, isEnabled: Bool, note: String) {
+    init(id: UUID, name: String, amountMinorUnits: Int64, currencyCode: String, cycleRawValue: String, customIntervalValue: Int? = nil, customIntervalUnitRawValue: String? = nil, categoryID: UUID?, accountID: UUID?, nextBillingDate: Date, isEnabled: Bool, note: String) {
         self.id = id
         self.name = name
         self.amountMinorUnits = amountMinorUnits
         self.currencyCode = currencyCode
         self.cycleRawValue = cycleRawValue
+        self.customIntervalValue = customIntervalValue
+        self.customIntervalUnitRawValue = customIntervalUnitRawValue
         self.categoryID = categoryID
         self.accountID = accountID
         self.nextBillingDate = nextBillingDate
@@ -438,6 +442,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             amountMinorUnits: sub.amount.minorUnits,
             currencyCode: sub.amount.currencyCode,
             cycleRawValue: sub.cycle.rawValue,
+            customIntervalValue: sub.customInterval?.value,
+            customIntervalUnitRawValue: sub.customInterval?.unit.rawValue,
             categoryID: sub.categoryID,
             accountID: sub.accountID,
             nextBillingDate: sub.nextBillingDate,
@@ -456,6 +462,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         entity.amountMinorUnits = sub.amount.minorUnits
         entity.currencyCode = sub.amount.currencyCode
         entity.cycleRawValue = sub.cycle.rawValue
+        entity.customIntervalValue = sub.customInterval?.value
+        entity.customIntervalUnitRawValue = sub.customInterval?.unit.rawValue
         entity.categoryID = sub.categoryID
         entity.accountID = sub.accountID
         entity.nextBillingDate = sub.nextBillingDate
@@ -479,20 +487,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         guard let entity = fetchSubscriptionEntities().first(where: { $0.id == id }), entity.isEnabled else {
             return false
         }
-        let cycle = SubscriptionCycle(rawValue: entity.cycleRawValue) ?? .monthly
-        let nextDate: Date
-        switch cycle {
-        case .daily:
-            nextDate = calendar.date(byAdding: .day, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
-        case .weekly:
-            nextDate = calendar.date(byAdding: .weekOfYear, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
-        case .monthly:
-            nextDate = calendar.date(byAdding: .month, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
-        case .quarterly:
-            nextDate = calendar.date(byAdding: .month, value: 3, to: entity.nextBillingDate) ?? entity.nextBillingDate
-        case .yearly:
-            nextDate = calendar.date(byAdding: .year, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
-        }
+        let nextDate = entity.domainModel.nextBillingDateAfter(entity.nextBillingDate, calendar: calendar)
         guard nextDate > entity.nextBillingDate else { return false }
         entity.nextBillingDate = nextDate
         try save()
@@ -931,6 +926,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
                 amountMinorUnits: sub.amount.minorUnits,
                 currencyCode: sub.amount.currencyCode,
                 cycleRawValue: sub.cycle.rawValue,
+                customIntervalValue: sub.customInterval?.value,
+                customIntervalUnitRawValue: sub.customInterval?.unit.rawValue,
                 categoryID: sub.categoryID,
                 accountID: sub.accountID,
                 nextBillingDate: sub.nextBillingDate,
@@ -1519,11 +1516,17 @@ private extension BudgetSettingEntity {
 
 private extension SubscriptionEntity {
     var domainModel: Subscription {
-        Subscription(
+        let customInterval = customIntervalValue.flatMap { value in
+            customIntervalUnitRawValue
+                .flatMap(SubscriptionIntervalUnit.init(rawValue:))
+                .flatMap { SubscriptionInterval(value: value, unit: $0) }
+        }
+        return Subscription(
             id: id,
             name: name,
             amount: Money(minorUnits: amountMinorUnits, currencyCode: currencyCode),
             cycle: SubscriptionCycle(rawValue: cycleRawValue) ?? .monthly,
+            customInterval: customInterval,
             categoryID: categoryID,
             accountID: accountID,
             nextBillingDate: nextBillingDate,

@@ -4164,6 +4164,24 @@
         }
       }
     },
+    "subscription.interval.unit": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "单位" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unit" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "單位" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "単位" } }
+      }
+    },
+    "subscription.interval.value": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "每隔" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Every" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "每隔" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "間隔" } }
+      }
+    },
     "subscription.next.billing": {
       "extractionState": "manual",
       "localizations": {

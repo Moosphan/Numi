@@ -8,6 +8,7 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
     case monthly = "monthly"
     case quarterly = "quarterly"
     case yearly = "yearly"
+    case custom = "custom"
 
     public var displayName: String {
         switch self {
@@ -16,7 +17,35 @@ public enum SubscriptionCycle: String, Codable, CaseIterable, Sendable {
         case .monthly: return NumiLocalized.string( "subscription.cycle.monthly")
         case .quarterly: return NumiLocalized.string("subscription.cycle.quarterly")
         case .yearly: return NumiLocalized.string( "subscription.cycle.yearly")
+        case .custom: return NumiLocalized.string("subscription.cycle.custom")
         }
+    }
+}
+
+public enum SubscriptionIntervalUnit: String, Codable, CaseIterable, Sendable {
+    case day
+    case week
+    case month
+    case year
+
+    public var displayName: String {
+        switch self {
+        case .day: return NumiLocalized.string("subscription.interval.unit.day")
+        case .week: return NumiLocalized.string("subscription.interval.unit.week")
+        case .month: return NumiLocalized.string("subscription.interval.unit.month")
+        case .year: return NumiLocalized.string("subscription.interval.unit.year")
+        }
+    }
+}
+
+public struct SubscriptionInterval: Codable, Equatable, Hashable, Sendable {
+    public let value: Int
+    public let unit: SubscriptionIntervalUnit
+
+    public init?(value: Int, unit: SubscriptionIntervalUnit) {
+        guard value > 0 else { return nil }
+        self.value = value
+        self.unit = unit
     }
 }
 
@@ -27,6 +56,7 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
     public var name: String
     public var amount: Money
     public var cycle: SubscriptionCycle
+    public var customInterval: SubscriptionInterval?
     public var categoryID: UUID?
     public var accountID: UUID?
     public var nextBillingDate: Date
@@ -38,6 +68,7 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
         name: String,
         amount: Money,
         cycle: SubscriptionCycle,
+        customInterval: SubscriptionInterval? = nil,
         categoryID: UUID? = nil,
         accountID: UUID? = nil,
         nextBillingDate: Date,
@@ -48,6 +79,7 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
         self.name = name
         self.amount = amount
         self.cycle = cycle
+        self.customInterval = customInterval
         self.categoryID = categoryID
         self.accountID = accountID
         self.nextBillingDate = nextBillingDate
@@ -63,6 +95,14 @@ public struct Subscription: Identifiable, Codable, Equatable, Hashable, Sendable
         case .monthly: return calendar.date(byAdding: .month, value: 1, to: date) ?? date
         case .quarterly: return calendar.date(byAdding: .month, value: 3, to: date) ?? date
         case .yearly: return calendar.date(byAdding: .year, value: 1, to: date) ?? date
+        case .custom:
+            guard let customInterval, customInterval.value > 0 else { return date }
+            switch customInterval.unit {
+            case .day: return calendar.date(byAdding: .day, value: customInterval.value, to: date) ?? date
+            case .week: return calendar.date(byAdding: .weekOfYear, value: customInterval.value, to: date) ?? date
+            case .month: return calendar.date(byAdding: .month, value: customInterval.value, to: date) ?? date
+            case .year: return calendar.date(byAdding: .year, value: customInterval.value, to: date) ?? date
+            }
         }
     }
 

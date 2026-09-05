@@ -1122,6 +1122,8 @@ private struct SubscriptionFormView: View {
     @State private var name = ""
     @State private var amountText = ""
     @State private var cycle: SubscriptionCycle = .monthly
+    @State private var customIntervalValueText = "1"
+    @State private var customIntervalUnit: SubscriptionIntervalUnit = .month
     @State private var categoryID: UUID?
     @State private var accountID: UUID?
     @State private var nextBillingDate = Date()
@@ -1141,6 +1143,8 @@ private struct SubscriptionFormView: View {
             _name = State(initialValue: sub.name)
             _amountText = State(initialValue: Self.decimalText(for: sub.amount))
             _cycle = State(initialValue: sub.cycle)
+            _customIntervalValueText = State(initialValue: sub.customInterval.map { String($0.value) } ?? "1")
+            _customIntervalUnit = State(initialValue: sub.customInterval?.unit ?? .month)
             _categoryID = State(initialValue: sub.categoryID)
             _accountID = State(initialValue: sub.accountID)
             _nextBillingDate = State(initialValue: sub.nextBillingDate)
@@ -1172,6 +1176,22 @@ private struct SubscriptionFormView: View {
                     }
                     .accessibilityIdentifier("picker.subscriptionCycle")
 
+                    if cycle == .custom {
+                        TextField("subscription.interval.value", text: $customIntervalValueText)
+                            #if os(iOS)
+                            .keyboardType(.numberPad)
+                            #endif
+                            .monospacedDigit()
+                            .accessibilityIdentifier("input.subscriptionCustomIntervalValue")
+
+                        Picker("subscription.interval.unit", selection: $customIntervalUnit) {
+                            ForEach(SubscriptionIntervalUnit.allCases, id: \.self) { unit in
+                                Text(unit.displayName).tag(unit)
+                            }
+                        }
+                        .accessibilityIdentifier("picker.subscriptionCustomIntervalUnit")
+                    }
+
                     DatePicker("subscription.next.billing", selection: $nextBillingDate, displayedComponents: .date)
                         .accessibilityIdentifier("picker.subscriptionNextDate")
                 } header: {
@@ -1188,11 +1208,17 @@ private struct SubscriptionFormView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(existing == nil ? NumiLocalized.string( "common.add") : NumiLocalized.string( "common.save")) {
                         guard let amount = try? Money(decimalString: amountText, currencyCode: "CNY") else { return }
+                        let customInterval = SubscriptionInterval(
+                            value: Int(customIntervalValueText) ?? 0,
+                            unit: customIntervalUnit
+                        )
+                        guard cycle != .custom || customInterval != nil else { return }
                         let sub = Subscription(
                             id: existing?.id ?? UUID(),
                             name: name,
                             amount: amount,
                             cycle: cycle,
+                            customInterval: cycle == .custom ? customInterval : nil,
                             categoryID: categoryID,
                             accountID: accountID,
                             nextBillingDate: nextBillingDate,
@@ -1208,8 +1234,13 @@ private struct SubscriptionFormView: View {
     }
 
     private var canSave: Bool {
-        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let hasValidCustomInterval = cycle != .custom || SubscriptionInterval(
+            value: Int(customIntervalValueText) ?? 0,
+            unit: customIntervalUnit
+        ) != nil
+        return !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && (try? Money(decimalString: amountText, currencyCode: "CNY")) != nil
+            && hasValidCustomInterval
     }
 
     private static func decimalText(for money: Money) -> String {

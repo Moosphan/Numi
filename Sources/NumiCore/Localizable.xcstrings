@@ -677,6 +677,51 @@
         "ja": { "stringUnit": { "state": "translated", "value": "四半期ごと" } }
       }
     },
+    "subscription.cycle.custom": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自定义间隔" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Custom interval" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自訂間隔" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "カスタム間隔" } }
+      }
+    },
+    "subscription.interval.unit.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "天" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Days" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "天" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "日" } }
+      }
+    },
+    "subscription.interval.unit.week": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "周" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Weeks" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "週" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "週" } }
+      }
+    },
+    "subscription.interval.unit.month": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "个月" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Months" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "個月" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "か月" } }
+      }
+    },
+    "subscription.interval.unit.year": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "年" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Years" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "年" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "年" } }
+      }
+    },
     "subscription.cycle.yearly": {
       "extractionState": "manual",
       "localizations": {

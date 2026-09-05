@@ -2,6 +2,88 @@ import XCTest
 @testable import NumiCore
 
 final class SubscriptionTests: XCTestCase {
+    func testCustomMonthIntervalAdvancesBillingDateByIntervalValue() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 31)))
+        let subscription = Subscription(
+            name: "Bi-monthly service",
+            amount: Money(minorUnits: 1000, currencyCode: "CNY"),
+            cycle: .custom,
+            customInterval: try XCTUnwrap(SubscriptionInterval(value: 2, unit: .month)),
+            nextBillingDate: start
+        )
+
+        XCTAssertEqual(
+            subscription.nextBillingDateAfter(start, calendar: calendar),
+            calendar.date(byAdding: .month, value: 2, to: start)
+        )
+    }
+
+    func testCustomCycleWithoutIntervalDoesNotAdvance() {
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        let subscription = Subscription(
+            name: "Invalid custom",
+            amount: Money(minorUnits: 1000, currencyCode: "CNY"),
+            cycle: .custom,
+            nextBillingDate: start
+        )
+
+        XCTAssertEqual(subscription.nextBillingDateAfter(start), start)
+    }
+
+    func testCustomCycleWithInvalidDecodedIntervalDoesNotAdvance() throws {
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        let interval = try JSONDecoder().decode(
+            SubscriptionInterval.self,
+            from: Data("{\"value\":-1,\"unit\":\"month\"}".utf8)
+        )
+        let subscription = Subscription(
+            name: "Invalid decoded custom",
+            amount: Money(minorUnits: 1000, currencyCode: "CNY"),
+            cycle: .custom,
+            customInterval: interval,
+            nextBillingDate: start
+        )
+
+        XCTAssertEqual(subscription.nextBillingDateAfter(start), start)
+    }
+
+    func testCustomSubscriptionCycleAndIntervalUnitsAreLocalizedInAllSupportedLanguages() {
+        let expectedCycleValues = [
+            "zh-Hans": "自定义间隔",
+            "zh-Hant": "自訂間隔",
+            "en": "Custom interval",
+            "ja": "カスタム間隔"
+        ]
+        let expectedMonthUnitValues = [
+            "zh-Hans": "个月",
+            "zh-Hant": "個月",
+            "en": "Months",
+            "ja": "か月"
+        ]
+
+        for (language, expected) in expectedCycleValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("subscription.cycle.custom", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+        for (language, expected) in expectedMonthUnitValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("subscription.interval.unit.month", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+    }
+
+    func testSubscriptionIntervalUnitUsesLocalizedDisplayName() {
+        XCTAssertEqual(
+            SubscriptionIntervalUnit.month.displayName,
+            NumiLocalized.string("subscription.interval.unit.month")
+        )
+    }
+
     func testQuarterlyCycleAdvancesBillingDateByThreeMonths() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
