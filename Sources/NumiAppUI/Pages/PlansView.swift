@@ -52,6 +52,7 @@ public struct PlansView: View {
     @State private var selectedSubscription: Subscription?
     @State private var selectedInstallmentPlan: InstallmentPlan?
     @State private var pendingDeleteSubscription: Subscription?
+    @State private var pendingSkipSubscription: Subscription?
     @State private var pendingDeleteInstallment: InstallmentPlan?
 
     private let budgets: [BudgetCardModel]
@@ -64,6 +65,7 @@ public struct PlansView: View {
     private let onAddSubscription: (Subscription) -> Void
     private let onUpdateSubscription: (Subscription) -> Void
     private let onDeleteSubscription: (UUID) -> Void
+    private let onSkipSubscriptionBilling: (UUID) -> Void
     private let onAddInstallmentPlan: (InstallmentPlan) -> Void
     private let onUpdateInstallmentPlan: (InstallmentPlan) -> Void
     private let onDeleteInstallmentPlan: (UUID) -> Void
@@ -83,6 +85,7 @@ public struct PlansView: View {
         onAddSubscription: @escaping (Subscription) -> Void = { _ in },
         onUpdateSubscription: @escaping (Subscription) -> Void = { _ in },
         onDeleteSubscription: @escaping (UUID) -> Void = { _ in },
+        onSkipSubscriptionBilling: @escaping (UUID) -> Void = { _ in },
         onAddInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onUpdateInstallmentPlan: @escaping (InstallmentPlan) -> Void = { _ in },
         onDeleteInstallmentPlan: @escaping (UUID) -> Void = { _ in },
@@ -101,6 +104,7 @@ public struct PlansView: View {
         self.onUpdateSubscription = onUpdateSubscription
         self.onAddSubscription = onAddSubscription
         self.onDeleteSubscription = onDeleteSubscription
+        self.onSkipSubscriptionBilling = onSkipSubscriptionBilling
         self.onAddInstallmentPlan = onAddInstallmentPlan
         self.onUpdateInstallmentPlan = onUpdateInstallmentPlan
         self.onDeleteInstallmentPlan = onDeleteInstallmentPlan
@@ -336,6 +340,14 @@ public struct PlansView: View {
                 Label("common.edit", systemImage: "square.and.pencil")
             }
 
+            if sub.isEnabled {
+                Button {
+                    pendingSkipSubscription = sub
+                } label: {
+                    Label("subscription.skip.next", systemImage: "forward.end")
+                }
+            }
+
             Button {
 #if canImport(UIKit)
                 UIPasteboard.general.string = shareText(sub)
@@ -369,6 +381,24 @@ public struct PlansView: View {
             }
         } message: {
             Text("subscription.delete.msg")
+        }
+        .confirmationDialog(
+            NumiLocalized.string("subscription.skip.confirm", sub.name),
+            isPresented: Binding(
+                get: { pendingSkipSubscription?.id == sub.id },
+                set: { if !$0 { pendingSkipSubscription = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("subscription.skip.next") {
+                onSkipSubscriptionBilling(sub.id)
+                pendingSkipSubscription = nil
+            }
+            Button("common.cancel", role: .cancel) {
+                pendingSkipSubscription = nil
+            }
+        } message: {
+            Text("subscription.skip.msg")
         }
     }
 

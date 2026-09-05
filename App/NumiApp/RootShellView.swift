@@ -532,6 +532,13 @@ struct RootShellView: View {
                         initializationError = error.localizedDescription
                     }
                 },
+                onSkipSubscriptionBilling: { id in
+                    do {
+                        _ = try store.skipNextSubscriptionBilling(id: id)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
+                },
                 onAddInstallmentPlan: { plan in
                     do {
                         try store.createInstallmentPlan(plan)

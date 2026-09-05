@@ -307,6 +307,30 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testSkippingNextSubscriptionBillingAdvancesDateWithoutTransaction() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let account = try XCTUnwrap(store.accounts.first)
+        let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2025, month: 1, day: 1)))
+        let subscription = Subscription(
+            name: "Daily",
+            amount: Money(minorUnits: 1000, currencyCode: account.balance.currencyCode),
+            cycle: .daily,
+            accountID: account.id,
+            nextBillingDate: start
+        )
+        try store.createSubscription(subscription)
+
+        XCTAssertTrue(try store.skipNextSubscriptionBilling(id: subscription.id, calendar: calendar))
+        XCTAssertEqual(store.subscriptions.first?.nextBillingDate, calendar.date(byAdding: .day, value: 1, to: start))
+        XCTAssertTrue(store.subscriptions.first?.isEnabled == true)
+        XCTAssertTrue(store.visibleTransactions.isEmpty)
+        XCTAssertFalse(try store.skipNextSubscriptionBilling(id: UUID(), calendar: calendar))
+    }
+
+    @MainActor
     func testRecordingInstallmentPaymentCreatesAndBindsExpenseTransaction() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

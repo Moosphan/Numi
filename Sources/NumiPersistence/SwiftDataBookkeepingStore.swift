@@ -475,6 +475,31 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
     }
 
     @discardableResult
+    public func skipNextSubscriptionBilling(id: UUID, calendar: Calendar = .current) throws -> Bool {
+        guard let entity = fetchSubscriptionEntities().first(where: { $0.id == id }), entity.isEnabled else {
+            return false
+        }
+        let cycle = SubscriptionCycle(rawValue: entity.cycleRawValue) ?? .monthly
+        let nextDate: Date
+        switch cycle {
+        case .daily:
+            nextDate = calendar.date(byAdding: .day, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
+        case .weekly:
+            nextDate = calendar.date(byAdding: .weekOfYear, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
+        case .monthly:
+            nextDate = calendar.date(byAdding: .month, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
+        case .yearly:
+            nextDate = calendar.date(byAdding: .year, value: 1, to: entity.nextBillingDate) ?? entity.nextBillingDate
+        }
+        guard nextDate > entity.nextBillingDate else { return false }
+        entity.nextBillingDate = nextDate
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+        return true
+    }
+
+    @discardableResult
     public func processDueSubscriptions(asOf date: Date = Date(), calendar: Calendar = .current) throws -> Int {
         guard let ledger = ledgers.first else { return 0 }
         var processed = 0
