@@ -5,6 +5,8 @@ public struct ThemeSelectionView: View {
     @AppStorage("app.theme.id") private var themeID = NumiTheme.default.id
     @AppStorage("app.colorSchemeMode") private var colorSchemeMode: ColorSchemeMode = .system
     @ObservedObject private var themeController = NumiThemeController.shared
+    @ObservedObject private var membership = MembershipController.shared
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     public init() {}
 
@@ -26,6 +28,8 @@ public struct ThemeSelectionView: View {
         .background(NumiColor.surfacePage)
         .navigationTitle(Text("theme.title"))
         .modifier(LargeTitleNavigationChrome())
+        .task { await membership.start() }
+        .membershipPaywall(context: $membershipPaywallContext)
     }
 
     // MARK: - Appearance Section
@@ -79,9 +83,11 @@ public struct ThemeSelectionView: View {
             VStack(spacing: 0) {
                 ForEach(Array(NumiTheme.allCases.enumerated()), id: \.element.id) { index, theme in
                     let isSelected = themeID == theme.id
+                    let isLocked = theme.id == NumiTheme.brandWarm.id
+                        && !isSelected
+                        && membership.decision(for: .openPremiumThemes) != .granted
                     Button {
-                        themeController.apply(theme: theme)
-                        themeID = theme.id
+                        selectTheme(theme)
                     } label: {
                         HStack(spacing: NumiSpacing.s3) {
                             themeSwatch(theme)
@@ -98,6 +104,11 @@ public struct ThemeSelectionView: View {
                                 Image(systemName: "checkmark.circle.fill")
                                     .font(.system(size: 20, weight: .semibold))
                                     .foregroundStyle(NumiColor.accentDeep)
+                            } else if isLocked {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(NumiColor.textTertiary)
+                                    .accessibilityIdentifier("theme.locked.warm")
                             }
                         }
                         .padding(.horizontal, NumiSpacing.s4)
@@ -147,6 +158,28 @@ public struct ThemeSelectionView: View {
         default:
             return NumiLocalized.string( "theme.default.desc")
         }
+    }
+
+    private func selectTheme(_ theme: NumiTheme) {
+        guard let request = ThemeSelectionAccessPolicy.featureRequest(
+            currentThemeID: themeID,
+            candidateThemeID: theme.id
+        ) else {
+            apply(theme)
+            return
+        }
+
+        switch membership.decision(for: request) {
+        case .granted:
+            apply(theme)
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
+    private func apply(_ theme: NumiTheme) {
+        themeController.apply(theme: theme)
+        themeID = theme.id
     }
 
     private func color(_ hex: String) -> Color {
