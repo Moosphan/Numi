@@ -3394,6 +3394,51 @@
         }
       }
     },
+    "insight.custom.range": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自定义日期范围" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Custom Date Range" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自訂日期範圍" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "カスタム期間" } }
+      }
+    },
+    "insight.custom.range.active": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "正在查看自定义范围" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Viewing a Custom Range" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "正在查看自訂範圍" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "カスタム期間を表示中" } }
+      }
+    },
+    "insight.custom.range.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "选择日期范围" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Choose Date Range" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "選擇日期範圍" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "期間を選択" } }
+      }
+    },
+    "insight.custom.range.from": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "开始日期" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Start Date" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "開始日期" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "開始日" } }
+      }
+    },
+    "insight.custom.range.to": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "结束日期" } },
+        "en": { "stringUnit": { "state": "translated", "value": "End Date" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "結束日期" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "終了日" } }
+      }
+    },
     "budget.title": {
       "extractionState": "manual",
       "localizations": {

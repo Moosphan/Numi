@@ -90,7 +90,7 @@ Numi 是一款 iOS 本地优先的记账 App。用户数据默认保存在设备
 | 账户/钱包 | `AccountManagementView` + `MembershipFeatureGate.createAccount` | 可用且已接 Gate | F：前 20 个；P0：第 21 个起无限 | 20 个足够覆盖普通个人；专业/多场景用户自然升级。已有账户永远可编辑/删除。 |
 | 多账本 | `LedgerManagementView` + `createLedger` Gate | 可用且已接 Gate | F：2 个；P0：无限 | 生活/旅行两个免费账本完整；第三账本是清晰的规模型付费触发。 |
 | 首页月度概览、基础趋势和分类分布 | `TransactionsHomeView`、`InsightsView`；50,000 条汇总性能基线 | 基础可用 | F | 用户应能免费理解自己的收支；不锁基本报告。 |
-| 高级洞悉（任意时间范围、模块排序隐藏、专项统计、高级报告） | `MembershipCapability.advancedInsights` 已定义；P2-07 Not Started | 未交付 | P1 | 没有完整 UI/数据语义与 Gate 接入，不得出售；完成后才作为 Pro。 |
+| 高级洞悉（任意时间范围、模块排序隐藏、专项统计、高级报告） | `MembershipCapability.advancedInsights` 已定义；洞悉页的自定义日期范围已接入 `.openAdvancedInsights`，P2-07 仍未开始 | 部分交付 | P1 | 自定义范围可作为后续高级洞悉的已交付子能力；在模块排序、专项统计与高级报告完成前，仍不得作为 V1 已售权益宣传。 |
 | 周/月基础预算 | `BudgetSetting` | 基础可用 | F | 预算是核心财务习惯，不应因未付费失效。 |
 | 分类/账户预算、预算顺延、报销/退款预算规则 | P0B-05 Partial；`advancedBudgeting` 仅能力枚举 | 不完整 | P1 | 先补数据模型与规则，再作为 Pro 的“精细预算”；不把当前不完整规则卖给用户。 |
 | 订阅/循环记账 | `PlansView`、提醒调度；P1-01 Partial | 自动化强，仍有日历规则缺口 | F：3 项；P0：无限订阅；P1：高级规则 | 第 4 个订阅触发升级合理；已有的暂停、跳过、确认、提醒不按单次收费。法定节假日/第 N 工作日等未完成能力暂不承诺。 |

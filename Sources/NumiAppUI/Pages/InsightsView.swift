@@ -47,17 +47,24 @@ public enum InsightsTimeDimension: String, CaseIterable, Identifiable {
 
 public struct InsightsView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
+    @ObservedObject private var membership = MembershipController.shared
     private let summary: TransactionSummary
     private let expenseDistribution: [InsightsDistributionRow]
     private let incomeDistribution: [InsightsDistributionRow]
     private let categories: [NumiCore.Category]
     private let periodTitle: String
+    private let customRange: InsightsCustomRange?
     private let onPreviousPeriod: () -> Void
     private let onNextPeriod: () -> Void
     private let onTimeDimensionChange: (InsightsTimeDimension) -> Void
+    private let onApplyCustomRange: (InsightsCustomRange) -> Void
     private let onSelectCategory: (InsightsDistributionRow, String) -> Void
 
     @State private var selectedDimension: InsightsTimeDimension = .month
+    @State private var customRangeStart = Date()
+    @State private var customRangeEnd = Date()
+    @State private var showsCustomRangeEditor = false
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     public init(
         summary: TransactionSummary,
@@ -65,9 +72,11 @@ public struct InsightsView: View {
         incomeDistribution: [InsightsDistributionRow] = [],
         categories: [NumiCore.Category] = [],
         periodTitle: String = "",
+        customRange: InsightsCustomRange? = nil,
         onPreviousPeriod: @escaping () -> Void = {},
         onNextPeriod: @escaping () -> Void = {},
         onTimeDimensionChange: @escaping (InsightsTimeDimension) -> Void = { _ in },
+        onApplyCustomRange: @escaping (InsightsCustomRange) -> Void = { _ in },
         onSelectCategory: @escaping (InsightsDistributionRow, String) -> Void = { _, _ in }
     ) {
         self.summary = summary
@@ -75,9 +84,11 @@ public struct InsightsView: View {
         self.incomeDistribution = incomeDistribution
         self.categories = categories
         self.periodTitle = periodTitle
+        self.customRange = customRange
         self.onPreviousPeriod = onPreviousPeriod
         self.onNextPeriod = onNextPeriod
         self.onTimeDimensionChange = onTimeDimensionChange
+        self.onApplyCustomRange = onApplyCustomRange
         self.onSelectCategory = onSelectCategory
     }
 
@@ -96,6 +107,27 @@ public struct InsightsView: View {
                 .padding(.horizontal, 2)
                 .padding(.vertical, 2)
 
+                Button {
+                    startCustomRangeSelection()
+                } label: {
+                    HStack(spacing: NumiSpacing.s3) {
+                        Image(systemName: "calendar.badge.clock")
+                            .font(.system(size: 15, weight: .semibold))
+                        Text(customRange == nil ? "insight.custom.range" : "insight.custom.range.active")
+                            .font(NumiFont.bodyStrong)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .padding(.horizontal, NumiSpacing.s4)
+                    .frame(height: 42)
+                    .background(NumiColor.surfaceCardSubtle)
+                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("action.insightsCustomRange")
+
                 // Period navigation
                 HStack(spacing: NumiSpacing.s3) {
                     Button {
@@ -109,6 +141,7 @@ public struct InsightsView: View {
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
+                    .disabled(customRange != nil)
 
                     Spacer()
 
@@ -131,6 +164,7 @@ public struct InsightsView: View {
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
+                    .disabled(customRange != nil)
                 }
                 .padding(.horizontal, NumiSpacing.s4)
 
@@ -168,6 +202,43 @@ public struct InsightsView: View {
         .background(NumiColor.surfacePage)
         .navigationTitle(Text("insight.title"))
         .modifier(LargeTitleNavigationChrome())
+        .sheet(isPresented: $showsCustomRangeEditor) {
+            NavigationStack {
+                Form {
+                    DatePicker("insight.custom.range.from", selection: $customRangeStart, displayedComponents: .date)
+                    DatePicker("insight.custom.range.to", selection: $customRangeEnd, displayedComponents: .date)
+                }
+                .navigationTitle("insight.custom.range.title")
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("common.cancel") {
+                            showsCustomRangeEditor = false
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("common.done") {
+                            onApplyCustomRange(InsightsCustomRange(start: customRangeStart, end: customRangeEnd))
+                            showsCustomRangeEditor = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
+        }
+        .task { await membership.start() }
+        .membershipPaywall(context: $membershipPaywallContext)
+    }
+
+    private func startCustomRangeSelection() {
+        switch membership.decision(for: .openAdvancedInsights) {
+        case .granted:
+            let selectedRange = customRange ?? InsightsCustomRange(start: Date(), end: Date())
+            customRangeStart = selectedRange.start
+            customRangeEnd = selectedRange.end
+            showsCustomRangeEditor = true
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
     }
 
     // MARK: - Distribution Section

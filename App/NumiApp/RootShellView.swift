@@ -64,6 +64,7 @@ struct RootShellView: View {
     @State private var showAIRecordToast = false
     @State private var insightsDimension: InsightsTimeDimension = .month
     @State private var insightsAnchorDate = Date()
+    @State private var insightsCustomRange: InsightsCustomRange?
     @State private var selectedCategoryID: UUID?
     @State private var selectedCategoryType: String = "expense"
     @State private var isBottomAccessoryHiddenByPage = false
@@ -494,11 +495,16 @@ struct RootShellView: View {
                 incomeDistribution: income,
                 categories: store.categories,
                 periodTitle: periodTitle,
+                customRange: insightsCustomRange,
                 onPreviousPeriod: { moveInsightsPeriod(-1) },
                 onNextPeriod: { moveInsightsPeriod(1) },
                 onTimeDimensionChange: { dim in
                     insightsDimension = dim
                     insightsAnchorDate = Date()
+                    insightsCustomRange = nil
+                },
+                onApplyCustomRange: { range in
+                    insightsCustomRange = range
                 },
                 onSelectCategory: { row, type in
                     selectedCategoryID = row.categoryID
@@ -918,13 +924,20 @@ struct RootShellView: View {
         let interval = insightsDateInterval
         let ledgerID = currentLedger?.id
         return store.visibleTransactions.filter { tx in
-            interval.contains(tx.occurredAt)
+            InsightsCustomRangePolicy.contains(tx.occurredAt, in: interval)
                 && (ledgerID == nil || tx.ledgerID == ledgerID)
         }
     }
 
     private var insightsDateInterval: DateInterval {
         let cal = calendar
+        if let insightsCustomRange {
+            return InsightsCustomRangePolicy.dateInterval(
+                start: insightsCustomRange.start,
+                end: insightsCustomRange.end,
+                calendar: cal
+            )
+        }
         switch insightsDimension {
         case .day:
             return DateInterval(start: cal.startOfDay(for: insightsAnchorDate), duration: 86400)
@@ -949,6 +962,10 @@ struct RootShellView: View {
     private var insightsPeriodTitle: String {
         let interval = insightsDateInterval
         let start = interval.start
+        if insightsCustomRange != nil {
+            let end = calendar.date(byAdding: .day, value: -1, to: interval.end) ?? interval.end
+            return "\(yearMonthDayFormatter.string(from: start)) - \(yearMonthDayFormatter.string(from: end))"
+        }
         switch insightsDimension {
         case .day:
             return monthDayWeekdayFormatter.string(from: start)
