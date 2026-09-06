@@ -1,12 +1,45 @@
 import Foundation
 
+public enum MembershipAnnualSavings {
+    /// Returns the discount percentage only when an annual plan costs less than twelve
+    /// monthly renewals. StoreKit supplies the prices, so this never embeds a locale or
+    /// production price assumption in the app.
+    public static func percent(monthlyPrice: Decimal?, yearlyPrice: Decimal?) -> Int? {
+        guard let monthlyPrice, let yearlyPrice,
+              monthlyPrice > 0, yearlyPrice > 0
+        else { return nil }
+
+        let annualMonthlyPrice = monthlyPrice * 12
+        guard yearlyPrice < annualMonthlyPrice else { return nil }
+
+        let rawPercentage = ((annualMonthlyPrice - yearlyPrice) / annualMonthlyPrice) * 100
+        let handler = NSDecimalNumberHandler(
+            roundingMode: .plain,
+            scale: 0,
+            raiseOnExactness: false,
+            raiseOnOverflow: false,
+            raiseOnUnderflow: false,
+            raiseOnDivideByZero: false
+        )
+        let percentage = NSDecimalNumber(decimal: rawPercentage)
+            .rounding(accordingToBehavior: handler)
+            .intValue
+        return percentage > 0 ? percentage : nil
+    }
+}
+
 public struct MembershipProduct: Equatable, Sendable, Identifiable {
     public var id: MembershipPlan { plan }
     public let plan: MembershipPlan
     public let displayPrice: String
-    public init(plan: MembershipPlan, displayPrice: String) {
+    /// StoreKit's decimal price is kept separately from `displayPrice` so pricing
+    /// comparisons never parse localized currency text.
+    public let price: Decimal?
+
+    public init(plan: MembershipPlan, displayPrice: String, price: Decimal? = nil) {
         self.plan = plan
         self.displayPrice = displayPrice
+        self.price = price
     }
 }
 

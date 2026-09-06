@@ -15,7 +15,9 @@ public final class MembershipStoreKitService: MembershipCommerceService {
             return (plan, product)
         })
         return MembershipPlan.allCases.compactMap { plan in
-            products[plan].map { MembershipProduct(plan: plan, displayPrice: $0.displayPrice) }
+            products[plan].map {
+                MembershipProduct(plan: plan, displayPrice: $0.displayPrice, price: $0.price)
+            }
         }
     }
 

@@ -120,10 +120,12 @@ public struct MembershipBenefitsView: View {
     private var planSelector: some View {
         HStack(spacing: NumiSpacing.s2) {
             ForEach(MembershipPlan.allCases, id: \.self) { plan in
+                let product = membership.products.first(where: { $0.plan == plan })
                 Button { selectedPlan = plan } label: {
                     MembershipPlanCard(
                         plan: plan, isSelected: selectedPlan == plan,
-                        price: membership.products.first(where: { $0.plan == plan })?.displayPrice
+                        price: product?.displayPrice,
+                        yearlySavingsPercent: plan == .yearlyPro ? yearlySavingsPercent : nil
                     )
                 }
                 .buttonStyle(.plain)
@@ -134,6 +136,13 @@ public struct MembershipBenefitsView: View {
         }
         .fixedSize(horizontal: false, vertical: true)
         .padding(.top, NumiSpacing.s2)
+    }
+
+    private var yearlySavingsPercent: Int? {
+        MembershipAnnualSavings.percent(
+            monthlyPrice: membership.products.first(where: { $0.plan == .monthlyPro })?.price,
+            yearlyPrice: membership.products.first(where: { $0.plan == .yearlyPro })?.price
+        )
     }
 
     private var comparisonHint: some View {
@@ -442,6 +451,7 @@ private struct MembershipPlanCard: View {
     let plan: MembershipPlan
     let isSelected: Bool
     let price: String?
+    let yearlySavingsPercent: Int?
 
     private var termKey: String {
         switch plan {
@@ -492,15 +502,26 @@ private struct MembershipPlanCard: View {
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
         .overlay(alignment: .top) {
             if plan == .yearlyPro {
-                Text(NumiLocalized.string("membership.plan.yearly.badge"))
-                    .font(NumiFont.caption.weight(.semibold))
-                    .foregroundStyle(NumiColor.accentDeep)
-                    .padding(.horizontal, NumiSpacing.s2)
-                    .padding(.vertical, 3)
-                    .background(NumiColor.controlFillStrong, in: Capsule())
-                    .offset(y: -10)
+                HStack(spacing: NumiSpacing.s1) {
+                    membershipBadge("membership.plan.yearly.badge")
+                    if let yearlySavingsPercent {
+                        membershipBadge(
+                            NumiLocalized.string("membership.plan.yearly.savings", yearlySavingsPercent)
+                        )
+                    }
+                }
+                .offset(y: -10)
             }
         }
+    }
+
+    private func membershipBadge(_ text: String) -> some View {
+        Text(text)
+            .font(NumiFont.caption.weight(.semibold))
+            .foregroundStyle(NumiColor.accentDeep)
+            .padding(.horizontal, NumiSpacing.s2)
+            .padding(.vertical, 3)
+            .background(NumiColor.controlFillStrong, in: Capsule())
     }
 }
 

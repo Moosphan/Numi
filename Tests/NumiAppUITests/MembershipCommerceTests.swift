@@ -3,6 +3,11 @@ import NumiCore
 @testable import NumiAppUI
 
 final class MembershipCommerceTests: XCTestCase {
+    func testLoadedProductsExposeARealPriceForAnnualSavings() {
+        let product = MembershipProduct(plan: .monthlyPro, displayPrice: "$8.00", price: 8)
+        XCTAssertEqual(product.price, 8)
+    }
+
     func testLifetimeWinsRegardlessOfRecurringOrder() {
         for entries: [MembershipEntitlement] in [
             [.init(plan: .lifetimePro), .init(plan: .yearlyPro, expiresAt: .distantFuture)],

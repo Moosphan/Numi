@@ -93,6 +93,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testMembershipAnnualSavingsCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "节省 %lld%%",
+            "en": "Save %lld%%",
+            "zh-Hant": "節省 %lld%%",
+            "ja": "%lld%% お得"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("membership.plan.yearly.savings", locale: Locale(identifier: language)),
+                expected,
+                "Missing annual savings copy for \(language)"
+            )
+        }
+    }
+
     func testMembershipCommerceCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (success: "订阅已生效，Pro 权益现已解锁。", ledgerLimit: "免费版最多可创建 2 个账本，升级 Pro 后可无限创建。"),

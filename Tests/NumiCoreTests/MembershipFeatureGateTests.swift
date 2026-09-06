@@ -2,6 +2,14 @@ import XCTest
 @testable import NumiCore
 
 final class MembershipFeatureGateTests: XCTestCase {
+    func testAnnualSavingsUsesTwelveMonthlyPrices() {
+        XCTAssertEqual(MembershipAnnualSavings.percent(monthlyPrice: 8, yearlyPrice: 48), 50)
+    }
+
+    func testAnnualSavingsIsHiddenWhenYearlyPlanIsNotCheaper() {
+        XCTAssertNil(MembershipAnnualSavings.percent(monthlyPrice: 8, yearlyPrice: 96))
+    }
+
     func testFreeTierBlocksTheThirdLedger() {
         let gate = MembershipFeatureGate(status: .free)
 
