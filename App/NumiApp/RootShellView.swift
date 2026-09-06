@@ -536,17 +536,28 @@ struct RootShellView: View {
                 categories: store.categories,
                 accounts: store.accounts,
                 defaultCurrencyCode: activeCurrencyCode,
-                onSaveBudget: { period, amount, isEnabled, categoryID, accountID in
+                onSaveBudget: { existingID, period, amount, isEnabled, categoryID, accountID in
                     do {
-                        guard let ledgerID = currentLedger?.id else { return }
-                        try store.upsertBudgetSetting(
-                            period: period,
-                            amount: amount,
-                            isEnabled: isEnabled,
-                            ledgerID: ledgerID,
-                            categoryID: categoryID,
-                            accountID: accountID
-                        )
+                        if let existingID {
+                            _ = try store.updateBudgetSetting(
+                                id: existingID,
+                                period: period,
+                                amount: amount,
+                                isEnabled: isEnabled,
+                                categoryID: categoryID,
+                                accountID: accountID
+                            )
+                        } else {
+                            guard let ledgerID = currentLedger?.id else { return }
+                            try store.upsertBudgetSetting(
+                                period: period,
+                                amount: amount,
+                                isEnabled: isEnabled,
+                                ledgerID: ledgerID,
+                                categoryID: categoryID,
+                                accountID: accountID
+                            )
+                        }
                     } catch {
                         initializationError = error.localizedDescription
                     }
@@ -1115,7 +1126,8 @@ struct RootShellView: View {
                 spent: spent,
                 status: status,
                 isEnabled: setting?.isEnabled ?? true,
-                id: setting?.id ?? BudgetCardModel.defaultID(for: period)
+                id: setting?.id ?? BudgetCardModel.defaultID(for: period),
+                persistedBudgetID: setting?.id
             )
         }
         let scopedCards = settings
@@ -1135,6 +1147,7 @@ struct RootShellView: View {
                     status: status,
                     isEnabled: setting.isEnabled,
                     id: setting.id,
+                    persistedBudgetID: setting.id,
                     categoryID: setting.categoryID,
                     accountID: setting.accountID,
                     scopeName: scopeName

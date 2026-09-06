@@ -1304,6 +1304,31 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         return setting.domainModel
     }
 
+    @discardableResult
+    public func updateBudgetSetting(
+        id: UUID,
+        period: BudgetPeriod,
+        amount: Money,
+        isEnabled: Bool,
+        categoryID: UUID?,
+        accountID: UUID?
+    ) throws -> Bool {
+        guard let setting = fetchBudgetSettingEntities().first(where: { $0.id == id }) else {
+            return false
+        }
+
+        setting.periodRawValue = period.rawValue
+        setting.amountMinorUnits = amount.minorUnits
+        setting.currencyCode = amount.currencyCode
+        setting.isEnabled = isEnabled
+        setting.categoryID = categoryID
+        setting.accountID = accountID
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+        return true
+    }
+
     private func applyBalanceEffect(type: TransactionType, amount: Money, accountID: UUID, targetAccountID: UUID?) throws {
         let transaction = Transaction(type: type, amount: amount, accountID: accountID, targetAccountID: targetAccountID)
         try updateBalances(reversing: nil, applying: transaction)

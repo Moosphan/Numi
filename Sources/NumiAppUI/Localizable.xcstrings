@@ -3452,6 +3452,24 @@
         }
       }
     },
+    "budget.scope.conflict.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "预算范围已存在" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Budget Scope Already Exists" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "預算範圍已存在" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "予算範囲はすでに存在します" } }
+      }
+    },
+    "budget.scope.conflict.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "此分类和账户范围已有专项预算，请调整范围或编辑现有预算。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "This category and account scope already has a budget. Adjust the scope or edit the existing budget." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "此分類和帳戶範圍已有專項預算，請調整範圍或編輯現有預算。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "このカテゴリと口座の範囲にはすでに予算があります。範囲を変更するか、既存の予算を編集してください。" } }
+      }
+    },
     "budget.scope": {
       "extractionState": "manual",
       "localizations": {

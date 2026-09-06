@@ -3,6 +3,7 @@ import NumiCore
 
 public struct BudgetCardModel: Identifiable, Equatable {
     public let id: UUID
+    public let persistedBudgetID: UUID?
     public let period: BudgetPeriod
     public let amount: Money
     public let spent: Money
@@ -19,6 +20,7 @@ public struct BudgetCardModel: Identifiable, Equatable {
         status: BudgetStatus,
         isEnabled: Bool,
         id: UUID = UUID(),
+        persistedBudgetID: UUID? = nil,
         categoryID: UUID? = nil,
         accountID: UUID? = nil,
         scopeName: String? = nil
@@ -29,6 +31,7 @@ public struct BudgetCardModel: Identifiable, Equatable {
         self.status = status
         self.isEnabled = isEnabled
         self.id = id
+        self.persistedBudgetID = persistedBudgetID
         self.categoryID = categoryID
         self.accountID = accountID
         self.scopeName = scopeName
@@ -65,7 +68,7 @@ public struct PlansView: View {
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
     private let defaultCurrencyCode: String
-    private let onSaveBudget: (BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void
+    private let onSaveBudget: (UUID?, BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void
     private let onAddSubscription: (Subscription) -> Void
     private let onUpdateSubscription: (Subscription) -> Void
     private let onDeleteSubscription: (UUID) -> Void
@@ -89,7 +92,7 @@ public struct PlansView: View {
         categories: [NumiCore.Category] = [],
         accounts: [Account] = [],
         defaultCurrencyCode: String = "CNY",
-        onSaveBudget: @escaping (BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void = { _, _, _, _, _ in },
+        onSaveBudget: @escaping (UUID?, BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void = { _, _, _, _, _, _ in },
         onAddSubscription: @escaping (Subscription) -> Void = { _ in },
         onUpdateSubscription: @escaping (Subscription) -> Void = { _ in },
         onDeleteSubscription: @escaping (UUID) -> Void = { _ in },
@@ -219,12 +222,28 @@ public struct PlansView: View {
             BudgetFormView(
                 draft: draft,
                 categories: categories,
-                accounts: accounts
+                accounts: accounts,
+                otherBudgetScopes: budgets
+                    .filter { $0.id != draft.id }
+                    .map {
+                        BudgetScope(
+                            period: $0.period,
+                            categoryID: $0.categoryID,
+                            accountID: $0.accountID
+                        )
+                    }
             ) { savedDraft in
                 guard let amount = try? Money(decimalString: savedDraft.amountText, currencyCode: savedDraft.currencyCode) else {
                     return
                 }
-                onSaveBudget(savedDraft.period, amount, savedDraft.isEnabled, savedDraft.categoryID, savedDraft.accountID)
+                onSaveBudget(
+                    savedDraft.persistedBudgetID,
+                    savedDraft.period,
+                    amount,
+                    savedDraft.isEnabled,
+                    savedDraft.categoryID,
+                    savedDraft.accountID
+                )
                 editingDraft = nil
             }
             .presentationDetents([.medium])
@@ -1031,6 +1050,7 @@ private struct PlanEmptyStateCard: View {
 
 private struct BudgetDraft: Identifiable {
     let id: UUID
+    let persistedBudgetID: UUID?
     let requiresScope: Bool
     var period: BudgetPeriod
     var amountText: String
@@ -1041,6 +1061,7 @@ private struct BudgetDraft: Identifiable {
 
     init(model: BudgetCardModel) {
         self.id = model.id
+        self.persistedBudgetID = model.persistedBudgetID
         self.requiresScope = false
         self.period = model.period
         self.amountText = Self.decimalText(for: model.amount)
@@ -1053,6 +1074,7 @@ private struct BudgetDraft: Identifiable {
     static func newAdvanced(currencyCode: String) -> BudgetDraft {
         BudgetDraft(
             id: UUID(),
+            persistedBudgetID: nil,
             requiresScope: true,
             period: .month,
             amountText: "",
@@ -1065,6 +1087,7 @@ private struct BudgetDraft: Identifiable {
 
     private init(
         id: UUID,
+        persistedBudgetID: UUID?,
         requiresScope: Bool,
         period: BudgetPeriod,
         amountText: String,
@@ -1074,6 +1097,7 @@ private struct BudgetDraft: Identifiable {
         accountID: UUID?
     ) {
         self.id = id
+        self.persistedBudgetID = persistedBudgetID
         self.requiresScope = requiresScope
         self.period = period
         self.amountText = amountText
@@ -1100,9 +1124,11 @@ private struct BudgetFormView: View {
     @ObservedObject private var membership = MembershipController.shared
     @State private var draft: BudgetDraft
     @State private var membershipPaywallContext: MembershipPaywallContext?
+    @State private var showsScopeConflict = false
 
     private let originalCategoryID: UUID?
     private let originalAccountID: UUID?
+    private let otherBudgetScopes: [BudgetScope]
     private let onSave: (BudgetDraft) -> Void
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
@@ -1111,6 +1137,7 @@ private struct BudgetFormView: View {
         draft: BudgetDraft,
         categories: [NumiCore.Category],
         accounts: [Account],
+        otherBudgetScopes: [BudgetScope],
         onSave: @escaping (BudgetDraft) -> Void
     ) {
         self._draft = State(initialValue: draft)
@@ -1118,6 +1145,7 @@ private struct BudgetFormView: View {
         self.originalAccountID = draft.accountID
         self.categories = categories.filter { $0.kind == .expense && !$0.isHidden }
         self.accounts = accounts.filter { !$0.isHidden }
+        self.otherBudgetScopes = otherBudgetScopes
         self.onSave = onSave
     }
 
@@ -1187,12 +1215,17 @@ private struct BudgetFormView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
-                        onSave(draft)
+                        save()
                     }
                     .disabled(!canSave)
                     .accessibilityIdentifier("action.saveBudget")
                 }
             }
+        }
+        .alert("budget.scope.conflict.title", isPresented: $showsScopeConflict) {
+            Button("common.ok", role: .cancel) {}
+        } message: {
+            Text("budget.scope.conflict.message")
         }
         .membershipPaywall(context: $membershipPaywallContext)
     }
@@ -1213,6 +1246,19 @@ private struct BudgetFormView: View {
                 categoryID: draft.categoryID,
                 accountID: draft.accountID
             ))
+    }
+
+    private func save() {
+        guard !BudgetScopeConflictPolicy.hasConflict(
+            existingScopes: otherBudgetScopes,
+            period: draft.period,
+            categoryID: draft.categoryID,
+            accountID: draft.accountID
+        ) else {
+            showsScopeConflict = true
+            return
+        }
+        onSave(draft)
     }
 
     private func validateScopeSelection() {

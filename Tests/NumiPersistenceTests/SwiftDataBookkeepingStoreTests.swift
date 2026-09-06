@@ -1142,6 +1142,43 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testUpdatingScopedBudgetChangesTheExistingRecordWithoutCreatingAnother() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let accountID = try XCTUnwrap(store.accounts.first?.id)
+        let expenseCategories = store.categories.filter { $0.kind == .expense }
+        let originalCategoryID = try XCTUnwrap(expenseCategories.first?.id)
+        let updatedCategoryID = try XCTUnwrap(expenseCategories.dropFirst().first?.id)
+        let original = try store.upsertBudgetSetting(
+            period: .month,
+            amount: Money(decimalString: "100", currencyCode: "CNY"),
+            isEnabled: true,
+            ledgerID: ledgerID,
+            categoryID: originalCategoryID
+        )
+
+        let didUpdate = try store.updateBudgetSetting(
+            id: original.id,
+            period: .month,
+            amount: Money(decimalString: "250", currencyCode: "CNY"),
+            isEnabled: false,
+            categoryID: updatedCategoryID,
+            accountID: accountID
+        )
+
+        XCTAssertTrue(didUpdate)
+        XCTAssertEqual(store.budgetSettings.count, 1)
+        let updated = try XCTUnwrap(store.budgetSettings.first)
+        XCTAssertEqual(updated.id, original.id)
+        XCTAssertEqual(updated.amount, try Money(decimalString: "250", currencyCode: "CNY"))
+        XCTAssertFalse(updated.isEnabled)
+        XCTAssertEqual(updated.categoryID, updatedCategoryID)
+        XCTAssertEqual(updated.accountID, accountID)
+    }
+
+    @MainActor
     func testCategoryBudgetAndTransactionLinksPersist() throws {
         let url = try temporaryStoreURL()
         let categoryID: UUID
