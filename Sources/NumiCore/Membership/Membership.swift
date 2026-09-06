@@ -41,6 +41,18 @@ public enum MembershipCapability: String, CaseIterable, Codable, Hashable, Senda
     case advancedImportExport
 }
 
+/// The only benefits that the V1 paywall may present as available today.
+///
+/// This deliberately differs from `MembershipCapability`: the capability list includes
+/// future integration points, while this catalogue protects the commercial promise from
+/// getting ahead of verified product delivery.
+public enum MembershipCommercialOffering: String, CaseIterable, Sendable {
+    case unlimitedOrganization
+    case subscriptions
+    case installments
+    case encryptedBackup
+}
+
 public enum MembershipStatusSource: String, Codable, Sendable {
     case unknown
     case cached

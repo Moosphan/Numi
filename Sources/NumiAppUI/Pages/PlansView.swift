@@ -45,6 +45,7 @@ public struct BudgetCardModel: Identifiable, Equatable {
 public struct PlansView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     @AppStorage("app.subscription.requiresConfirmation") private var requiresSubscriptionConfirmation = false
+    @ObservedObject private var membership = MembershipController.shared
     @State private var editingDraft: BudgetDraft?
     @State private var showAddSubscription = false
     @State private var showAddInstallment = false
@@ -55,6 +56,7 @@ public struct PlansView: View {
     @State private var pendingDeleteSubscription: Subscription?
     @State private var pendingSkipSubscription: Subscription?
     @State private var pendingDeleteInstallment: InstallmentPlan?
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     private let budgets: [BudgetCardModel]
     private let subscriptions: [Subscription]
@@ -192,12 +194,12 @@ public struct PlansView: View {
             ToolbarItem(placement: .trailingBar) {
                 Menu {
                     Button {
-                        showAddSubscription = true
+                        startAddingSubscription()
                     } label: {
                         Label("subscription.add", systemImage: "repeat")
                     }
                     Button {
-                        showAddInstallment = true
+                        startAddingInstallment()
                     } label: {
                         Label("installment.add", systemImage: "creditcard")
                     }
@@ -260,6 +262,7 @@ public struct PlansView: View {
             .presentationDetents([.large])
             .presentationCornerRadius(28)
         }
+        .membershipPaywall(context: $membershipPaywallContext)
     }
 
     private var budgetOverviewSection: some View {
@@ -310,7 +313,7 @@ public struct PlansView: View {
                     accessibilityIdentifier: "plans.empty.subscriptions",
                     actionTitle: NumiLocalized.string("subscription.add"),
                     actionAccessibilityIdentifier: "action.addSubscription.empty",
-                    action: { showAddSubscription = true }
+                    action: { startAddingSubscription() }
                 )
             } else {
                 ForEach(subscriptions) { sub in
@@ -474,7 +477,7 @@ public struct PlansView: View {
                     accessibilityIdentifier: "plans.empty.installments",
                     actionTitle: NumiLocalized.string("installment.add"),
                     actionAccessibilityIdentifier: "action.addInstallment.empty",
-                    action: { showAddInstallment = true }
+                    action: { startAddingInstallment() }
                 )
             } else {
                 ForEach(installmentPlans) { plan in
@@ -593,6 +596,24 @@ public struct PlansView: View {
             }
         } message: {
             Text("installment.delete.msg")
+        }
+    }
+
+    private func startAddingSubscription() {
+        switch membership.decision(for: .createSubscription(currentCount: subscriptions.count)) {
+        case .granted:
+            showAddSubscription = true
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
+    private func startAddingInstallment() {
+        switch membership.decision(for: .createInstallment(currentCount: installmentPlans.count)) {
+        case .granted:
+            showAddInstallment = true
+        case .blocked(let context):
+            membershipPaywallContext = context
         }
     }
 

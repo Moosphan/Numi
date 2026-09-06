@@ -14858,6 +14858,924 @@
         }
       }
     },
+    "membership.free": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "免费版" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Free" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "免費版" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "無料版" } }
+      }
+    },
+    "membership.free.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "基础记账完整可用，Pro 解锁更多效率与安全能力" } },
+        "en": { "stringUnit": { "state": "translated", "value": "All core bookkeeping is available; Pro unlocks more efficiency and security." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "基礎記帳完整可用，Pro 解鎖更多效率與安全能力" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "基本の家計管理はすべて利用可能。Proで効率性と安全性をさらに高められます。" } }
+      }
+    },
+    "membership.details.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Numi Pro" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Numi Pro" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Numi Pro" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Numi Pro" } }
+      }
+    },
+    "membership.details.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "为你的财务管理解锁更多效率、洞察与安心。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unlock more efficiency, insight, and peace of mind for your finances." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "為你的財務管理解鎖更多效率、洞察與安心。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "家計管理をもっと効率的に、深く、安心して続けられます。" } }
+      }
+    },
+    "membership.benefits.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Pro 核心权益" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Core Pro Benefits" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Pro 核心權益" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Proの主な特典" } }
+      }
+    },
+    "membership.benefit.unlimited.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无限账本与账户" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unlimited ledgers & accounts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "無限帳本與帳戶" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "無制限の帳簿と口座" } }
+      }
+    },
+    "membership.benefit.unlimited.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "集中管理生活与工作的每一笔资金。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Bring every personal and work fund into one place." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "集中管理生活與工作的每一筆資金。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "暮らしと仕事のお金をひとつにまとめて管理。" } }
+      }
+    },
+    "membership.benefit.subscriptions.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "更多订阅与循环记账" } },
+        "en": { "stringUnit": { "state": "translated", "value": "More subscriptions & recurring entries" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "更多訂閱與循環記帳" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクと繰り返し記帳をもっと" } }
+      }
+    },
+    "membership.benefit.subscriptions.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "管理更多固定账单，并用提醒与自动记录保持从容。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Manage more recurring bills with reminders and automatic entries." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "管理更多固定帳單，並用提醒與自動記錄保持從容。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "リマインダーと自動記帳で、より多くの定期支払いを管理。" } }
+      }
+    },
+    "membership.benefit.installments.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "更多分期与还款计划" } },
+        "en": { "stringUnit": { "state": "translated", "value": "More installments & payment plans" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "更多分期與還款計畫" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "分割払いと返済プランをもっと" } }
+      }
+    },
+    "membership.benefit.installments.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "记录还款、提前结清或调整到期日，让每一期都清晰可控。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Record payments, settle early, or reschedule due dates with clarity." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "記錄還款、提前結清或調整到期日，讓每一期都清晰可控。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "支払い記録、繰り上げ完済、期日の変更まで、各回を明確に管理。" } }
+      }
+    },
+    "membership.benefit.currency.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "多货币与自动汇率" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Multi-currency & rates" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "多貨幣與自動匯率" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "複数通貨と自動為替レート" } }
+      }
+    },
+    "membership.benefit.currency.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用统一主货币看懂跨境收支。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Understand international spending in one home currency." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "用統一主貨幣看懂跨境收支。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "基準通貨ひとつで海外での収支も把握。" } }
+      }
+    },
+    "membership.benefit.security.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "加密备份" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Encrypted backups" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "加密備份" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "暗号化バックアップ" } }
+      }
+    },
+    "membership.benefit.security.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "为本地数据创建受密码保护的备份，需要时可安心恢复。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Create password-protected backups for local data and restore with confidence." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "為本機資料建立受密碼保護的備份，需要時可安心恢復。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "ローカルデータをパスワード保護してバックアップし、安心して復元。" } }
+      }
+    },
+    "membership.benefit.intelligence.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 智能记账" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI-powered bookkeeping" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 智慧記帳" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIでスマートに記帳" } }
+      }
+    },
+    "membership.benefit.intelligence.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "一句话生成账单，让日常记录更轻松。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Turn a sentence into a transaction. Make everyday tracking effortless." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "一句話產生帳單，讓日常記錄更輕鬆。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "ひと言で明細を作成。毎日の記録をもっと手軽に。" } }
+      }
+    },
+    "membership.benefit.budget.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "高级洞悉与预算" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Insights & smarter budgets" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "進階洞悉與預算" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "詳しい分析と予算管理" } }
+      }
+    },
+    "membership.benefit.budget.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "看清收支趋势，让每一份预算都有方向。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "See spending trends clearly and give every budget a purpose." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "看清收支趨勢，讓每一份預算都有方向。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "収支の傾向を把握して、目的に合った予算づくりを。" } }
+      }
+    },
+    "membership.plan.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "选择方案" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Choose a plan" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "選擇方案" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プランを選択" } }
+      }
+    },
+    "membership.plan.monthly": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Numi Pro 月付" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Numi Pro Monthly" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Numi Pro 月付" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Numi Pro 月額" } }
+      }
+    },
+    "membership.plan.monthly.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "按月订阅，随时管理" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Monthly subscription, managed anytime" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "按月訂閱，隨時管理" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "月ごとのサブスクリプション、いつでも管理" } }
+      }
+    },
+    "membership.plan.yearly": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Numi Pro 年付" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Numi Pro Yearly" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Numi Pro 年付" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Numi Pro 年額" } }
+      }
+    },
+    "membership.plan.yearly.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "全年完整 Pro 权益" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Full Pro benefits for a year" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "全年完整 Pro 權益" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "1年間のすべてのPro特典" } }
+      }
+    },
+    "membership.plan.yearly.badge": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "推荐" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Recommended" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "推薦" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "おすすめ" } }
+      }
+    },
+    "membership.plan.lifetime": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Numi Pro 终身版" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Numi Pro Lifetime" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Numi Pro 終身版" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Numi Pro 買い切り" } }
+      }
+    },
+    "membership.plan.lifetime.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "一次购买，长期使用" } },
+        "en": { "stringUnit": { "state": "translated", "value": "One purchase, long-term use" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "一次購買，長期使用" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "一度の購入で長く利用" } }
+      }
+    },
+    "membership.comparison.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "权益对比" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Compare benefits" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "權益比較" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "特典を比較" } }
+      }
+    },
+    "membership.comparison.feature": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "功能" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Feature" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "功能" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "機能" } }
+      }
+    },
+    "membership.comparison.free": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "免费版" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Free" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "免費版" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "無料版" } }
+      }
+    },
+    "membership.comparison.ledgers": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "账本" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Ledgers" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "帳本" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "帳簿" } }
+      }
+    },
+    "membership.comparison.accounts": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "账户" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Accounts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "帳戶" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "口座" } }
+      }
+    },
+    "membership.comparison.subscriptions": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅与循环记账" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Subscriptions & recurring entries" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱與循環記帳" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクと繰り返し記帳" } }
+      }
+    },
+    "membership.comparison.installments": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "分期计划" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Installment plans" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "分期計畫" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "分割払いプラン" } }
+      }
+    },
+    "membership.comparison.encryptedBackup": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "加密备份创建" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Create encrypted backups" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "建立加密備份" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "暗号化バックアップの作成" } }
+      }
+    },
+    "membership.comparison.dataExport": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "JSON / CSV 导入导出" } },
+        "en": { "stringUnit": { "state": "translated", "value": "JSON / CSV import & export" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "JSON / CSV 匯入匯出" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "JSON / CSVの読み込み・書き出し" } }
+      }
+    },
+    "membership.comparison.privacy": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "隐私锁与金额隐藏" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Privacy lock & hidden amounts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "隱私鎖與金額隱藏" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プライバシーロックと金額の非表示" } }
+      }
+    },
+    "membership.comparison.currencies": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "多货币与汇率" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Currencies & rates" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "多貨幣與匯率" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "複数通貨と為替レート" } }
+      }
+    },
+    "membership.comparison.security": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "同步与加密备份" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Sync & encrypted backup" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "同步與加密備份" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "同期と暗号化バックアップ" } }
+      }
+    },
+    "membership.comparison.intelligence": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 与高级洞悉" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI & advanced insights" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 與進階洞悉" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIと進階洞察" } }
+      }
+    },
+    "membership.comparison.two": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "2 个" } },
+        "en": { "stringUnit": { "state": "translated", "value": "2" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "2 個" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "2件" } }
+      }
+    },
+    "membership.comparison.twenty": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "20 个" } },
+        "en": { "stringUnit": { "state": "translated", "value": "20" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "20 個" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "20件" } }
+      }
+    },
+    "membership.comparison.three": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "3 个" } },
+        "en": { "stringUnit": { "state": "translated", "value": "3" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "3 個" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "3件" } }
+      }
+    },
+    "membership.comparison.notIncluded": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "不支持" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Not included" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "不支援" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "非対応" } }
+      }
+    },
+    "membership.purchase.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "购买与恢复购买暂未开放，敬请期待。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Purchases and restoring purchases will be available soon." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "購買與恢復購買尚未開放，敬請期待。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "購入と購入の復元は、まもなくご利用いただけます。" } }
+      }
+    },
+    "membership.purchase.unavailable.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "购买即将开放" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Purchases coming soon" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "購買即將開放" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "購入はまもなく開始" } }
+      }
+    },
+    "membership.paywall.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "解锁更多空间与守护：无限账本、账户、订阅和分期，以及加密备份。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unlock more room and protection: unlimited ledgers, accounts, subscriptions, installments, and encrypted backups." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "解鎖更多空間與守護：無限帳本、帳戶、訂閱和分期，以及加密備份。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "帳簿、口座、サブスク、分割払いを無制限に。暗号化バックアップも利用できます。" } }
+      }
+    },
+    "membership.unlock.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "解锁 Numi Pro 会员" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unlock Numi Pro" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "解鎖 Numi Pro 會員" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Numi Proをアンロック" } }
+      }
+    },
+    "membership.comparison.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "下滑查看免费版与 Pro 的完整权益对比" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Scroll down to compare Free and Pro benefits" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "下滑查看免費版與 Pro 的完整權益比較" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "下にスクロールして無料版とProの特典を比較" } }
+      }
+    },
+    "membership.plan.monthly.term": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "1 个月" } },
+        "en": { "stringUnit": { "state": "translated", "value": "1 month" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "1 個月" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "1か月" } }
+      }
+    },
+    "membership.plan.yearly.term": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "12 个月" } },
+        "en": { "stringUnit": { "state": "translated", "value": "12 months" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "12 個月" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "12か月" } }
+      }
+    },
+    "membership.plan.lifetime.term": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "终身会员" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Lifetime" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "終身會員" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "買い切り" } }
+      }
+    },
+    "membership.plan.price.pending": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "价格待显示" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Price pending" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "價格待顯示" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "価格は準備中" } }
+      }
+    },
+    "membership.purchase.start": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "开始订阅" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Start subscription" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "開始訂閱" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクリプションを開始" } }
+      }
+    },
+    "membership.purchase.terms": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用户协议｜隐私协议" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Terms | Privacy" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "使用者協議｜隱私協議" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "利用規約｜プライバシー" } }
+      }
+    },
+    "membership.purchase.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "恢复购买" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Restore purchases" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "恢復購買" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "購入を復元" } }
+      }
+    },
+    "membership.comparison.bookkeeping": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "基础记账主流程" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Core bookkeeping" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "基礎記帳主流程" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "基本の家計管理" } }
+      }
+    },
+    "membership.comparison.autoRates": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自动汇率" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Automatic exchange rates" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自動匯率" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "自動為替レート" } }
+      }
+    },
+    "membership.comparison.budgeting": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "高级洞悉与预算" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Advanced insights & budgets" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "進階洞悉與預算" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "高度なインサイトと予算" } }
+      }
+    },
+    "membership.comparison.plans": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅、分期与循环" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Subscriptions, installments & recurring" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱、分期與循環" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスク・分割払い・繰り返し" } }
+      }
+    },
+    "membership.comparison.themes": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "高级主题与图标" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Premium themes & icons" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "進階主題與圖示" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プレミアムテーマとアイコン" } }
+      }
+    },
+    "membership.comparison.limited": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "受限" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Limited" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "受限" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "制限あり" } }
+      }
+    },
+    "membership.comparison.one": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "1 套" } },
+        "en": { "stringUnit": { "state": "translated", "value": "1 set" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "1 套" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "1セット" } }
+      }
+    },
+    "membership.commerce.products.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "暂时无法获取订阅方案，请稍后重试。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Plans are unavailable right now. Please try again shortly." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "暫時無法取得訂閱方案，請稍後再試。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "現在プランを取得できません。しばらくしてからもう一度お試しください。" } }
+      }
+    },
+    "membership.commerce.products.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "加载订阅方案失败，请重试。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unable to load plans. Please try again." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "載入訂閱方案失敗，請重試。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プランを読み込めませんでした。もう一度お試しください。" } }
+      }
+    },
+    "membership.commerce.purchase.success": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅已生效，Pro 权益现已解锁。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your subscription is active and Pro features are unlocked." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱已生效，Pro 權益現已解鎖。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクリプションが有効になり、Pro機能が利用できます。" } }
+      }
+    },
+    "membership.commerce.purchase.processing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "购买正在处理，请稍候。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your purchase is being processed." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "購買正在處理，請稍候。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "購入を処理しています。しばらくお待ちください。" } }
+      }
+    },
+    "membership.commerce.purchase.pending": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "购买正在等待批准。批准后会自动生效。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your purchase is awaiting approval and will activate automatically." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "購買正在等待批准。批准後會自動生效。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "購入は承認待ちです。承認後に自動で有効になります。" } }
+      }
+    },
+    "membership.commerce.purchase.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "购买未完成，请稍后重试。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your purchase could not be completed. Please try again." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "購買未完成，請稍後重試。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "購入を完了できませんでした。もう一度お試しください。" } }
+      }
+    },
+    "membership.commerce.verification.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法验证这笔购买，Pro 权益尚未变更。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "We could not verify this purchase, so your Pro access has not changed." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "無法驗證這筆購買，Pro 權益尚未變更。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "この購入を確認できなかったため、Proの利用状況は変更されていません。" } }
+      }
+    },
+    "membership.commerce.restore.success": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已恢复你的 Pro 权益。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your Pro access has been restored." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已恢復你的 Pro 權益。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Proの利用状況を復元しました。" } }
+      }
+    },
+    "membership.commerce.restore.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未找到可恢复的 Pro 购买记录。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "No restorable Pro purchases were found." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未找到可恢復的 Pro 購買紀錄。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "復元できるProの購入履歴は見つかりませんでした。" } }
+      }
+    },
+    "membership.commerce.restore.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "恢复购买失败，请稍后重试。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unable to restore purchases. Please try again." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "恢復購買失敗，請稍後重試。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "購入を復元できませんでした。もう一度お試しください。" } }
+      }
+    },
+    "membership.commerce.lifetime.warning": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "终身版会立即解锁长期 Pro 权益；现有订阅请在 App Store 中自行管理。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Lifetime unlocks long-term Pro access immediately. Manage any existing subscription in the App Store." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "終身版會立即解鎖長期 Pro 權益；現有訂閱請在 App Store 中自行管理。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "買い切り版では長期のPro利用がすぐに有効になります。既存のサブスクリプションはApp Storeで管理してください。" } }
+      }
+    },
+    "membership.commerce.buy.lifetime": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "购买终身版" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Buy lifetime" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "購買終身版" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "買い切り版を購入" } }
+      }
+    },
+    "membership.commerce.period.end": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "当前周期结束" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Current period ends" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "目前週期結束" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "現在の期間終了日" } }
+      }
+    },
+    "membership.commerce.manage": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "管理订阅" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Manage subscription" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "管理訂閱" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクリプションを管理" } }
+      }
+    },
+    "membership.commerce.once": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "一次购买" } },
+        "en": { "stringUnit": { "state": "translated", "value": "One-time purchase" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "一次購買" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "買い切り" } }
+      }
+    },
+    "membership.commerce.recurring": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自动续订" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Auto-renewing" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自動續訂" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "自動更新" } }
+      }
+    },
+    "membership.commerce.terms": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用户协议" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Terms" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "使用者協議" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "利用規約" } }
+      }
+    },
+    "membership.commerce.privacy": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "隐私协议" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Privacy" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "隱私協議" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プライバシー" } }
+      }
+    },
+    "membership.commerce.legal.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "协议链接尚未配置。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "This legal link has not been configured yet." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "協議連結尚未設定。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "この規約リンクはまだ設定されていません。" } }
+      }
+    },
+    "membership.commerce.legal.required": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "购买将在用户协议和隐私政策配置完成后开放。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Purchases will be available once the Terms and Privacy Policy are configured." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "購買將在使用者協議和隱私政策設定完成後開放。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "利用規約とプライバシーポリシーの設定後に購入を開始できます。" } }
+      }
+    },
+    "membership.commerce.processing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "处理中…" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Processing…" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "處理中…" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "処理中…" } }
+      }
+    },
+    "membership.commerce.current.plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "当前方案" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Current plan" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "目前方案" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "現在のプラン" } }
+      }
+    },
+    "membership.commerce.lifetime.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "一次购买，长期使用。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "One purchase for long-term access." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "一次購買，長期使用。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "一度の購入で長く利用できます。" } }
+      }
+    },
+    "membership.commerce.renewal.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅会自动续订，可随时在 App Store 管理。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Subscriptions renew automatically and can be managed in the App Store." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱會自動續訂，可隨時在 App Store 管理。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクリプションは自動更新され、App Storeでいつでも管理できます。" } }
+      }
+    },
+    "membership.limit.ledgers": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "免费版最多可创建 2 个账本，升级 Pro 后可无限创建。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Free includes up to 2 ledgers. Upgrade to Pro for unlimited ledgers." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "免費版最多可建立 2 個帳本，升級 Pro 後可無限建立。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "無料版では帳簿を2個まで作成できます。Proにアップグレードすると無制限です。" } }
+      }
+    },
+    "membership.limit.accounts": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "免费版最多可创建 20 个账户，升级 Pro 后可无限创建。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Free includes up to 20 accounts. Upgrade to Pro for unlimited accounts." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "免費版最多可建立 20 個帳戶，升級 Pro 後可無限建立。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "無料版では口座を20個まで作成できます。Proにアップグレードすると無制限です。" } }
+      }
+    },
+    "membership.limit.subscriptions": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "免费版最多可创建 3 个订阅，升级 Pro 后可无限创建。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Free includes up to 3 subscriptions. Upgrade to Pro for unlimited subscriptions." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "免費版最多可建立 3 個訂閱，升級 Pro 後可無限建立。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "無料版ではサブスクリプションを3件まで作成できます。Proにアップグレードすると無制限です。" } }
+      }
+    },
+    "membership.limit.installments": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "免费版最多可创建 2 个分期，升级 Pro 后可无限创建。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Free includes up to 2 installment plans. Upgrade to Pro for unlimited plans." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "免費版最多可建立 2 個分期，升級 Pro 後可無限建立。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "無料版では分割払いを2件まで作成できます。Proにアップグレードすると無制限です。" } }
+      }
+    },
+    "membership.limit.currency": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自动汇率是 Pro 权益。升级后可自动更新汇率。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Automatic exchange rates are a Pro benefit. Upgrade to keep rates up to date." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自動匯率是 Pro 權益。升級後可自動更新匯率。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "自動為替レートはProの特典です。アップグレードすると自動更新できます。" } }
+      }
+    },
+    "membership.limit.sync": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "iCloud 同步是 Pro 权益。升级后可在设备间同步数据。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "iCloud sync is a Pro benefit. Upgrade to keep data in sync across devices." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "iCloud 同步是 Pro 權益。升級後可在裝置間同步資料。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "iCloud同期はProの特典です。アップグレードするとデバイス間で同期できます。" } }
+      }
+    },
+    "membership.limit.backup": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "加密备份是 Pro 权益。升级后可创建受密码保护的备份。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Encrypted backups are a Pro benefit. Upgrade to create password-protected backups." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "加密備份是 Pro 權益。升級後可建立受密碼保護的備份。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "暗号化バックアップはProの特典です。アップグレードするとパスワード保護されたバックアップを作成できます。" } }
+      }
+    },
+    "membership.limit.recurring": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "循环规则数量已达免费版上限，升级 Pro 后可无限创建。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "You have reached the Free recurring-rule limit. Upgrade to Pro for unlimited rules." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "循環規則數量已達免費版上限，升級 Pro 後可無限建立。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "無料版の繰り返しルール上限に達しました。Proにアップグレードすると無制限です。" } }
+      }
+    },
+    "membership.limit.ai": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 智能功能是 Pro 权益。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI-powered features are a Pro benefit." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 智慧功能是 Pro 權益。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AI機能はProの特典です。" } }
+      }
+    },
+    "membership.limit.themes": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "高级主题是 Pro 权益。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Premium themes are a Pro benefit." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "進階主題是 Pro 權益。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プレミアムテーマはProの特典です。" } }
+      }
+    },
+    "membership.limit.insights": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "高级洞悉与预算是 Pro 权益。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Advanced insights and budgets are a Pro benefit." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "進階洞悉與預算是 Pro 權益。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "高度な分析と予算はProの特典です。" } }
+      }
+    },
+    "membership.limit.plans": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "高级计划能力是 Pro 权益。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Advanced planning is a Pro benefit." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "進階規劃能力是 Pro 權益。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "高度なプラン機能はProの特典です。" } }
+      }
+    },
+    "membership.limit.batch": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "批量编辑是 Pro 权益。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Batch editing is a Pro benefit." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "批次編輯是 Pro 權益。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "一括編集はProの特典です。" } }
+      }
+    },
+    "membership.limit.import": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "高级导入导出是 Pro 权益。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Advanced import and export are a Pro benefit." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "進階匯入匯出是 Pro 權益。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "高度なインポートとエクスポートはProの特典です。" } }
+      }
+    },
+    "membership.pro.active": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Pro 已激活" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Pro Active" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Pro 已啟用" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Pro 有効" } }
+      }
+    },
     "preview.icon.title": {
       "extractionState": "manual",
       "localizations": {

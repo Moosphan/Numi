@@ -4,12 +4,14 @@ import NumiCore
 public struct CurrencyManagementView: View {
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @AppStorage("app.currency.autoUpdate") private var isAutoUpdateEnabled = true
+    @ObservedObject private var membership = MembershipController.shared
     @StateObject private var rateService = ExchangeRateService.shared
     @State private var searchText = ""
     @State private var isRefreshing = false
     @State private var toastMessage: String?
     @State private var toastIsError = false
     @State private var showToast = false
+    @State private var membershipPaywallContext: MembershipPaywallContext?
     @FocusState private var isSearchFocused: Bool
 
     public init() {}
@@ -45,10 +47,12 @@ public struct CurrencyManagementView: View {
         .navigationTitle("currency.title")
         .modifier(LargeTitleNavigationChrome())
         .task {
-            if isAutoUpdateEnabled {
+            await membership.start()
+            if hasAutoExchangeRateAccess {
                 await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
             }
         }
+        .membershipPaywall(context: $membershipPaywallContext)
         .overlay(alignment: .bottom) {
             if showToast, let message = toastMessage {
                 Text(message)
@@ -148,7 +152,10 @@ public struct CurrencyManagementView: View {
 
                 Spacer()
 
-                Toggle("", isOn: $isAutoUpdateEnabled)
+                Toggle("", isOn: Binding(
+                    get: { hasAutoExchangeRateAccess && isAutoUpdateEnabled },
+                    set: { setAutoExchangeRateEnabled($0) }
+                ))
                     .labelsHidden()
                     .tint(NumiColor.accentDeep)
             }
@@ -221,6 +228,25 @@ public struct CurrencyManagementView: View {
     }
 
     // MARK: - Search Bar
+
+    private var hasAutoExchangeRateAccess: Bool {
+        if case .granted = membership.decision(for: .openAutoExchangeRate) { return true }
+        return false
+    }
+
+    private func setAutoExchangeRateEnabled(_ isEnabled: Bool) {
+        guard isEnabled else {
+            isAutoUpdateEnabled = false
+            return
+        }
+        switch membership.decision(for: .openAutoExchangeRate) {
+        case .granted:
+            isAutoUpdateEnabled = true
+            Task { await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode) }
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
 
     private var searchBar: some View {
         HStack(spacing: NumiSpacing.s2) {

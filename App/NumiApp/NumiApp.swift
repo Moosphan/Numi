@@ -35,12 +35,20 @@ struct NumiApp: App {
             .task {
                 appearanceBridge.start()
                 applyColorScheme(colorSchemeMode)
+                await MembershipController.shared.start()
+                while !Task.isCancelled {
+                    do { try await Task.sleep(for: .seconds(60)) } catch { break }
+                    await MembershipController.shared.refreshStatus()
+                }
             }
             .onChange(of: colorSchemeMode) { _, newValue in
                 applyColorScheme(newValue)
             }
             .onChange(of: scenePhase) { _, _ in
                 applyColorScheme(colorSchemeMode)
+                if scenePhase == .active {
+                    Task { await MembershipController.shared.refreshStatus() }
+                }
             }
         }
     }

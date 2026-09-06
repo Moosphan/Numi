@@ -385,6 +385,7 @@ public struct BackupView: View {
     private let exportSnapshot: () -> BookkeepingSnapshot
     private let importSnapshot: (BookkeepingSnapshot) throws -> Void
 
+    @ObservedObject private var membership = MembershipController.shared
     @State private var backupPassword = ""
     @State private var restorePassword = ""
     @State private var showBackupFile = false
@@ -392,6 +393,7 @@ public struct BackupView: View {
     @State private var shareURL: ShareableURL?
     @State private var toastMessage: String?
     @State private var showToast = false
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     public init(
         exportSnapshot: @escaping () -> BookkeepingSnapshot,
@@ -433,6 +435,8 @@ public struct BackupView: View {
             NumiShareSheet(items: [item.url])
 #endif
         }
+        .task { await membership.start() }
+        .membershipPaywall(context: $membershipPaywallContext)
     }
 
     // MARK: - Create Backup
@@ -489,7 +493,7 @@ public struct BackupView: View {
 
             // Create button
             Button {
-                createBackup()
+                startCreatingBackup()
             } label: {
                 let isEnabled = !backupPassword.isEmpty
                 HStack {
@@ -593,6 +597,15 @@ public struct BackupView: View {
     }
 
     // MARK: - Actions
+
+    private func startCreatingBackup() {
+        switch membership.decision(for: .openEncryptedBackup) {
+        case .granted:
+            createBackup()
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
 
     private func createBackup() {
         let snapshot = exportSnapshot()

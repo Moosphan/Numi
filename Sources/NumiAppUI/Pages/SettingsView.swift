@@ -38,6 +38,13 @@ public struct SettingsView: View {
     private let exportSnapshot: (() -> BookkeepingSnapshot)?
     private let importSnapshot: ((BookkeepingSnapshot) throws -> Void)?
     private let appendTransactions: (([NumiCore.Transaction]) throws -> Void)?
+    @ObservedObject private var membership = MembershipController.shared
+    private var membershipStatus: MembershipStatus {
+        if !membership.hasResolvedStatus, let tier = membership.cachedTier {
+            return MembershipStatus(tier: tier, source: .cached)
+        }
+        return membership.status
+    }
     private let onManageLedgers: () -> Void
     private let onCategoryVisibilityChange: (NumiCore.Category, Bool) -> Void
     private let onAccountVisibilityChange: (Account, Bool) -> Void
@@ -97,6 +104,7 @@ public struct SettingsView: View {
         exportSnapshot: (() -> BookkeepingSnapshot)? = nil,
         importSnapshot: ((BookkeepingSnapshot) throws -> Void)? = nil,
         appendTransactions: (([NumiCore.Transaction]) throws -> Void)? = nil,
+        membershipStatus: MembershipStatus = .free,
         onManageLedgers: @escaping () -> Void = {},
         onCategoryVisibilityChange: @escaping (NumiCore.Category, Bool) -> Void = { _, _ in },
         onAccountVisibilityChange: @escaping (Account, Bool) -> Void = { _, _ in },
@@ -130,6 +138,14 @@ public struct SettingsView: View {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // 统计小卡片
                 statsRow
+
+                NavigationLink {
+                    MembershipBenefitsView()
+                } label: {
+                    MembershipStatusCard(status: membershipStatus)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings.membership")
 
                 settingsSection(
                     title: NumiLocalized.string( "setting.data"),
@@ -350,7 +366,7 @@ public struct SettingsView: View {
             .padding(.bottom, 120)
         }
         .background(NumiColor.surfacePage)
-        .navigationTitle("setting.title")
+        .navigationTitle(NumiLocalized.string("setting.title"))
         .modifier(LargeTitleNavigationChrome())
         .sheet(isPresented: $showLanguageSheet) {
             languageSheet
@@ -1069,5 +1085,58 @@ struct LargeTitleNavigationChrome: ViewModifier {
         #else
         content
         #endif
+    }
+}
+
+private struct MembershipStatusCard: View {
+    let status: MembershipStatus
+
+    private var tierTitle: String {
+        status.tier.isPro
+            ? NumiLocalized.string("membership.pro.active")
+            : NumiLocalized.string("membership.free")
+    }
+
+    private var detail: String {
+        status.tier.isPro
+            ? NumiLocalized.string("membership.pro.active")
+            : NumiLocalized.string("membership.free.description")
+    }
+
+    var body: some View {
+        HStack(spacing: NumiSpacing.s3) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(NumiColor.accentDeep)
+                .frame(width: 44, height: 44)
+                .background(NumiColor.controlFill)
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+
+            VStack(alignment: .leading, spacing: NumiSpacing.s1) {
+                Text("Numi Pro")
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.textPrimary)
+
+                Text(detail)
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(NumiColor.textTertiary)
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: NumiSpacing.s2)
+
+            Text(tierTitle)
+                .font(NumiFont.footnote.weight(.semibold))
+                .foregroundStyle(NumiColor.accentDeep)
+                .padding(.horizontal, NumiSpacing.s2)
+                .padding(.vertical, NumiSpacing.s1)
+                .background(NumiColor.controlFill)
+                .clipShape(Capsule())
+        }
+        .padding(NumiSpacing.s4)
+        .background(NumiColor.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+        .accessibilityElement(children: .combine)
     }
 }

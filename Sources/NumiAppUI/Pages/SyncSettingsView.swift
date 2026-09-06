@@ -73,6 +73,20 @@ public enum iCloudAccountStatusEvaluator {
     }
 }
 
+public enum iCloudRuntimeAvailabilityPolicy {
+    public static var isRunningInSimulator: Bool {
+        #if targetEnvironment(simulator)
+        true
+        #else
+        false
+        #endif
+    }
+
+    public static func shouldQueryCloudKit(isSimulator: Bool) -> Bool {
+        !isSimulator
+    }
+}
+
 // MARK: - Network Type
 
 public enum NetworkType: String {
@@ -200,6 +214,13 @@ public class iCloudSyncService: ObservableObject {
     }
 
     private func checkiCloudAvailability() {
+        guard iCloudRuntimeAvailabilityPolicy.shouldQueryCloudKit(
+            isSimulator: iCloudRuntimeAvailabilityPolicy.isRunningInSimulator
+        ) else {
+            isiCloudAvailable = false
+            return
+        }
+
         CKContainer(identifier: "iCloud.com.local.Numi").accountStatus { [weak self] status, _ in
             let available = iCloudAccountStatusEvaluator.isUsable(status)
             DispatchQueue.main.async {
@@ -240,6 +261,8 @@ public class iCloudSyncService: ObservableObject {
 
 public struct SyncSettingsView: View {
     @StateObject private var syncService = iCloudSyncService.shared
+    @ObservedObject private var membership = MembershipController.shared
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     public init() {}
 
@@ -274,6 +297,8 @@ public struct SyncSettingsView: View {
         .background(NumiColor.surfacePage)
         .navigationTitle(Text("sync.title"))
         .modifier(LargeTitleNavigationChrome())
+        .task { await membership.start() }
+        .membershipPaywall(context: $membershipPaywallContext)
     }
 
     // MARK: - Sync Toggle Card
@@ -301,7 +326,7 @@ public struct SyncSettingsView: View {
 
                 Toggle("", isOn: Binding(
                     get: { syncService.isSyncEnabled },
-                    set: { _ in syncService.toggleSync() }
+                    set: { setSyncEnabled($0) }
                 ))
                 .labelsHidden()
                 .tint(NumiColor.accentDeep)
@@ -350,6 +375,20 @@ public struct SyncSettingsView: View {
     }
 
     // MARK: - Network Status Card
+
+    private func setSyncEnabled(_ isEnabled: Bool) {
+        guard isEnabled != syncService.isSyncEnabled else { return }
+        guard isEnabled else {
+            syncService.toggleSync()
+            return
+        }
+        switch membership.decision(for: .openICloudSync) {
+        case .granted:
+            syncService.toggleSync()
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
 
     private var networkStatusCard: some View {
         HStack(spacing: NumiSpacing.s3) {

@@ -38,4 +38,11 @@ final class MembershipFeatureGateTests: XCTestCase {
         XCTAssertEqual(gate.decision(for: .createAccount(currentCount: 20)), .granted)
         XCTAssertEqual(gate.decision(for: .openMultiCurrency), .granted)
     }
+
+    func testV1CommercialOfferingOnlyContainsReleasedProBenefits() {
+        XCTAssertEqual(
+            Set(MembershipCommercialOffering.allCases.map(\.rawValue)),
+            ["unlimitedOrganization", "subscriptions", "installments", "encryptedBackup"]
+        )
+    }
 }

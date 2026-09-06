@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="300" viewBox="0 0 640 300" fill="none">
+<defs><linearGradient id="globe" x1="242" y1="44" x2="411" y2="252" gradientUnits="userSpaceOnUse"><stop stop-color="#CAFFF0"/><stop offset="1" stop-color="#6AD7CA"/></linearGradient></defs>
+<ellipse cx="324" cy="278" rx="210" ry="12" fill="#065379" opacity=".08"/><ellipse cx="321" cy="156" rx="242" ry="89" transform="rotate(-17 321 156)" stroke="#C8F4FF" stroke-opacity=".55" stroke-width="2" stroke-dasharray="6 7"/>
+<circle cx="324" cy="153" r="111" fill="#145D89" opacity=".08"/><circle cx="324" cy="146" r="111" fill="url(#globe)" stroke="#DDFFF5" stroke-width="2"/>
+<ellipse cx="324" cy="146" rx="50" ry="111" stroke="#3DADA8" stroke-width="2" opacity=".6"/><path d="M213 146H435M228 91H420M228 201H420M324 35V257" stroke="#3DADA8" stroke-width="2" opacity=".6"/>
+<path d="M248 81L268 68L292 73L302 91L285 104L284 125L266 133L253 112L235 110Z M282 145L307 148L316 168L308 188L299 196L291 218L278 208L281 185L269 168Z M346 68L368 61L393 79L405 99L386 108L375 98L360 113L344 102L333 84Z M347 122L374 118L389 136L382 158L362 166L354 188L338 172L333 146Z M389 196L406 187L418 202L406 217L388 211Z" fill="#348F90"/>
+<path d="M115 213C188 284 416 279 528 102M522 118L529 101L512 105" stroke="#F8D785" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="rotate(-10 156 109)">
+<rect x="89" y="70" width="122" height="70" rx="17" fill="#FFF9EB" stroke="#FFFFFF" stroke-width="2"/><circle cx="119" cy="105" r="19" fill="#EDBD5C"/><path d="M126 96C119 90 109 95 113 102C116 106 126 103 126 109C126 116 114 118 110 111M118 90V119" stroke="#926D2E" stroke-width="2.5" stroke-linecap="round"/><path d="M150 98H191M150 111H177" stroke="#B6ACA0" stroke-width="5" stroke-linecap="round"/>
+</g>
+<g transform="rotate(10 490 215)">
+<rect x="433" y="183" width="127" height="67" rx="18" fill="#F3EEFF" stroke="#FFFFFF" stroke-width="2"/><circle cx="464" cy="216" r="20" fill="#A18CDD"/><path d="M455 205L464 215L473 205M455 216H473M455 224H473M464 215V230" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/><path d="M497 209H540M497 222H525" stroke="#B2A4CD" stroke-width="5" stroke-linecap="round"/>
+</g>
+<circle cx="469" cy="72" r="23" fill="#FFBBAB" stroke="#FFDFD3" stroke-width="2"/><path d="M477 59C463 52 456 65 457 73C458 83 471 89 479 80M452 68H470M451 74H468" stroke="#AC675D" stroke-width="3" stroke-linecap="round"/>
+<path d="M175 216L191 188L194 190L190 210L211 207L214 211L189 220L183 235L177 233L177 224L166 224L164 221Z" fill="#FFFFFF"/><circle cx="179" cy="40" r="5" fill="#E0F9FE"/><circle cx="550" cy="155" r="5" fill="#F6D58C"/>
+</svg>

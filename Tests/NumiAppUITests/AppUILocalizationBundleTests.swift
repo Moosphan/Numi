@@ -46,6 +46,68 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testMembershipStatusCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (tier: "免费版", description: "基础记账完整可用，Pro 解锁更多效率与安全能力"),
+            "en": (tier: "Free", description: "All core bookkeeping is available; Pro unlocks more efficiency and security."),
+            "zh-Hant": (tier: "免費版", description: "基礎記帳完整可用，Pro 解鎖更多效率與安全能力"),
+            "ja": (tier: "無料版", description: "基本の家計管理はすべて利用可能。Proで効率性と安全性をさらに高められます。")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("membership.free", locale: locale), expected.tier)
+            XCTAssertEqual(NumiLocalized.lookup("membership.free.description", locale: locale), expected.description)
+        }
+    }
+
+    func testMembershipDetailsCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (title: "Numi Pro", benefit: "加密备份", plan: "选择方案"),
+            "en": (title: "Numi Pro", benefit: "Encrypted backups", plan: "Choose a plan"),
+            "zh-Hant": (title: "Numi Pro", benefit: "加密備份", plan: "選擇方案"),
+            "ja": (title: "Numi Pro", benefit: "暗号化バックアップ", plan: "プランを選択")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("membership.details.title", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.security.title", locale: locale), expected.benefit)
+            XCTAssertEqual(NumiLocalized.lookup("membership.plan.title", locale: locale), expected.plan)
+        }
+    }
+
+    func testMembershipV1BenefitsOnlyDescribeReleasedOfferings() {
+        let expectedValues = [
+            "zh-Hans": (subscriptions: "更多订阅与循环记账", installments: "更多分期与还款计划", backup: "加密备份"),
+            "en": (subscriptions: "More subscriptions & recurring entries", installments: "More installments & payment plans", backup: "Encrypted backups"),
+            "zh-Hant": (subscriptions: "更多訂閱與循環記帳", installments: "更多分期與還款計畫", backup: "加密備份"),
+            "ja": (subscriptions: "サブスクと繰り返し記帳をもっと", installments: "分割払いと返済プランをもっと", backup: "暗号化バックアップ")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.subscriptions.title", locale: locale), expected.subscriptions)
+            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.installments.title", locale: locale), expected.installments)
+            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.security.title", locale: locale), expected.backup)
+        }
+    }
+
+    func testMembershipCommerceCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (success: "订阅已生效，Pro 权益现已解锁。", ledgerLimit: "免费版最多可创建 2 个账本，升级 Pro 后可无限创建。"),
+            "en": (success: "Your subscription is active and Pro features are unlocked.", ledgerLimit: "Free includes up to 2 ledgers. Upgrade to Pro for unlimited ledgers."),
+            "zh-Hant": (success: "訂閱已生效，Pro 權益現已解鎖。", ledgerLimit: "免費版最多可建立 2 個帳本，升級 Pro 後可無限建立。"),
+            "ja": (success: "サブスクリプションが有効になり、Pro機能が利用できます。", ledgerLimit: "無料版では帳簿を2個まで作成できます。Proにアップグレードすると無制限です。")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("membership.commerce.purchase.success", locale: locale), expected.success)
+            XCTAssertEqual(NumiLocalized.lookup("membership.limit.ledgers", locale: locale), expected.ledgerLimit)
+        }
+    }
+
     func testStringLiteralOverloadUsesRawLocalizationKey() {
         UserDefaults.standard.set("zh-Hans", forKey: languageKey)
         XCTAssertEqual(NumiLocalized.string("setting.stat.days"), "记账天数")

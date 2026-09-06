@@ -1095,6 +1095,51 @@ final class NumiUITests: XCTestCase {
         saveScreenshot(named: "10-add-record")
     }
 
+    func testSettingsDisplaysMembershipStatusCard() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+
+        let settingsTab = tabButton("我的", in: app)
+        XCTAssertTrue(settingsTab.waitForExistence(timeout: 5))
+        settingsTab.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(app.staticTexts["我的"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["setting.title"].exists)
+        let membershipCard = app.descendants(matching: .any)["settings.membership"]
+        XCTAssertTrue(membershipCard.waitForExistence(timeout: 5))
+        saveScreenshot(named: "settings-membership-status")
+    }
+
+    func testMembershipBenefitsDisplaysDetails() {
+        let app = launchMembershipVisualReviewApp()
+
+        let settingsTab = tabButton("我的", in: app)
+        XCTAssertTrue(settingsTab.waitForExistence(timeout: 5))
+        settingsTab.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+
+        let membershipCard = app.descendants(matching: .any)["settings.membership"]
+        XCTAssertTrue(membershipCard.waitForExistence(timeout: 5))
+        membershipCard.tap()
+
+        XCTAssertTrue(app.staticTexts["membership.details.title"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["membership.benefit.pager"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.images["membership.hero.illustration"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["membership.plan.monthlyPro"].exists)
+        XCTAssertTrue(app.buttons["membership.plan.yearlyPro"].exists)
+        XCTAssertTrue(app.buttons["membership.plan.lifetimePro"].exists)
+        saveScreenshot(named: "membership-benefits-details")
+        let pager = app.collectionViews["membership.benefit.pager"]
+        for scene in ["ledgers", "currency", "security", "budget"] {
+            pager.swipeLeft()
+            saveScreenshot(named: "membership-banner-\(scene)")
+        }
+    }
+
+    private func launchMembershipVisualReviewApp() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["NUMI_UI_TEST_APP_LANGUAGE"] = "zh-Hans"
+        app.launch()
+        return app
+    }
+
     private func launchApp(seedProfile: String? = nil, languageCode: String? = "zh-Hans") -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["NUMI_UI_TEST_STORE_ID"] = uiTestStoreID

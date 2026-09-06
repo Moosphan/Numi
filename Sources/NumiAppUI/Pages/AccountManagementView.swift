@@ -4,9 +4,11 @@ import NumiCore
 
 public struct AccountManagementView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
+    @ObservedObject private var membership = MembershipController.shared
     @State private var localAccounts: [Account]
     @State private var editingDraft: AccountDraft?
     @State private var pendingDelete: Account?
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     private let accounts: [Account]
     private let transactions: [NumiCore.Transaction]
@@ -98,7 +100,7 @@ public struct AccountManagementView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    editingDraft = .new(currencyCode: localAccounts.first?.balance.currencyCode ?? "CNY")
+                    startCreatingAccount()
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -111,6 +113,7 @@ public struct AccountManagementView: View {
                 save(savedDraft)
             }
         }
+        .membershipPaywall(context: $membershipPaywallContext)
         .confirmationDialog(
             "record.delete.confirm",
             isPresented: Binding(
@@ -137,6 +140,15 @@ public struct AccountManagementView: View {
 
     private var visibleRows: [Account] {
         localAccounts.sortedForLocalizedDisplay()
+    }
+
+    private func startCreatingAccount() {
+        switch membership.decision(for: .createAccount(currentCount: localAccounts.count)) {
+        case .granted:
+            editingDraft = .new(currencyCode: localAccounts.first?.balance.currencyCode ?? "CNY")
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
     }
 
     private var totalAssets: Money {

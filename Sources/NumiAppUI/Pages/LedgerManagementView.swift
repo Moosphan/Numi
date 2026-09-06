@@ -28,9 +28,11 @@ public struct LedgerDraft: Identifiable {
 // MARK: - Ledger Management View
 
 public struct LedgerManagementView: View {
+    @ObservedObject private var membership = MembershipController.shared
     @State private var editingDraft: LedgerDraft?
     @State private var pendingDelete: Ledger?
     @State private var showDeleteConfirm = false
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     private let ledgers: [Ledger]
     private let transactionCounts: [UUID: Int]
@@ -104,7 +106,7 @@ public struct LedgerManagementView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    editingDraft = .new(currencyCode: "CNY")
+                    startCreatingLedger()
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -126,6 +128,7 @@ public struct LedgerManagementView: View {
             .presentationDetents([.medium])
             .presentationCornerRadius(28)
         }
+        .membershipPaywall(context: $membershipPaywallContext)
         .alert("ledger.delete.confirm", isPresented: $showDeleteConfirm) {
             Button("common.cancel", role: .cancel) {
                 pendingDelete = nil
@@ -146,6 +149,15 @@ public struct LedgerManagementView: View {
 
     private var sortedLedgers: [Ledger] {
         ledgers.sortedForLocalizedDisplay()
+    }
+
+    private func startCreatingLedger() {
+        switch membership.decision(for: .createLedger(currentCount: ledgers.count)) {
+        case .granted:
+            editingDraft = .new(currencyCode: "CNY")
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
     }
 
     @ViewBuilder

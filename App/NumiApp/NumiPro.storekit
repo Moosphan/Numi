@@ -1,0 +1,136 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "A89CE8B4",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "49.99",
+      "familyShareable" : false,
+      "internalID" : "4B16DDCA",
+      "localizations" : [
+        {
+          "description" : "Unlock all Numi Pro features permanently.",
+          "displayName" : "Numi Pro Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.local.Numi.pro.lifetime",
+      "referenceName" : "Numi Pro Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "58C44A5F",
+      "localizations" : [
+
+      ],
+      "name" : "Numi Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "C314A2EF",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monthly access to all Numi Pro features.",
+              "displayName" : "Numi Pro Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.local.Numi.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Numi Pro Monthly",
+          "subscriptionGroupID" : "58C44A5F",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "19.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "91F72D6B",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Annual access to all Numi Pro features.",
+              "displayName" : "Numi Pro Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.local.Numi.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Numi Pro Yearly",
+          "subscriptionGroupID" : "58C44A5F",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
