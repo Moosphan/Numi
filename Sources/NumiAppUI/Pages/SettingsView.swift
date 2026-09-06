@@ -32,6 +32,7 @@ public struct SettingsView: View {
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
     private let transactions: [NumiCore.Transaction]
+    private let exchangeRateHistory: ExchangeRateHistory
     private let ledgers: [Ledger]
     private let currentLedgerID: UUID?
     private let ledgerTransactionCounts: [UUID: Int]
@@ -98,6 +99,7 @@ public struct SettingsView: View {
         categories: [NumiCore.Category] = [],
         accounts: [Account] = [],
         transactions: [NumiCore.Transaction] = [],
+        exchangeRateHistory: ExchangeRateHistory = ExchangeRateHistory(),
         ledgers: [Ledger] = [],
         currentLedgerID: UUID? = nil,
         ledgerTransactionCounts: [UUID: Int] = [:],
@@ -117,6 +119,7 @@ public struct SettingsView: View {
         self.categories = categories
         self.accounts = accounts
         self.transactions = transactions
+        self.exchangeRateHistory = exchangeRateHistory
         self.ledgers = ledgers
         self.currentLedgerID = currentLedgerID
         self.ledgerTransactionCounts = ledgerTransactionCounts
@@ -178,6 +181,7 @@ public struct SettingsView: View {
                             accounts: accounts,
                             transactions: transactions,
                             categories: categories,
+                            exchangeRateHistory: exchangeRateHistory,
                             onVisibilityChange: onAccountVisibilityChange,
                             onCreate: onAccountCreate,
                             onUpdate: onAccountUpdate,

@@ -14,6 +14,7 @@ public struct AccountManagementView: View {
     private let accounts: [Account]
     private let transactions: [NumiCore.Transaction]
     private let categories: [NumiCore.Category]
+    private let exchangeRateHistory: ExchangeRateHistory
     private let onVisibilityChange: (Account, Bool) -> Void
     private let onCreate: (AccountDraft) -> Void
     private let onUpdate: (Account, AccountDraft) -> Void
@@ -23,6 +24,7 @@ public struct AccountManagementView: View {
         accounts: [Account],
         transactions: [NumiCore.Transaction] = [],
         categories: [NumiCore.Category] = [],
+        exchangeRateHistory: ExchangeRateHistory = ExchangeRateHistory(),
         onVisibilityChange: @escaping (Account, Bool) -> Void,
         onCreate: @escaping (AccountDraft) -> Void = { _ in },
         onUpdate: @escaping (Account, AccountDraft) -> Void = { _, _ in },
@@ -31,6 +33,7 @@ public struct AccountManagementView: View {
         self.accounts = accounts
         self.transactions = transactions
         self.categories = categories
+        self.exchangeRateHistory = exchangeRateHistory
         self._localAccounts = State(initialValue: accounts)
         self.onVisibilityChange = onVisibilityChange
         self.onCreate = onCreate
@@ -41,25 +44,7 @@ public struct AccountManagementView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
-                VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text("account.total.asset")
-                        .font(NumiFont.bodySmall)
-                        .foregroundStyle(NumiColor.textSecondary)
-                    Text(privacyAmountDisplayPolicy.display(totalAssets))
-                        .font(NumiFont.title)
-                        .foregroundStyle(NumiColor.textPrimary)
-                        .monospacedDigit()
-
-                    Text("account.info.desc")
-                        .font(NumiFont.footnote)
-                        .foregroundStyle(NumiColor.textTertiary)
-                        .padding(.top, NumiSpacing.s1)
-                }
-                .padding(NumiSpacing.s5)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(NumiColor.surfaceCard)
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+                assetTotalCard
 
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
                     Text("account.section")
@@ -143,6 +128,36 @@ public struct AccountManagementView: View {
         localAccounts.sortedForLocalizedDisplay()
     }
 
+    private var assetTotalCard: some View {
+        let summary = assetSummary
+        return VStack(alignment: .leading, spacing: NumiSpacing.s3) {
+            Text("account.total.asset")
+                .font(NumiFont.bodySmall)
+                .foregroundStyle(NumiColor.textSecondary)
+            Text(privacyAmountDisplayPolicy.display(summary.total))
+                .font(NumiFont.title)
+                .foregroundStyle(NumiColor.textPrimary)
+                .monospacedDigit()
+
+            if summary.includedAccountCount > 0 {
+                Text(assetSummaryStatus(for: summary))
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(assetSummaryColor(for: summary))
+                    .padding(.top, NumiSpacing.s1)
+            }
+
+            Text("account.info.desc")
+                .font(NumiFont.footnote)
+                .foregroundStyle(NumiColor.textTertiary)
+                .padding(.top, NumiSpacing.s1)
+        }
+        .padding(NumiSpacing.s5)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NumiColor.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
+
     private func startCreatingAccount() {
         switch membership.decision(for: .createAccount(currentCount: localAccounts.count)) {
         case .granted:
@@ -152,14 +167,32 @@ public struct AccountManagementView: View {
         }
     }
 
-    private var totalAssets: Money {
-        let included = localAccounts.filter { $0.isIncludedInAssets }
-        guard let first = included.first else {
-            return .zero(currencyCode: "CNY")
+    private var assetSummary: AccountAssetSummary {
+        AccountAssetSummary.calculate(
+            accounts: localAccounts,
+            targetCurrencyCode: defaultCurrencyCode,
+            exchangeRateHistory: exchangeRateHistory,
+            at: Date()
+        )
+    }
+
+    private func assetSummaryStatus(for summary: AccountAssetSummary) -> String {
+        if summary.unavailableAccountCount == 0 {
+            return NumiLocalized.string(
+                "account.total.asset.converted",
+                summary.convertedAccountCount
+            )
         }
-        return included.dropFirst().reduce(first.balance) { partial, account in
-            (try? partial.adding(account.balance)) ?? partial
-        }
+        return NumiLocalized.string(
+            "account.total.asset.unavailable",
+            summary.convertedAccountCount,
+            summary.includedAccountCount,
+            summary.unavailableAccountCount
+        )
+    }
+
+    private func assetSummaryColor(for summary: AccountAssetSummary) -> Color {
+        summary.unavailableAccountCount == 0 ? NumiColor.textTertiary : NumiColor.negativeText
     }
 
     private func accountRow(_ account: Account) -> some View {

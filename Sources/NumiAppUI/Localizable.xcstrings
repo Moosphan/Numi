@@ -2060,6 +2060,64 @@
         }
       }
     },
+    "account.total.asset.converted": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已按默认币种换算 %lld 个计入资产的账户"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Converted %lld asset accounts to your default currency"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已按預設幣別換算 %lld 個計入資產的帳戶"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 件の資産口座を既定通貨に換算済み"
+          }
+        }
+      }
+    },
+    "account.total.asset.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已换算 %lld/%lld 个账户；%lld 个账户缺少汇率，未计入总额"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Converted %lld of %lld accounts; %lld are excluded because exchange rates are unavailable"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已換算 %lld/%lld 個帳戶；%lld 個帳戶缺少匯率，未計入總額"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld/%lld 件の口座を換算済み。%lld 件は為替レートがないため合計に含まれません"
+          }
+        }
+      }
+    },
     "account.section": {
       "extractionState": "manual",
       "localizations": {

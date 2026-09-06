@@ -737,6 +737,7 @@ struct RootShellView: View {
                 categories: store.categories,
                 accounts: store.accounts,
                 transactions: store.visibleTransactions,
+                exchangeRateHistory: rateService.history,
                 ledgers: store.ledgers,
                 currentLedgerID: currentLedger?.id,
                 ledgerTransactionCounts: ledgerTransactionCounts,
