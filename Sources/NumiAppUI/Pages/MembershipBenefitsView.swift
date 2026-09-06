@@ -503,7 +503,7 @@ private struct MembershipPlanCard: View {
         .overlay(alignment: .top) {
             if plan == .yearlyPro {
                 HStack(spacing: NumiSpacing.s1) {
-                    membershipBadge("membership.plan.yearly.badge")
+                    membershipBadge(NumiLocalized.string("membership.plan.yearly.badge"))
                     if let yearlySavingsPercent {
                         membershipBadge(
                             NumiLocalized.string("membership.plan.yearly.savings", yearlySavingsPercent)

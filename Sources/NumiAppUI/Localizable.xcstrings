@@ -5833,13 +5833,40 @@
         "ja": { "stringUnit": { "state": "translated", "value": "リマインダー" } }
       }
     },
+    "setting.reminder.days.onDate": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "当天提醒" } },
+        "en": { "stringUnit": { "state": "translated", "value": "On the day" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "當天提醒" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "当日に通知" } }
+      }
+    },
+    "setting.reminder.days.value": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "提前 %lld 天" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%lld days before" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "提前 %lld 天" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld日前" } }
+      }
+    },
     "setting.installment.reminder.days": {
       "extractionState": "manual",
       "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "分期提前提醒" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Installment Reminder" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "分期提前提醒" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "分割払いの事前通知" } }
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "分期还款提醒" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Installment due reminder" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "分期還款提醒" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "分割払いの返済通知" } }
+      }
+    },
+    "setting.installment.reminder.days.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "在下一笔待还分期到期前通知你" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Get notified before your next unpaid installment is due." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "在下一筆待還分期到期前通知你" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "次の未払い分割払いの期日前に通知します。" } }
       }
     },
     "setting.installment.reminder.days.value": {
@@ -5854,10 +5881,19 @@
     "setting.subscription.reminder.days": {
       "extractionState": "manual",
       "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅提前提醒" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Subscription Reminder" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱提前提醒" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "サブスクの事前通知" } }
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅扣费提醒" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Subscription billing reminder" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱扣款提醒" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスク請求通知" } }
+      }
+    },
+    "setting.subscription.reminder.days.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "在订阅下一次扣费前通知你" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Get notified before your next subscription billing date." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "在訂閱下一次扣款前通知你" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "次のサブスク請求日前に通知します。" } }
       }
     },
     "setting.subscription.reminder.days.value": {

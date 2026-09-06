@@ -288,19 +288,56 @@ final class AppUILocalizationBundleTests: XCTestCase {
 
     func testInstallmentReminderPreferenceCopyIsLocalized() {
         let expectedValues = [
-            "zh-Hans": (section: "提醒", label: "分期提前提醒", value: "提前 3 天"),
-            "en": (section: "Reminders", label: "Installment Reminder", value: "3 days before"),
-            "zh-Hant": (section: "提醒", label: "分期提前提醒", value: "提前 3 天"),
-            "ja": (section: "リマインダー", label: "分割払いの事前通知", value: "3日前")
+            "zh-Hans": (section: "提醒", label: "分期还款提醒", detail: "在下一笔待还分期到期前通知你", value: "提前 3 天", onDate: "当天提醒"),
+            "en": (section: "Reminders", label: "Installment due reminder", detail: "Get notified before your next unpaid installment is due.", value: "3 days before", onDate: "On the day"),
+            "zh-Hant": (section: "提醒", label: "分期還款提醒", detail: "在下一筆待還分期到期前通知你", value: "提前 3 天", onDate: "當天提醒"),
+            "ja": (section: "リマインダー", label: "分割払いの返済通知", detail: "次の未払い分割払いの期日前に通知します。", value: "3日前", onDate: "当日に通知")
         ]
 
         for (language, expected) in expectedValues {
             let locale = Locale(identifier: language)
             XCTAssertEqual(NumiLocalized.lookup("setting.reminders", locale: locale), expected.section)
             XCTAssertEqual(NumiLocalized.lookup("setting.installment.reminder.days", locale: locale), expected.label)
+            XCTAssertEqual(NumiLocalized.lookup("setting.installment.reminder.days.desc", locale: locale), expected.detail)
+            XCTAssertEqual(NumiLocalized.lookup("setting.reminder.days.onDate", locale: locale), expected.onDate)
             XCTAssertEqual(
                 NumiLocalized.format("setting.installment.reminder.days.value", arguments: [3], locale: locale),
                 expected.value
+            )
+        }
+    }
+
+    func testSubscriptionReminderPreferenceCopyIsLocalized() {
+        let expectedValues = [
+            "zh-Hans": (label: "订阅扣费提醒", detail: "在订阅下一次扣费前通知你"),
+            "en": (label: "Subscription billing reminder", detail: "Get notified before your next subscription billing date."),
+            "zh-Hant": (label: "訂閱扣款提醒", detail: "在訂閱下一次扣款前通知你"),
+            "ja": (label: "サブスク請求通知", detail: "次のサブスク請求日前に通知します。")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("setting.subscription.reminder.days", locale: locale), expected.label)
+            XCTAssertEqual(NumiLocalized.lookup("setting.subscription.reminder.days.desc", locale: locale), expected.detail)
+        }
+    }
+
+    func testReminderLeadTimeValueCopyIsLocalized() {
+        let expectedValues = [
+            "zh-Hans": "提前 3 天",
+            "en": "3 days before",
+            "zh-Hant": "提前 3 天",
+            "ja": "3日前"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.format(
+                    "setting.reminder.days.value",
+                    arguments: [3],
+                    locale: Locale(identifier: language)
+                ),
+                expected
             )
         }
     }

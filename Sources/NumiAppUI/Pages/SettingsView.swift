@@ -275,33 +275,23 @@ public struct SettingsView: View {
                     accessibilityID: "settings.section.reminders",
                     cardAccessibilityID: "settings.card.reminders"
                 ) {
-                    Picker(selection: $installmentReminderDaysBefore) {
-                        ForEach([0, 1, 3, 7], id: \.self) { days in
-                            Text(NumiLocalized.string("setting.installment.reminder.days.value", days))
-                                .tag(days)
-                        }
-                    } label: {
-                        settingsRow(
-                            NumiLocalized.string("setting.installment.reminder.days"),
-                            icon: "bell.badge",
-                            trailingText: NumiLocalized.string("setting.installment.reminder.days.value", installmentReminderDaysBefore)
-                        )
-                    }
-                    .accessibilityIdentifier("settings.installmentReminderDays")
+                    reminderPreferenceRow(
+                        title: NumiLocalized.string("setting.installment.reminder.days"),
+                        description: NumiLocalized.string("setting.installment.reminder.days.desc"),
+                        icon: "creditcard",
+                        selection: $installmentReminderDaysBefore,
+                        accessibilityID: "settings.installmentReminderDays",
+                        showsDivider: true
+                    )
 
-                    Picker(selection: $subscriptionReminderDaysBefore) {
-                        ForEach([0, 1, 3, 7], id: \.self) { days in
-                            Text(NumiLocalized.string("setting.subscription.reminder.days.value", days))
-                                .tag(days)
-                        }
-                    } label: {
-                        settingsRow(
-                            NumiLocalized.string("setting.subscription.reminder.days"),
-                            icon: "bell.badge",
-                            trailingText: NumiLocalized.string("setting.subscription.reminder.days.value", subscriptionReminderDaysBefore)
-                        )
-                    }
-                    .accessibilityIdentifier("settings.subscriptionReminderDays")
+                    reminderPreferenceRow(
+                        title: NumiLocalized.string("setting.subscription.reminder.days"),
+                        description: NumiLocalized.string("setting.subscription.reminder.days.desc"),
+                        icon: "repeat",
+                        selection: $subscriptionReminderDaysBefore,
+                        accessibilityID: "settings.subscriptionReminderDays",
+                        showsDivider: false
+                    )
                 }
 
                 settingsSection(
@@ -808,6 +798,82 @@ public struct SettingsView: View {
         .padding(.vertical, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(NumiColor.surfaceCard)
+    }
+
+    private func reminderPreferenceRow(
+        title: String,
+        description: String,
+        icon: String,
+        selection: Binding<Int>,
+        accessibilityID: String,
+        showsDivider: Bool
+    ) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: NumiSpacing.s3) {
+                Image(systemName: icon)
+                    .font(.system(size: 17, weight: .semibold))
+                    .frame(width: 36, height: 36)
+                    .background(NumiColor.iconBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                    .foregroundStyle(NumiColor.accentPrimary)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(NumiColor.textPrimary)
+
+                    Text(description)
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: NumiSpacing.s2)
+
+                Menu {
+                    ForEach(ReminderLeadTime.supportedDays, id: \.self) { days in
+                        Button {
+                            selection.wrappedValue = days
+                        } label: {
+                            if selection.wrappedValue == days {
+                                Label(reminderLeadTimeText(days), systemImage: "checkmark")
+                            } else {
+                                Text(reminderLeadTimeText(days))
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(reminderLeadTimeText(selection.wrappedValue))
+                            .font(NumiFont.footnote.weight(.semibold))
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 9)
+                    .background(NumiColor.iconBackground)
+                    .clipShape(Capsule())
+                }
+                .accessibilityIdentifier(accessibilityID)
+                .accessibilityLabel(title)
+                .accessibilityValue(reminderLeadTimeText(selection.wrappedValue))
+            }
+            .padding(.horizontal, NumiSpacing.s4)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(NumiColor.surfaceCard)
+
+            if showsDivider {
+                Divider()
+                    .padding(.leading, NumiSpacing.s4 + 36 + NumiSpacing.s3)
+            }
+        }
+    }
+
+    private func reminderLeadTimeText(_ days: Int) -> String {
+        let key = ReminderLeadTime.displayLocalizationKey(for: days)
+        return days == 0 ? NumiLocalized.string(key) : NumiLocalized.string(key, days)
     }
 
     // MARK: - AI Config Helpers
