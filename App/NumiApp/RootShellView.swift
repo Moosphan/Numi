@@ -167,7 +167,6 @@ struct RootShellView: View {
                 periods: store.installmentPeriods,
                 daysBefore: installmentReminderDaysBefore
             )
-            await rateService.fetchRatesIfNeeded(base: defaultCurrencyCode)
         }
         .onChange(of: installmentReminderDaysBefore) { _, _ in
             Task {

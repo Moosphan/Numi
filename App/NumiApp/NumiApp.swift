@@ -9,6 +9,8 @@ struct NumiApp: App {
     @AppStorage("app.theme.id") private var themeID = NumiTheme.default.id
     @AppStorage("app.colorSchemeMode") private var colorSchemeMode: ColorSchemeMode = .system
     @AppStorage("app.language") private var languageCode: String = "system"
+    @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
+    @AppStorage("app.currency.autoUpdate") private var isAutoExchangeRateEnabled = true
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var appearanceBridge = UIKitAppearanceBridge()
 
@@ -36,6 +38,7 @@ struct NumiApp: App {
                 appearanceBridge.start()
                 applyColorScheme(colorSchemeMode)
                 await MembershipController.shared.start()
+                await refreshAutomaticExchangeRatesIfNeeded()
                 while !Task.isCancelled {
                     do { try await Task.sleep(for: .seconds(60)) } catch { break }
                     await MembershipController.shared.refreshStatus()
@@ -47,7 +50,10 @@ struct NumiApp: App {
             .onChange(of: scenePhase) { _, _ in
                 applyColorScheme(colorSchemeMode)
                 if scenePhase == .active {
-                    Task { await MembershipController.shared.refreshStatus() }
+                    Task {
+                        await MembershipController.shared.refreshStatus()
+                        await refreshAutomaticExchangeRatesIfNeeded()
+                    }
                 }
             }
         }
@@ -58,6 +64,15 @@ struct NumiApp: App {
             return .autoupdatingCurrent
         }
         return Locale(identifier: languageCode)
+    }
+
+    private func refreshAutomaticExchangeRatesIfNeeded() async {
+        let decision = MembershipController.shared.decision(for: .openAutoExchangeRate)
+        guard AutomaticExchangeRateRefreshPolicy.shouldRefresh(
+            isEnabled: isAutoExchangeRateEnabled,
+            accessDecision: decision
+        ) else { return }
+        await ExchangeRateService.shared.fetchRatesIfNeeded(base: defaultCurrencyCode)
     }
 
     private func applyLaunchOverrides() {
