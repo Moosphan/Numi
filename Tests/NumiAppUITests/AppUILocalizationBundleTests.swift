@@ -110,6 +110,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testAccountCurrencyPickerUsesExistingLocalizedLabel() {
+        let expectedValues = [
+            "zh-Hans": "货币",
+            "en": "Currency",
+            "zh-Hant": "貨幣",
+            "ja": "通貨"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("ledger.currency", locale: Locale(identifier: language)),
+                expected,
+                "Missing existing currency label for \(language)"
+            )
+        }
+    }
+
     func testMembershipCommerceCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (success: "订阅已生效，Pro 权益现已解锁。", ledgerLimit: "免费版最多可创建 2 个账本，升级 Pro 后可无限创建。"),

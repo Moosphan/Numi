@@ -4,6 +4,7 @@ import NumiCore
 
 public struct AccountManagementView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
+    @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @ObservedObject private var membership = MembershipController.shared
     @State private var localAccounts: [Account]
     @State private var editingDraft: AccountDraft?
@@ -145,7 +146,7 @@ public struct AccountManagementView: View {
     private func startCreatingAccount() {
         switch membership.decision(for: .createAccount(currentCount: localAccounts.count)) {
         case .granted:
-            editingDraft = .new(currencyCode: localAccounts.first?.balance.currencyCode ?? "CNY")
+            editingDraft = .new(currencyCode: defaultCurrencyCode)
         case .blocked(let context):
             membershipPaywallContext = context
         }
@@ -393,7 +394,9 @@ public struct AccountDraft: Identifiable {
 
 private struct AccountFormView: View {
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var membership = MembershipController.shared
     @State private var draft: AccountDraft
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     private let onSave: (AccountDraft) -> Void
 
@@ -432,6 +435,21 @@ private struct AccountFormView: View {
                         .monospacedDigit()
                         .accessibilityIdentifier("input.accountBalance")
 
+                    if draft.sourceAccount == nil {
+                        NumiCurrencyPickerRow(
+                            title: NumiLocalized.string("ledger.currency"),
+                            options: currencyOptions,
+                            selectedCode: $draft.currencyCode,
+                            accessibilityIdentifier: "picker.accountCurrency",
+                            onSelectionAttempt: canSelectCurrency
+                        )
+                    } else {
+                        LabeledContent(NumiLocalized.string("ledger.currency")) {
+                            Text(draft.currencyCode)
+                                .foregroundStyle(NumiColor.textSecondary)
+                        }
+                    }
+
                     toggleRow(
                         title: NumiLocalized.string( "account.count.total"),
                         subtitle: NumiLocalized.string( "account.info.desc"),
@@ -469,11 +487,33 @@ private struct AccountFormView: View {
                 }
             }
         }
+        .membershipPaywall(context: $membershipPaywallContext)
     }
 
     private var canSave: Bool {
         !draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && (try? Money(decimalString: draft.balanceText, currencyCode: draft.currencyCode)) != nil
+    }
+
+    private var currencyOptions: [NumiCurrencyOption] {
+        CurrencyDefinition.common.map {
+            NumiCurrencyOption(code: $0.code, title: $0.name, symbol: $0.symbol)
+        }
+    }
+
+    private func canSelectCurrency(_ selectedCurrencyCode: String) -> Bool {
+        guard let request = AccountCurrencySelectionPolicy.featureRequest(
+            currentCurrencyCode: draft.currencyCode,
+            selectedCurrencyCode: selectedCurrencyCode
+        ) else { return true }
+
+        switch membership.decision(for: request) {
+        case .granted:
+            return true
+        case .blocked(let context):
+            membershipPaywallContext = context
+            return false
+        }
     }
 
     private func toggleRow(

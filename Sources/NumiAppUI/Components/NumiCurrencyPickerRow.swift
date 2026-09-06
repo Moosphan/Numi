@@ -20,24 +20,29 @@ public struct NumiCurrencyPickerRow: View {
     private let options: [NumiCurrencyOption]
     @Binding private var selectedCode: String
     private let accessibilityIdentifier: String
+    private let onSelectionAttempt: ((String) -> Bool)?
 
     public init(
         title: String? = nil,
         options: [NumiCurrencyOption],
         selectedCode: Binding<String>,
-        accessibilityIdentifier: String
+        accessibilityIdentifier: String,
+        onSelectionAttempt: ((String) -> Bool)? = nil
     ) {
         self.title = title
         self.options = options
         self._selectedCode = selectedCode
         self.accessibilityIdentifier = accessibilityIdentifier
+        self.onSelectionAttempt = onSelectionAttempt
     }
 
     public var body: some View {
         Menu {
             ForEach(options) { option in
                 Button {
-                    selectedCode = option.code
+                    if onSelectionAttempt?(option.code) ?? true {
+                        selectedCode = option.code
+                    }
                 } label: {
                     Label("\(option.code) · \(option.title)", systemImage: selectedCode == option.code ? "checkmark.circle.fill" : "circle")
                 }
