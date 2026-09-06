@@ -5,13 +5,20 @@ public struct CSVImportReviewSheet: View {
     private let document: CSVImportDocument
     private let context: CSVImportContext
     private let onImport: ([NumiCore.Transaction]) -> Void
+    private let templateStore: CSVImportMappingTemplateStore
 
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var membership = MembershipController.shared
     @State private var mapping: CSVImportMapping
+    @State private var templates: [CSVImportMappingTemplate]
+    @State private var templateName = ""
+    @State private var showsTemplateNameEditor = false
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     public init(
         document: CSVImportDocument,
         snapshot: BookkeepingSnapshot,
+        templateStore: CSVImportMappingTemplateStore = .shared,
         onImport: @escaping ([NumiCore.Transaction]) -> Void
     ) {
         self.document = document
@@ -21,7 +28,9 @@ public struct CSVImportReviewSheet: View {
             accounts: snapshot.accounts
         )
         self.onImport = onImport
+        self.templateStore = templateStore
         _mapping = State(initialValue: CSVImportMapping(headers: document.headers))
+        _templates = State(initialValue: templateStore.templates)
     }
 
     public var body: some View {
@@ -54,6 +63,16 @@ public struct CSVImportReviewSheet: View {
                 }
             }
         }
+        .alert("io.import.csv.template.save.title", isPresented: $showsTemplateNameEditor) {
+            TextField("io.import.csv.template.save.placeholder", text: $templateName)
+            Button("common.cancel", role: .cancel) {}
+            Button("io.import.csv.template.save") {
+                saveTemplate()
+            }
+            .disabled(templateName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
+        .task { await membership.start() }
+        .membershipPaywall(context: $membershipPaywallContext)
     }
 
     private var preview: CSVImportResult {
@@ -62,9 +81,13 @@ public struct CSVImportReviewSheet: View {
 
     private var mappingSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text(NumiLocalized.string("io.import.csv.mapping"))
-                .font(NumiFont.bodySmall)
-                .foregroundStyle(NumiColor.textSecondary)
+            HStack {
+                Text(NumiLocalized.string("io.import.csv.mapping"))
+                    .font(NumiFont.bodySmall)
+                    .foregroundStyle(NumiColor.textSecondary)
+                Spacer()
+                mappingTemplateMenu
+            }
 
             VStack(spacing: 0) {
                 ForEach(document.headers, id: \.self) { header in
@@ -85,6 +108,39 @@ public struct CSVImportReviewSheet: View {
             .background(NumiColor.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
         }
+    }
+
+    @ViewBuilder
+    private var mappingTemplateMenu: some View {
+        Menu {
+            if !templates.isEmpty {
+                Menu("io.import.csv.template.load") {
+                    ForEach(templates) { template in
+                        Button(template.name) {
+                            mapping = template.mapping.applying(to: document.headers)
+                        }
+                    }
+                }
+                Divider()
+            }
+            Button("io.import.csv.template.save") {
+                startSavingTemplate()
+            }
+            if !templates.isEmpty {
+                Menu("io.import.csv.template.delete") {
+                    ForEach(templates) { template in
+                        Button(template.name, role: .destructive) {
+                            deleteTemplate(template)
+                        }
+                    }
+                }
+            }
+        } label: {
+            Label("io.import.csv.template.label", systemImage: "bookmark")
+                .font(NumiFont.footnote)
+                .foregroundStyle(NumiColor.accentDeep)
+        }
+        .accessibilityIdentifier("menu.csvImportMappingTemplate")
     }
 
     private var previewSection: some View {
@@ -155,5 +211,27 @@ public struct CSVImportReviewSheet: View {
             get: { mapping.field(for: header) },
             set: { mapping.assign($0, to: header) }
         )
+    }
+
+    private func startSavingTemplate() {
+        switch membership.decision(for: .openAdvancedImportExport) {
+        case .granted:
+            templateName = ""
+            showsTemplateNameEditor = true
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
+    private func saveTemplate() {
+        let name = templateName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+        templateStore.save(CSVImportMappingTemplate(name: name, mapping: mapping))
+        templates = templateStore.templates
+    }
+
+    private func deleteTemplate(_ template: CSVImportMappingTemplate) {
+        templateStore.delete(id: template.id)
+        templates = templateStore.templates
     }
 }

@@ -8446,6 +8446,60 @@
         "ja": { "stringUnit": { "state": "translated", "value": "項目の対応付け" } }
       }
     },
+    "io.import.csv.template.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "映射模板" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Mapping Templates" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "對應範本" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "対応テンプレート" } }
+      }
+    },
+    "io.import.csv.template.load": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "应用模板" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Apply Template" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "套用範本" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "テンプレートを適用" } }
+      }
+    },
+    "io.import.csv.template.save": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "保存为模板" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Save as Template" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "儲存為範本" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "テンプレートとして保存" } }
+      }
+    },
+    "io.import.csv.template.save.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "保存映射模板" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Save Mapping Template" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "儲存對應範本" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "対応テンプレートを保存" } }
+      }
+    },
+    "io.import.csv.template.save.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "模板名称" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Template Name" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "範本名稱" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "テンプレート名" } }
+      }
+    },
+    "io.import.csv.template.delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "删除模板" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Delete Template" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "刪除範本" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "テンプレートを削除" } }
+      }
+    },
     "io.import.csv.no.ledger": {
       "extractionState": "manual",
       "localizations": {

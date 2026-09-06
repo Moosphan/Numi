@@ -98,7 +98,7 @@ Numi 是一款 iOS 本地优先的记账 App。用户数据默认保存在设备
 | 多币种账户、历史汇率、主币种折算 | `CurrencyManagementView`、`ExchangeRateService`；P1-03 Partial | 链路大部分可用 | P1（发布核验后转 P0） | 功能涉及历史汇率与统计准确性；在端到端验收前不售卖。单币种记账仍永久免费。 |
 | 自动汇率 | `CurrencyManagementView` 已接 `openAutoExchangeRate` Gate | Gate 已接，汇率链路待完整验证 | P1（发布核验后转 P0） | 这是典型的外部数据/省心价值；手动汇率与已有数据不锁定。 |
 | iCloud 同步 | `SyncSettingsView` 已接 `openICloudSync` Gate；P1-04 Partial | 未完成冲突/跨设备验证 | P1（未达标不得上架） | 同步是信任承诺，不能先收费后补可靠性；发布前需真实双设备、冲突与恢复验证。 |
-| JSON/CSV 导入、导出、CSV 映射/预览/错误行、导入前恢复点 | `DataManagementView`、`BackupService`、`ImportRecoveryPointService`；P0B-02/03 Done | 已验证 | F | 可移植性与撤销风险是用户数据权利；基础导入导出永远免费。 |
+| JSON/CSV 导入、导出、CSV 映射/预览/错误行、导入前恢复点 | `DataManagementView`、`BackupService`、`ImportRecoveryPointService`；P0B-02/03 Done；CSV 映射模板的新建已接 `.openAdvancedImportExport` | 基础已验证，效率增强部分交付 | F：基础导入导出；P1：新建映射模板 | 可移植性与撤销风险是用户数据权利；基础导入导出永远免费。降级后用户仍可加载或删除已保存的模板，不能被锁定。 |
 | 加密备份创建与恢复 | `BackupView` 已接 `openEncryptedBackup` Gate；P0B-01 Done | 已验证 | P0：创建加密备份；F：普通导出、恢复和已有备份恢复 | 加密备份是高级安全增强；但不允许用订阅阻止用户恢复自己已有的备份。 |
 | Face ID/密码锁、后台模糊、隐藏金额 | `SettingsView`、`PrivacyAmountDisplayPolicy`；P0B-04 Done | 已验证 | F | 财务隐私是底线，不做付费墙。 |
 | App 内 AI 文本解析（Claude/Qwen/DeepSeek） | `TransactionLLMService`、设置中的 provider/key；`openAIRecord` 已枚举但未接 UI Gate | 有基础代码，依赖用户 Key/外部服务 | P1 | 发布前明确“自带 Key”还是“平台额度”；不得承诺无限 AI。若自带 Key，可考虑免费基础解析，Pro 仅售自动化/批量能力。 |

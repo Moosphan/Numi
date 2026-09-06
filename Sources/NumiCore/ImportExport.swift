@@ -70,7 +70,7 @@ public struct CSVImportResult: Equatable, Sendable {
     }
 }
 
-public enum CSVImportField: String, CaseIterable, Identifiable, Sendable {
+public enum CSVImportField: String, CaseIterable, Codable, Identifiable, Sendable {
     case ignored
     case id
     case type
@@ -87,7 +87,7 @@ public enum CSVImportField: String, CaseIterable, Identifiable, Sendable {
     public var id: String { rawValue }
 }
 
-public struct CSVImportMapping: Equatable, Sendable {
+public struct CSVImportMapping: Codable, Equatable, Sendable {
     private var assignments: [String: CSVImportField]
 
     public init(headers: [String]) {
@@ -108,6 +108,15 @@ public struct CSVImportMapping: Equatable, Sendable {
             }
         }
         assignments[header] = field
+    }
+
+    public func applying(to headers: [String]) -> CSVImportMapping {
+        var updated = CSVImportMapping(headers: headers)
+        for header in headers {
+            guard let field = assignments[header] else { continue }
+            updated.assign(field, to: header)
+        }
+        return updated
     }
 
     private static func defaultField(for header: String) -> CSVImportField {

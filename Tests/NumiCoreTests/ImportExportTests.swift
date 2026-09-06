@@ -2,6 +2,19 @@ import XCTest
 @testable import NumiCore
 
 final class ImportExportTests: XCTestCase {
+    func testMappingCanBeReappliedToMatchingHeadersWithoutOverridingNewHeaders() {
+        var original = CSVImportMapping(headers: ["transaction_kind", "transaction_total", "transaction_day"])
+        original.assign(.type, to: "transaction_kind")
+        original.assign(.amount, to: "transaction_total")
+        original.assign(.date, to: "transaction_day")
+
+        let reapplied = original.applying(to: ["transaction_kind", "transaction_total", "new_metadata"])
+
+        XCTAssertEqual(reapplied.field(for: "transaction_kind"), .type)
+        XCTAssertEqual(reapplied.field(for: "transaction_total"), .amount)
+        XCTAssertEqual(reapplied.field(for: "new_metadata"), .ignored)
+    }
+
     func testJSONExportRoundTripsTransactions() throws {
         let store = InMemoryBookkeepingStore()
         try store.seedDefaultsIfNeeded()
