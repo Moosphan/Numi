@@ -38,7 +38,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 | P0B-02 | JSON 导入前恢复点 | Done | 2026-09-02：JSON 解码成功后、写入前自动持久化当前完整快照；导入失败会立即回滚；用户可确认恢复最近一次导入前数据 | P0B-03 CSV 导入字段映射、预览与错误行 | 恢复点创建失败不会开始导入；导入异常不破坏原有数据；成功导入后可恢复导入前状态 |
 | P0B-03 | CSV 导入字段映射、预览与错误行 | Done | 2026-09-02：CSV 支持字段映射、前 20 条有效记录预览、逐行错误明细，以及分类/账户 UUID 或名称匹配；导入有效记录前创建恢复点 | P0B-04 隐藏金额模式全局接线 | 用户能导入第三方 CSV；错误行可见且不阻塞有效行预览；导入失败可恢复原数据 |
 | P0B-04 | 隐藏金额模式全局接线 | Done | 2026-09-03：新增 `PrivacyAmountDisplayPolicy` 与 `app.privacy.hideAmounts` 设置；首页、明细、洞悉、计划、账户资产及详情统一使用占位符；关闭后恢复真实金额；SwiftPM 183 项与 iPhone 15 UI 测试通过 | P0B-05 分类预算、报销与退款对预算的规则 | 开启后首页、明细、洞悉、计划、设置资产相关区域均不露出真实金额 |
-| P0B-05 | 分类预算、报销与退款对预算的规则 | Partial | `BudgetSetting` 支持 week/month；PRD 要求分类预算、报销标记、退款不影响个人预算 | 扩展预算 scope、分类/账户维度；补 `reimbursementId` / `refundOfTransactionId` 或等价模型 | 分类预算可设置和统计；报销/退款按规则排除或抵扣，测试覆盖 |
+| P0B-05 | 分类预算、报销与退款对预算的规则 | Partial | `BudgetSetting` 已支持 week/month 和分类/账户范围；`BudgetSpendingCalculator` 会排除已报销支出并以退款抵扣原始支出，持久化与核心计算已有回归测试；从基础总预算首次切换到分类或账户专项预算时会请求 `.openAdvancedBudget`，免费用户保留总预算以及既有专项预算的编辑/删除能力 | 补专项预算的独立新增/编辑生命周期与更细规则 | 分类预算可设置和统计；报销/退款按规则排除或抵扣，测试覆盖 |
 | P0B-06 | 搜索/筛选/编辑删除闭环验收 | Partial | `TransactionSearchView` 已支持时间、类型、分类、账户、金额和关键字组合筛选；新增工具栏一键重置会同时清空关键字与筛选条件；交易编辑删除撤销路径已有单测/UI 覆盖 | 补齐不依赖 Simulator 无障碍树的搜索/筛选回归；继续确认编辑/删除后统计和余额刷新 | P0 UI Test 覆盖新增、搜索、筛选、编辑、删除、撤销 |
 | P0B-07 | 转账与账户统计边界 | Done | `TransactionSummaryTests` 与 `SwiftDataBookkeepingStoreTests` 覆盖转账不计入收支、创建/编辑/删除/恢复余额更新；新增无目标、同账户、跨币种和无副作用失败边界测试 | 后续转入 P0C-01，稳定关键 UI 流程并补齐发布前回归 | 转账只移动同币种账户资产，不污染收入/支出；非法转账拒绝且不写入数据 |
 
@@ -81,7 +81,7 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 | --- | --- | --- | --- | --- | --- |
 | PRO-01 | 会员 Domain 模型 | Done | 新增 `Sources/NumiCore/Membership/Membership.swift`：`MembershipPlan`、`MembershipTier`、`MembershipCapability`、`MembershipStatus`、`MembershipPolicy`、Paywall context 和统一 `MembershipFeatureGate` 已落地；`MembershipFeatureGateTests` 覆盖免费数量上限、核心高级能力拦截和 Pro 全权益解析 | StoreKit 服务只负责产生已验证会员状态；业务页后续统一消费 gate 决策 | 会员能力可被单元测试独立验证 |
 | PRO-02 | StoreKit 2 接入 | Partial | 新增 `MembershipCommerce`、`MembershipStoreKitService` 与共享 `MembershipController`：商品加载、已验证交易、transaction updates、前台刷新、恢复购买和仅展示用缓存已接入；`App/NumiApp/NumiPro.storekit` 提供月付/年付/终身本地测试商品 | 在 App Store Connect 创建同 ID 商品、配置正式价格，并完成 Sandbox 购买/恢复/退款验证 | Sandbox 可购买/恢复；会员态可重启保持 |
-| PRO-03 | FeatureGate 能力闸口 | Partial | 新增统一 paywall presenter；新建账本、账户、订阅、分期均按免费额度拦截，自动汇率、iCloud 启用和加密备份创建按能力拦截；既有数据编辑、删除、恢复及基础导出未锁定 | 将 AI、主题、批量编辑、高级导入导出和高级洞悉在各自功能真正落地时接入同一 gate | 所有已实现收费能力只通过统一 gate 判断 |
+| PRO-03 | FeatureGate 能力闸口 | Partial | 新增统一 paywall presenter；新建账本、账户、订阅、分期均按免费额度拦截，自动汇率、iCloud 启用和加密备份创建按能力拦截；分类/账户专项预算首次从基础预算切换时接入 `.openAdvancedBudget`，降级用户仍可维护已有专项预算；既有数据编辑、删除、恢复及基础导出未锁定 | 将 AI、主题、批量编辑、高级导入导出和高级洞悉在各自功能真正落地时接入同一 gate | 所有已实现收费能力只通过统一 gate 判断 |
 | PRO-04 | Paywall 与会员状态页 | Partial | 设置页状态卡与权益页已连接实时会员状态；价格由 StoreKit 返回，购买/待批准/验签失败/恢复/续订管理/到期状态与上下文升级页均已接入，年付卡仅在已加载月付与年付实际价格、且年付低于十二个月月付总价时显示计算所得的节省比例；文案覆盖四种运行时语言；权益页现仅宣传 V1 已发布的无限账本/账户、更多订阅/分期与加密备份，且只有用户协议与隐私政策均配置为合法 HTTPS 地址时才允许启动购买 | 配置用户协议与隐私协议正式链接；用 Sandbox 完成真机或模拟器端到端支付验证 | 设置页可进入会员页；受限功能可弹上下文 paywall |
 | PRO-05 | 免费/Pro 限制策略与迁移 | Done | 数量限制只阻止新建；账本、账户、订阅、分期的既有实体仍可查看、编辑和删除，备份恢复与基础导出未锁定 | 跟随新增收费能力补充最小化迁移覆盖 | 限制只阻止新增，不删除用户已有数据 |
 

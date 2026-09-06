@@ -211,7 +211,11 @@ public struct PlansView: View {
             }
         }
         .sheet(item: $editingDraft) { draft in
-            BudgetFormView(draft: draft, categories: categories, accounts: accounts) { savedDraft in
+            BudgetFormView(
+                draft: draft,
+                categories: categories,
+                accounts: accounts
+            ) { savedDraft in
                 guard let amount = try? Money(decimalString: savedDraft.amountText, currencyCode: savedDraft.currencyCode) else {
                     return
                 }
@@ -1044,14 +1048,25 @@ private struct BudgetDraft: Identifiable {
 
 private struct BudgetFormView: View {
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var membership = MembershipController.shared
     @State private var draft: BudgetDraft
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
+    private let originalCategoryID: UUID?
+    private let originalAccountID: UUID?
     private let onSave: (BudgetDraft) -> Void
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
 
-    init(draft: BudgetDraft, categories: [NumiCore.Category], accounts: [Account], onSave: @escaping (BudgetDraft) -> Void) {
+    init(
+        draft: BudgetDraft,
+        categories: [NumiCore.Category],
+        accounts: [Account],
+        onSave: @escaping (BudgetDraft) -> Void
+    ) {
         self._draft = State(initialValue: draft)
+        self.originalCategoryID = draft.categoryID
+        self.originalAccountID = draft.accountID
         self.categories = categories.filter { $0.kind == .expense && !$0.isHidden }
         self.accounts = accounts.filter { !$0.isHidden }
         self.onSave = onSave
@@ -1108,6 +1123,12 @@ private struct BudgetFormView: View {
                     }
                 }
             }
+            .onChange(of: draft.categoryID) { _, _ in
+                validateScopeSelection()
+            }
+            .onChange(of: draft.accountID) { _, _ in
+                validateScopeSelection()
+            }
             .navigationTitle("budget.edit")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -1124,6 +1145,7 @@ private struct BudgetFormView: View {
                 }
             }
         }
+        .membershipPaywall(context: $membershipPaywallContext)
     }
 
     private var title: String {
@@ -1138,6 +1160,25 @@ private struct BudgetFormView: View {
             return false
         }
         return amount.minorUnits >= 0
+    }
+
+    private func validateScopeSelection() {
+        guard let request = BudgetScopeMembershipPolicy.featureRequest(
+            existingCategoryID: originalCategoryID,
+            existingAccountID: originalAccountID,
+            selectedCategoryID: draft.categoryID,
+            selectedAccountID: draft.accountID
+        ) else {
+            return
+        }
+        switch membership.decision(for: request) {
+        case .granted:
+            return
+        case .blocked(let context):
+            draft.categoryID = originalCategoryID
+            draft.accountID = originalAccountID
+            membershipPaywallContext = context
+        }
     }
 }
 
