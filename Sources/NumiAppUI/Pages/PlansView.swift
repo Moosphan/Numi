@@ -194,6 +194,11 @@ public struct PlansView: View {
             ToolbarItem(placement: .trailingBar) {
                 Menu {
                     Button {
+                        startAddingAdvancedBudget()
+                    } label: {
+                        Label("budget.add.advanced", systemImage: "chart.bar.doc.horizontal")
+                    }
+                    Button {
                         startAddingSubscription()
                     } label: {
                         Label("subscription.add", systemImage: "repeat")
@@ -612,6 +617,15 @@ public struct PlansView: View {
         }
     }
 
+    private func startAddingAdvancedBudget() {
+        switch membership.decision(for: .openAdvancedBudget) {
+        case .granted:
+            editingDraft = BudgetDraft.newAdvanced(currencyCode: defaultCurrencyCode)
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
     private func startAddingInstallment() {
         switch membership.decision(for: .createInstallment(currentCount: installmentPlans.count)) {
         case .granted:
@@ -1017,6 +1031,7 @@ private struct PlanEmptyStateCard: View {
 
 private struct BudgetDraft: Identifiable {
     let id: UUID
+    let requiresScope: Bool
     var period: BudgetPeriod
     var amountText: String
     var currencyCode: String
@@ -1026,12 +1041,46 @@ private struct BudgetDraft: Identifiable {
 
     init(model: BudgetCardModel) {
         self.id = model.id
+        self.requiresScope = false
         self.period = model.period
         self.amountText = Self.decimalText(for: model.amount)
         self.currencyCode = model.amount.currencyCode
         self.isEnabled = model.isEnabled
         self.categoryID = model.categoryID
         self.accountID = model.accountID
+    }
+
+    static func newAdvanced(currencyCode: String) -> BudgetDraft {
+        BudgetDraft(
+            id: UUID(),
+            requiresScope: true,
+            period: .month,
+            amountText: "",
+            currencyCode: currencyCode,
+            isEnabled: true,
+            categoryID: nil,
+            accountID: nil
+        )
+    }
+
+    private init(
+        id: UUID,
+        requiresScope: Bool,
+        period: BudgetPeriod,
+        amountText: String,
+        currencyCode: String,
+        isEnabled: Bool,
+        categoryID: UUID?,
+        accountID: UUID?
+    ) {
+        self.id = id
+        self.requiresScope = requiresScope
+        self.period = period
+        self.amountText = amountText
+        self.currencyCode = currencyCode.uppercased()
+        self.isEnabled = isEnabled
+        self.categoryID = categoryID
+        self.accountID = accountID
     }
 
     private static func decimalText(for money: Money) -> String {
@@ -1160,6 +1209,10 @@ private struct BudgetFormView: View {
             return false
         }
         return amount.minorUnits >= 0
+            && (!draft.requiresScope || AdvancedBudgetCreationPolicy.hasScope(
+                categoryID: draft.categoryID,
+                accountID: draft.accountID
+            ))
     }
 
     private func validateScopeSelection() {

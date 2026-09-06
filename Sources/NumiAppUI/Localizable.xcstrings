@@ -3423,6 +3423,35 @@
         }
       }
     },
+    "budget.add.advanced": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增专项预算"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Scoped Budget"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增專項預算"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "対象別予算を追加"
+          }
+        }
+      }
+    },
     "budget.scope": {
       "extractionState": "manual",
       "localizations": {
