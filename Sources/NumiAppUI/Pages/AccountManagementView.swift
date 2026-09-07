@@ -47,7 +47,7 @@ public struct AccountManagementView: View {
                 assetTotalCard
 
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text("account.section")
+                    Text(NumiLocalized.string("account.section"))
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(NumiColor.textSecondary)
 
@@ -80,7 +80,7 @@ public struct AccountManagementView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.accountManagement")
         .background(NumiColor.surfacePage)
-        .navigationTitle("account.title")
+        .navigationTitle(NumiLocalized.string("account.title"))
         .modifier(LargeTitleNavigationChrome())
         .tint(NumiColor.accentDeep)
         .toolbar {
@@ -90,7 +90,7 @@ public struct AccountManagementView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("account.add")
+                .accessibilityLabel(NumiLocalized.string("account.add"))
                 .accessibilityIdentifier("action.addAccount")
             }
         }
@@ -101,7 +101,7 @@ public struct AccountManagementView: View {
         }
         .membershipPaywall(context: $membershipPaywallContext)
         .confirmationDialog(
-            "record.delete.confirm",
+            NumiLocalized.string("record.delete.confirm"),
             isPresented: Binding(
                 get: { pendingDelete != nil },
                 set: { if !$0 { pendingDelete = nil } }
@@ -109,11 +109,11 @@ public struct AccountManagementView: View {
             titleVisibility: .visible,
             presenting: pendingDelete
         ) { account in
-            Button("common.delete", role: .destructive) {
+            Button(NumiLocalized.string("common.delete"), role: .destructive) {
                 onDelete?(account)
                 pendingDelete = nil
             }
-            Button("common.cancel", role: .cancel) {
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {
                 pendingDelete = nil
             }
         } message: { account in
@@ -131,7 +131,7 @@ public struct AccountManagementView: View {
     private var assetTotalCard: some View {
         let summary = assetSummary
         return VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("account.total.asset")
+            Text(NumiLocalized.string("account.total.asset"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
             Text(privacyAmountDisplayPolicy.display(summary.total))
@@ -146,7 +146,7 @@ public struct AccountManagementView: View {
                     .padding(.top, NumiSpacing.s1)
             }
 
-            Text("account.info.desc")
+            Text(NumiLocalized.string("account.info.desc"))
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
                 .padding(.top, NumiSpacing.s1)
@@ -211,7 +211,7 @@ public struct AccountManagementView: View {
                         .foregroundStyle(NumiColor.textPrimary)
 
                     if isAccountHidden(account.id) {
-                        Text("account.hidden")
+                        Text(NumiLocalized.string("account.hidden"))
                             .font(NumiFont.caption)
                             .foregroundStyle(NumiColor.textTertiary)
                             .padding(.horizontal, 6)
@@ -235,7 +235,7 @@ public struct AccountManagementView: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text("account.balance")
+                Text(NumiLocalized.string("account.balance"))
                     .font(NumiFont.caption)
                     .foregroundStyle(NumiColor.textTertiary)
                 Text(privacyAmountDisplayPolicy.display(account.balance))
@@ -253,7 +253,7 @@ public struct AccountManagementView: View {
             Button {
                 editingDraft = .existing(account)
             } label: {
-                Label("common.edit", systemImage: "square.and.pencil")
+                Label(NumiLocalized.string("common.edit"), systemImage: "square.and.pencil")
             }
 
             Button {
@@ -270,7 +270,7 @@ public struct AccountManagementView: View {
             Button(role: .destructive) {
                 pendingDelete = account
             } label: {
-                Label("common.delete", systemImage: "trash")
+                Label(NumiLocalized.string("common.delete"), systemImage: "trash")
             }
         }
         .accessibilityIdentifier("account.\(account.id.uuidString)")
@@ -449,7 +449,7 @@ private struct AccountFormView: View {
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("input.accountName")
 
-                    Picker("account.type", selection: $draft.type) {
+                    Picker(NumiLocalized.string("account.type"), selection: $draft.type) {
                         ForEach(accountTypes, id: \.self) { type in
                             Label(typeName(for: type), systemImage: iconName(for: type))
                                 .tag(type)
@@ -457,7 +457,7 @@ private struct AccountFormView: View {
                     }
                     .accessibilityIdentifier("picker.accountType")
                 } header: {
-                    Text("account.info")
+                    Text(NumiLocalized.string("account.info"))
                 }
 
                 Section {
@@ -497,22 +497,22 @@ private struct AccountFormView: View {
                         accessibilityIdentifier: "toggle.accountHidden"
                     )
                 } header: {
-                    Text("account.balance")
+                    Text(NumiLocalized.string("account.balance"))
                 } footer: {
-                    Text("account.balance.adjust.desc")
+                    Text(NumiLocalized.string("account.balance.adjust.desc"))
                 }
             }
             .scrollContentBackground(.hidden)
             .background(NumiColor.surfacePage)
-            .navigationTitle(draft.sourceAccount == nil ? Text("account.add") : Text("account.edit"))
+            .navigationTitle(draft.sourceAccount == nil ? Text(NumiLocalized.string("account.add")) : Text(NumiLocalized.string("account.edit")))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") {
+                    Button(NumiLocalized.string("common.cancel")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("common.save") {
+                    Button(NumiLocalized.string("common.save")) {
                         onSave(draft)
                     }
                     .disabled(!canSave)
@@ -697,7 +697,7 @@ struct AccountDetailView: View {
                     }
 
                     VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                        Text("account.current.balance")
+                        Text(NumiLocalized.string("account.current.balance"))
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
                         Text(privacyAmountDisplayPolicy.display(account.balance))
@@ -710,7 +710,7 @@ struct AccountDetailView: View {
 
                     HStack(spacing: NumiSpacing.s4) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("account.initial.amount")
+                            Text(NumiLocalized.string("account.initial.amount"))
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
                             Text(privacyAmountDisplayPolicy.display(initialBalance))
@@ -722,7 +722,7 @@ struct AccountDetailView: View {
                         Spacer()
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("account.total.expense")
+                            Text(NumiLocalized.string("account.total.expense"))
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
                             Text(privacyAmountDisplayPolicy.display(expenseTotal))
@@ -734,7 +734,7 @@ struct AccountDetailView: View {
                         Spacer()
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("account.total.income")
+                            Text(NumiLocalized.string("account.total.income"))
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
                             Text(privacyAmountDisplayPolicy.display(incomeTotal))
@@ -746,7 +746,7 @@ struct AccountDetailView: View {
 
                     HStack(spacing: NumiSpacing.s4) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("account.transaction.count")
+                            Text(NumiLocalized.string("account.transaction.count"))
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.textTertiary)
                             Text("\(transactions.count)")
@@ -765,7 +765,7 @@ struct AccountDetailView: View {
                 // 最近交易记录
                 if !transactions.isEmpty {
                     VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                        Text("account.recent.transactions")
+                        Text(NumiLocalized.string("account.recent.transactions"))
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(NumiColor.textSecondary)
 
@@ -790,7 +790,7 @@ struct AccountDetailView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.accountDetail")
         .background(NumiColor.surfacePage)
-        .navigationTitle("account.detail")
+        .navigationTitle(NumiLocalized.string("account.detail"))
         .modifier(LargeTitleNavigationChrome())
     }
 

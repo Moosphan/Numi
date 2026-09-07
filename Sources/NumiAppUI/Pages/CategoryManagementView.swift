@@ -27,11 +27,11 @@ public struct CategoryManagementView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
-                Picker("category.type", selection: $selectedKind) {
-                    Text("record.expense")
+                Picker(NumiLocalized.string("category.type"), selection: $selectedKind) {
+                    Text(NumiLocalized.string("record.expense"))
                         .tag(CategoryKind.expense)
                         .accessibilityIdentifier("categoryKind.expense")
-                    Text("record.income")
+                    Text(NumiLocalized.string("record.income"))
                         .tag(CategoryKind.income)
                         .accessibilityIdentifier("categoryKind.income")
                 }
@@ -68,7 +68,7 @@ public struct CategoryManagementView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.categoryManagement")
         .background(NumiColor.surfacePage)
-        .navigationTitle("category.title")
+        .navigationTitle(NumiLocalized.string("category.title"))
         .modifier(LargeTitleNavigationChrome())
         .tint(NumiColor.accentDeep)
         .toolbar {
@@ -158,7 +158,7 @@ public struct CategoryManagementView: View {
                 Button(role: .destructive) {
                     onCategoryDelete?(category)
                 } label: {
-                    Label("common.delete", systemImage: "trash")
+                    Label(NumiLocalized.string("common.delete"), systemImage: "trash")
                 }
             }
         }
@@ -286,13 +286,13 @@ private struct AddCategorySheet: View {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // 分类名称
                 VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                    Text("category.name.label")
+                    Text(NumiLocalized.string("category.name.label"))
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textSecondary)
 
                     VStack(spacing: 0) {
                         HStack(spacing: NumiSpacing.s3) {
-                            Text("category.name.label")
+                            Text(NumiLocalized.string("category.name.label"))
                                 .font(NumiFont.body)
                                 .foregroundStyle(NumiColor.textPrimary)
                             Spacer()
@@ -314,7 +314,7 @@ private struct AddCategorySheet: View {
 
                 // 图标选择
                 VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                    Text("category.select.icon")
+                    Text(NumiLocalized.string("category.select.icon"))
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textSecondary)
 
@@ -369,15 +369,15 @@ private struct AddCategorySheet: View {
             .padding(.bottom, 120)
         }
         .background(NumiColor.surfacePage)
-        .navigationTitle("category.add")
+        .navigationTitle(NumiLocalized.string("category.add"))
         .modifier(LargeTitleNavigationChrome())
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("common.cancel") { onDismiss() }
+                Button(NumiLocalized.string("common.cancel")) { onDismiss() }
                     .foregroundStyle(NumiColor.toolbarIcon)
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("common.add") { onCreate(name, selectedIcon) }
+                Button(NumiLocalized.string("common.add")) { onCreate(name, selectedIcon) }
                     .disabled(name.isEmpty)
                     .foregroundStyle(name.isEmpty ? NumiColor.textTertiary : NumiColor.accentDeep)
             }

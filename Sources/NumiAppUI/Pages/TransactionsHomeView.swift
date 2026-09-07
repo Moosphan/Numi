@@ -148,12 +148,12 @@ public struct TransactionsHomeView: View {
                 .background(NumiColor.surfacePage)
                 .modifier(HomeToolbarChrome(periodToolbarControl: periodToolbarControl, searchToolbarButton: searchToolbarButton))
                 .confirmationDialog(
-                    Text("record.delete.confirm"),
+                    Text(NumiLocalized.string("record.delete.confirm")),
                     isPresented: deleteConfirmationBinding,
                     titleVisibility: .visible,
                     presenting: pendingDelete
                 ) { transaction in
-                    Button("common.delete", role: .destructive) {
+                    Button(NumiLocalized.string("common.delete"), role: .destructive) {
                         onDelete(transaction)
                         showsUndo = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
@@ -164,9 +164,9 @@ public struct TransactionsHomeView: View {
                     }
                     .accessibilityIdentifier("action.confirmDeleteRecord")
 
-                    Button("common.cancel", role: .cancel) {}
+                    Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
                 } message: { _ in
-                    Text("record.deleted.msg")
+                    Text(NumiLocalized.string("record.deleted.msg"))
                 }
 
             if showsUndo {
@@ -211,7 +211,7 @@ public struct TransactionsHomeView: View {
                     showsBatchCategoryConfirmation = true
                 }
             }
-            Button("common.cancel", role: .cancel) {}
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
         }
         .confirmationDialog(
             NumiLocalized.string("batch.edit.preview.title"),
@@ -219,10 +219,10 @@ public struct TransactionsHomeView: View {
             titleVisibility: .visible,
             presenting: pendingBatchCategory
         ) { category in
-            Button("batch.edit.preview.apply") {
+            Button(NumiLocalized.string("batch.edit.preview.apply")) {
                 applyBatchCategory(category)
             }
-            Button("common.cancel", role: .cancel) {
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {
                 pendingBatchCategory = nil
             }
         } message: { category in
@@ -387,7 +387,7 @@ public struct TransactionsHomeView: View {
 
     private var undoBar: some View {
         HStack(spacing: NumiSpacing.s3) {
-            Text("record.deleted")
+            Text(NumiLocalized.string("record.deleted"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textPrimary)
             Spacer()
@@ -395,7 +395,7 @@ public struct TransactionsHomeView: View {
                 onUndoDelete()
                 showsUndo = false
             } label: {
-                Text("record.undo")
+                Text(NumiLocalized.string("record.undo"))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.accentDeep)
                     .frame(minWidth: 72, minHeight: 44)
@@ -413,7 +413,7 @@ public struct TransactionsHomeView: View {
 
     private var batchUndoBar: some View {
         HStack(spacing: NumiSpacing.s3) {
-            Text("batch.edit.updated")
+            Text(NumiLocalized.string("batch.edit.updated"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textPrimary)
             Spacer()
@@ -425,7 +425,7 @@ public struct TransactionsHomeView: View {
                     }
                 }
             } label: {
-                Text("batch.edit.undo")
+                Text(NumiLocalized.string("batch.edit.undo"))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.accentDeep)
                     .frame(minWidth: 72, minHeight: 44)
@@ -447,7 +447,7 @@ public struct TransactionsHomeView: View {
                 Button {
                     finishBatchEditing()
                 } label: {
-                    Text("common.done")
+                    Text(NumiLocalized.string("common.done"))
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(NumiColor.accentDeep)
                         .frame(minHeight: NumiChromeMetrics.toolbarButtonHitSize)
@@ -495,11 +495,11 @@ public struct TransactionsHomeView: View {
                 .font(.system(size: 44, weight: .regular))
                 .foregroundStyle(NumiColor.textTertiary)
             VStack(spacing: NumiSpacing.s2) {
-                Text("empty.home.title")
+                Text(NumiLocalized.string("empty.home.title"))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
                     .accessibilityIdentifier("home.empty.title")
-                Text("empty.home.desc")
+                Text(NumiLocalized.string("empty.home.desc"))
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textTertiary)
                     .multilineTextAlignment(.center)
@@ -724,21 +724,21 @@ public struct TransactionsHomeView: View {
                 Button {
                     onEdit(row.transaction)
                 } label: {
-                    Label("common.edit", systemImage: "square.and.pencil")
+                    Label(NumiLocalized.string("common.edit"), systemImage: "square.and.pencil")
                 }
                 .accessibilityIdentifier("action.context.editRecord")
 
                 Button {
                     pendingDelete = row.transaction
                 } label: {
-                    Label("common.delete", systemImage: "trash")
+                    Label(NumiLocalized.string("common.delete"), systemImage: "trash")
                 }
                 .accessibilityIdentifier("action.context.deleteRecord")
 
                 Button {
                     onShare(row.transaction)
                 } label: {
-                    Label("common.share", systemImage: "square.and.arrow.up")
+                    Label(NumiLocalized.string("common.share"), systemImage: "square.and.arrow.up")
                 }
                 .accessibilityIdentifier("action.context.shareRecord")
             }
@@ -801,7 +801,7 @@ public struct TransactionsHomeView: View {
                 Text(NumiLocalized.string("batch.edit.selected", selectedBatchTransactionIDs.count))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
-                Text("batch.edit.hint")
+                Text(NumiLocalized.string("batch.edit.hint"))
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
                     .lineLimit(1)
@@ -812,7 +812,7 @@ public struct TransactionsHomeView: View {
             Button {
                 showsBatchCategoryPicker = true
             } label: {
-                Text("batch.edit.apply")
+                Text(NumiLocalized.string("batch.edit.apply"))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(.white)
                     .padding(.horizontal, NumiSpacing.s4)

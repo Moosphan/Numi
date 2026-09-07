@@ -330,40 +330,40 @@ private struct TransactionSearchFilterSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("search.filter.type") {
-                    Picker("search.filter.type", selection: $type) {
-                        Text("search.filter.allTypes").tag(TransactionType?.none)
-                        Text("record.expense").tag(TransactionType?.some(.expense))
-                        Text("record.income").tag(TransactionType?.some(.income))
-                        Text("record.transfer").tag(TransactionType?.some(.transfer))
+                Section(NumiLocalized.string("search.filter.type")) {
+                    Picker(NumiLocalized.string("search.filter.type"), selection: $type) {
+                        Text(NumiLocalized.string("search.filter.allTypes")).tag(TransactionType?.none)
+                        Text(NumiLocalized.string("record.expense")).tag(TransactionType?.some(.expense))
+                        Text(NumiLocalized.string("record.income")).tag(TransactionType?.some(.income))
+                        Text(NumiLocalized.string("record.transfer")).tag(TransactionType?.some(.transfer))
                     }
                     .accessibilityIdentifier("picker.transactionFilterType")
                 }
-                Section("search.filter.scope") {
-                    Picker("search.filter.category", selection: $categoryID) {
-                        Text("search.filter.allCategories").tag(UUID?.none)
+                Section(NumiLocalized.string("search.filter.scope")) {
+                    Picker(NumiLocalized.string("search.filter.category"), selection: $categoryID) {
+                        Text(NumiLocalized.string("search.filter.allCategories")).tag(UUID?.none)
                         ForEach(categories.filter { $0.kind == .expense || $0.kind == .income }) { category in
                             Text(category.localizedDisplayName).tag(Optional(category.id))
                         }
                     }
                     .accessibilityIdentifier("picker.transactionFilterCategory")
-                    Picker("search.filter.account", selection: $accountID) {
-                        Text("search.filter.allAccounts").tag(UUID?.none)
+                    Picker(NumiLocalized.string("search.filter.account"), selection: $accountID) {
+                        Text(NumiLocalized.string("search.filter.allAccounts")).tag(UUID?.none)
                         ForEach(accounts) { account in
                             Text(account.localizedDisplayName).tag(Optional(account.id))
                         }
                     }
                     .accessibilityIdentifier("picker.transactionFilterAccount")
                 }
-                Section("search.filter.date") {
-                    Toggle("search.filter.enableDate", isOn: $useDateRange)
+                Section(NumiLocalized.string("search.filter.date")) {
+                    Toggle(NumiLocalized.string("search.filter.enableDate"), isOn: $useDateRange)
                         .accessibilityIdentifier("toggle.transactionFilterDate")
                     if useDateRange {
                         DatePicker("search.filter.from", selection: $startDate, displayedComponents: .date)
                         DatePicker("search.filter.to", selection: $endDate, displayedComponents: .date)
                     }
                 }
-                Section("search.filter.amount") {
+                Section(NumiLocalized.string("search.filter.amount")) {
                     TextField("search.filter.minimum", text: $minimumAmountText)
                         #if os(iOS)
                         .keyboardType(.decimalPad)
@@ -379,17 +379,17 @@ private struct TransactionSearchFilterSheet: View {
             .navigationTitle(NumiLocalized.string("search.filters"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") { dismiss() }
+                    Button(NumiLocalized.string("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("common.apply") {
+                    Button(NumiLocalized.string("common.apply")) {
                         apply()
                         dismiss()
                     }
                     .accessibilityIdentifier("action.applyTransactionFilters")
                 }
                 ToolbarItem(placement: .secondaryAction) {
-                    Button("common.reset") {
+                    Button(NumiLocalized.string("common.reset")) {
                         reset()
                     }
                     .accessibilityIdentifier("action.resetTransactionFilters")

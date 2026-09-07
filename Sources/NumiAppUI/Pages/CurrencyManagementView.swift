@@ -44,7 +44,7 @@ public struct CurrencyManagementView: View {
         .onTapGesture {
             isSearchFocused = false
         }
-        .navigationTitle("currency.title")
+        .navigationTitle(NumiLocalized.string("currency.title"))
         .modifier(LargeTitleNavigationChrome())
         .task {
             await membership.start()
@@ -76,7 +76,7 @@ public struct CurrencyManagementView: View {
         let currency = CurrencyDefinition.find(defaultCurrencyCode) ?? .cny
 
         return VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-            Text("currency.default")
+            Text(NumiLocalized.string("currency.default"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -142,10 +142,10 @@ public struct CurrencyManagementView: View {
                     .foregroundStyle(NumiColor.accentPrimary)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("currency.auto.update")
+                    Text(NumiLocalized.string("currency.auto.update"))
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
-                    Text("currency.auto.update.desc")
+                    Text(NumiLocalized.string("currency.auto.update.desc"))
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                 }
@@ -193,7 +193,7 @@ public struct CurrencyManagementView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("currency.manual.refresh")
+                        Text(NumiLocalized.string("currency.manual.refresh"))
                             .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(NumiColor.textPrimary)
 
@@ -210,7 +210,7 @@ public struct CurrencyManagementView: View {
                         ProgressView()
                             .scaleEffect(0.8)
                     } else {
-                        Text("common.refresh")
+                        Text(NumiLocalized.string("common.refresh"))
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.accentDeep)
                     }
@@ -280,7 +280,7 @@ public struct CurrencyManagementView: View {
 
     private var currencyListSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("currency.all")
+            Text(NumiLocalized.string("currency.all"))
                 .font(NumiFont.bodyStrong)
                 .foregroundStyle(NumiColor.textPrimary)
 
@@ -319,7 +319,7 @@ public struct CurrencyManagementView: View {
                             }
 
                             if isDefault {
-                                Text("currency.default.badge")
+                                Text(NumiLocalized.string("currency.default.badge"))
                                     .font(NumiFont.caption)
                                     .foregroundStyle(NumiColor.accentDeep)
                                     .padding(.horizontal, 8)
@@ -354,7 +354,7 @@ public struct CurrencyManagementView: View {
                 .font(.system(size: 14))
                 .foregroundStyle(NumiColor.textTertiary)
 
-            Text("currency.source")
+            Text(NumiLocalized.string("currency.source"))
                 .font(NumiFont.caption)
                 .foregroundStyle(NumiColor.textTertiary)
         }

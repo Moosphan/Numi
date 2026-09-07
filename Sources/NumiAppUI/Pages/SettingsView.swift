@@ -311,7 +311,7 @@ public struct SettingsView: View {
                                 .foregroundStyle(NumiColor.accentPrimary)
 
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("setting.ai.config")
+                                Text(NumiLocalized.string("setting.ai.config"))
                                     .font(.system(size: 17, weight: .medium))
                                     .foregroundStyle(NumiColor.textPrimary)
                                 Text(currentProviderDisplayName)
@@ -530,7 +530,7 @@ public struct SettingsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
-            Text("setting.privacy.lock")
+            Text(NumiLocalized.string("setting.privacy.lock"))
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(NumiColor.textPrimary)
 
@@ -569,7 +569,7 @@ public struct SettingsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     .foregroundStyle(NumiColor.accentPrimary)
 
-                Text("setting.unlock.method")
+                Text(NumiLocalized.string("setting.unlock.method"))
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -618,7 +618,7 @@ public struct SettingsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     .foregroundStyle(NumiColor.accentPrimary)
 
-                Text("setting.change.password")
+                Text(NumiLocalized.string("setting.change.password"))
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -653,7 +653,7 @@ public struct SettingsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
-            Text("setting.auto.blur")
+            Text(NumiLocalized.string("setting.auto.blur"))
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(NumiColor.textPrimary)
 
@@ -679,7 +679,7 @@ public struct SettingsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                 .foregroundStyle(NumiColor.accentPrimary)
 
-            Text("setting.hide.amounts")
+            Text(NumiLocalized.string("setting.hide.amounts"))
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(NumiColor.textPrimary)
 
@@ -900,7 +900,7 @@ public struct SettingsView: View {
                 Button {
                     showAIKeySheet = false
                 } label: {
-                    Text("common.cancel")
+                    Text(NumiLocalized.string("common.cancel"))
                         .font(NumiFont.body)
                         .foregroundStyle(NumiColor.toolbarIcon)
                         .frame(minWidth: 44, minHeight: 44)
@@ -909,7 +909,7 @@ public struct SettingsView: View {
 
                 Spacer()
 
-                Text("setting.ai.config")
+                Text(NumiLocalized.string("setting.ai.config"))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -930,7 +930,7 @@ public struct SettingsView: View {
                     }
                     showAIKeySheet = false
                 } label: {
-                    Text("common.save")
+                    Text(NumiLocalized.string("common.save"))
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.accentDeep)
                         .frame(minWidth: 44, minHeight: 44)
@@ -944,21 +944,21 @@ public struct SettingsView: View {
                 VStack(alignment: .leading, spacing: NumiSpacing.s4) {
                     // Provider picker - TabView
                     VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                        Text("setting.ai.select.provider")
+                        Text(NumiLocalized.string("setting.ai.select.provider"))
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
 
-                        Picker("setting.ai.provider", selection: $editingProvider) {
-                            Text("setting.ai.provider.claude").tag("claude")
-                            Text("setting.ai.provider.qwen").tag("qwen")
-                            Text("setting.ai.provider.deepseek").tag("deepseek")
+                        Picker(NumiLocalized.string("setting.ai.provider"), selection: $editingProvider) {
+                            Text(NumiLocalized.string("setting.ai.provider.claude")).tag("claude")
+                            Text(NumiLocalized.string("setting.ai.provider.qwen")).tag("qwen")
+                            Text(NumiLocalized.string("setting.ai.provider.deepseek")).tag("deepseek")
                         }
                         .pickerStyle(.segmented)
                     }
 
                     // API Key input
                     VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                        Text("setting.ai.api.key")
+                        Text(NumiLocalized.string("setting.ai.api.key"))
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
 
@@ -1014,16 +1014,16 @@ public struct SettingsView: View {
                     }
 
                     // Description
-                    Text("setting.ai.api.key.desc")
+                    Text(NumiLocalized.string("setting.ai.api.key.desc"))
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
 
                     // Provider info
                     VStack(alignment: .leading, spacing: NumiSpacing.s1) {
-                        Text("setting.ai.providers.title")
+                        Text(NumiLocalized.string("setting.ai.providers.title"))
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.textSecondary)
-                        Text("setting.ai.providers.detail")
+                        Text(NumiLocalized.string("setting.ai.providers.detail"))
                             .font(NumiFont.caption)
                             .foregroundStyle(NumiColor.textTertiary)
                     }

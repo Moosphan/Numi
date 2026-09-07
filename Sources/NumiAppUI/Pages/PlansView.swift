@@ -152,7 +152,7 @@ public struct PlansView: View {
             .padding(.bottom, 96)
         }
         .background(NumiColor.surfacePage)
-        .navigationTitle("tab.plans")
+        .navigationTitle(NumiLocalized.string("tab.plans"))
         .modifier(LargeTitleNavigationChrome())
         .navigationDestination(item: $selectedSubscription) { sub in
             SubscriptionDetailView(
@@ -199,17 +199,17 @@ public struct PlansView: View {
                     Button {
                         startAddingAdvancedBudget()
                     } label: {
-                        Label("budget.add.advanced", systemImage: "chart.bar.doc.horizontal")
+                        Label(NumiLocalized.string("budget.add.advanced"), systemImage: "chart.bar.doc.horizontal")
                     }
                     Button {
                         startAddingSubscription()
                     } label: {
-                        Label("subscription.add", systemImage: "repeat")
+                        Label(NumiLocalized.string("subscription.add"), systemImage: "repeat")
                     }
                     Button {
                         startAddingInstallment()
                     } label: {
-                        Label("installment.add", systemImage: "creditcard")
+                        Label(NumiLocalized.string("installment.add"), systemImage: "creditcard")
                     }
                 } label: {
                     Image(systemName: "plus")
@@ -319,10 +319,10 @@ public struct PlansView: View {
 
             Toggle(isOn: $requiresSubscriptionConfirmation) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("subscription.confirmation.mode")
+                    Text(NumiLocalized.string("subscription.confirmation.mode"))
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
-                    Text("subscription.confirmation.mode.detail")
+                    Text(NumiLocalized.string("subscription.confirmation.mode.detail"))
                         .font(NumiFont.caption)
                         .foregroundStyle(NumiColor.textSecondary)
                 }
@@ -375,7 +375,7 @@ public struct PlansView: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("subscription.next.billing")
+                    Text(NumiLocalized.string("subscription.next.billing"))
                         .font(NumiFont.caption)
                         .foregroundStyle(NumiColor.textTertiary)
                     Text(sub.nextBillingDate.numiFormatted(.dateTime.month().day()))
@@ -393,13 +393,13 @@ public struct PlansView: View {
             Button {
                 selectedSubscription = sub
             } label: {
-                Label("subscription.detail", systemImage: "info.circle")
+                Label(NumiLocalized.string("subscription.detail"), systemImage: "info.circle")
             }
 
             Button {
                 editingSubscription = sub
             } label: {
-                Label("common.edit", systemImage: "square.and.pencil")
+                Label(NumiLocalized.string("common.edit"), systemImage: "square.and.pencil")
             }
 
             Button {
@@ -418,20 +418,20 @@ public struct PlansView: View {
                     Button {
                         onRecordSubscriptionBilling(sub.id)
                     } label: {
-                        Label("subscription.record.billing", systemImage: "checkmark.circle")
+                        Label(NumiLocalized.string("subscription.record.billing"), systemImage: "checkmark.circle")
                     }
                 }
 
                 Button {
                     onEnableSubscriptionReminder(sub.id)
                 } label: {
-                    Label("subscription.reminder.enable", systemImage: "bell.badge")
+                    Label(NumiLocalized.string("subscription.reminder.enable"), systemImage: "bell.badge")
                 }
 
                 Button {
                     pendingSkipSubscription = sub
                 } label: {
-                    Label("subscription.skip.next", systemImage: "forward.end")
+                    Label(NumiLocalized.string("subscription.skip.next"), systemImage: "forward.end")
                 }
             }
 
@@ -440,7 +440,7 @@ public struct PlansView: View {
                 UIPasteboard.general.string = shareText(sub)
 #endif
             } label: {
-                Label("common.share", systemImage: "square.and.arrow.up")
+                Label(NumiLocalized.string("common.share"), systemImage: "square.and.arrow.up")
             }
 
             Divider()
@@ -448,7 +448,7 @@ public struct PlansView: View {
             Button(role: .destructive) {
                 pendingDeleteSubscription = sub
             } label: {
-                Label("common.delete", systemImage: "trash")
+                Label(NumiLocalized.string("common.delete"), systemImage: "trash")
             }
         }
         .confirmationDialog(
@@ -459,15 +459,15 @@ public struct PlansView: View {
             ),
             titleVisibility: .visible
         ) {
-            Button("subscription.delete.title", role: .destructive) {
+            Button(NumiLocalized.string("subscription.delete.title"), role: .destructive) {
                 onDeleteSubscription(sub.id)
                 pendingDeleteSubscription = nil
             }
-            Button("common.cancel", role: .cancel) {
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {
                 pendingDeleteSubscription = nil
             }
         } message: {
-            Text("subscription.delete.msg")
+            Text(NumiLocalized.string("subscription.delete.msg"))
         }
         .confirmationDialog(
             NumiLocalized.string("subscription.skip.confirm", sub.name),
@@ -477,15 +477,15 @@ public struct PlansView: View {
             ),
             titleVisibility: .visible
         ) {
-            Button("subscription.skip.next") {
+            Button(NumiLocalized.string("subscription.skip.next")) {
                 onSkipSubscriptionBilling(sub.id)
                 pendingSkipSubscription = nil
             }
-            Button("common.cancel", role: .cancel) {
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {
                 pendingSkipSubscription = nil
             }
         } message: {
-            Text("subscription.skip.msg")
+            Text(NumiLocalized.string("subscription.skip.msg"))
         }
     }
 
@@ -574,20 +574,20 @@ public struct PlansView: View {
             Button {
                 selectedInstallmentPlan = plan
             } label: {
-                Label("subscription.detail", systemImage: "info.circle")
+                Label(NumiLocalized.string("subscription.detail"), systemImage: "info.circle")
             }
 
             Button {
                 editingInstallment = plan
             } label: {
-                Label("common.edit", systemImage: "square.and.pencil")
+                Label(NumiLocalized.string("common.edit"), systemImage: "square.and.pencil")
             }
 
             if periods.contains(where: { $0.planID == plan.id && !$0.isPaid && !$0.isSkipped }) {
                 Button {
                     onEnableInstallmentReminder(plan.id)
                 } label: {
-                    Label("installment.reminder.enable", systemImage: "bell.badge")
+                    Label(NumiLocalized.string("installment.reminder.enable"), systemImage: "bell.badge")
                 }
             }
 
@@ -596,7 +596,7 @@ public struct PlansView: View {
                 UIPasteboard.general.string = shareText(plan)
 #endif
             } label: {
-                Label("common.share", systemImage: "square.and.arrow.up")
+                Label(NumiLocalized.string("common.share"), systemImage: "square.and.arrow.up")
             }
 
             Divider()
@@ -604,7 +604,7 @@ public struct PlansView: View {
             Button(role: .destructive) {
                 pendingDeleteInstallment = plan
             } label: {
-                Label("common.delete", systemImage: "trash")
+                Label(NumiLocalized.string("common.delete"), systemImage: "trash")
             }
         }
         .confirmationDialog(
@@ -615,15 +615,15 @@ public struct PlansView: View {
             ),
             titleVisibility: .visible
         ) {
-            Button("installment.delete.title", role: .destructive) {
+            Button(NumiLocalized.string("installment.delete.title"), role: .destructive) {
                 onDeleteInstallmentPlan(plan.id)
                 pendingDeleteInstallment = nil
             }
-            Button("common.cancel", role: .cancel) {
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {
                 pendingDeleteInstallment = nil
             }
         } message: {
-            Text("installment.delete.msg")
+            Text(NumiLocalized.string("installment.delete.msg"))
         }
     }
 
@@ -832,7 +832,7 @@ private struct BudgetProgressCard: View {
                         .minimumScaleFactor(0.8)
                         .accessibilityIdentifier("budget.\(model.period.rawValue).amount")
                 }
-                Text("budget.used.budget")
+                Text(NumiLocalized.string("budget.used.budget"))
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
             }
@@ -1165,8 +1165,8 @@ private struct BudgetFormView: View {
                     } label: {
                         HStack(spacing: NumiSpacing.s3) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("budget.enable")
-                                Text("budget.enable.desc")
+                                Text(NumiLocalized.string("budget.enable"))
+                                Text(NumiLocalized.string("budget.enable.desc"))
                                     .font(NumiFont.footnote)
                                     .foregroundStyle(NumiColor.textTertiary)
                             }
@@ -1182,18 +1182,18 @@ private struct BudgetFormView: View {
                 } header: {
                     Text(title)
                 } footer: {
-                    Text("budget.local.desc")
+                    Text(NumiLocalized.string("budget.local.desc"))
                 }
 
-                Section("budget.scope") {
-                    Picker("budget.category", selection: $draft.categoryID) {
-                        Text("budget.all.categories").tag(UUID?.none)
+                Section(NumiLocalized.string("budget.scope")) {
+                    Picker(NumiLocalized.string("budget.category"), selection: $draft.categoryID) {
+                        Text(NumiLocalized.string("budget.all.categories")).tag(UUID?.none)
                         ForEach(categories) { category in
                             Text(category.localizedDisplayName).tag(Optional(category.id))
                         }
                     }
-                    Picker("budget.account", selection: $draft.accountID) {
-                        Text("budget.all.accounts").tag(UUID?.none)
+                    Picker(NumiLocalized.string("budget.account"), selection: $draft.accountID) {
+                        Text(NumiLocalized.string("budget.all.accounts")).tag(UUID?.none)
                         ForEach(accounts) { account in
                             Text(account.localizedDisplayName).tag(Optional(account.id))
                         }
@@ -1206,15 +1206,15 @@ private struct BudgetFormView: View {
             .onChange(of: draft.accountID) { _, _ in
                 validateScopeSelection()
             }
-            .navigationTitle("budget.edit")
+            .navigationTitle(NumiLocalized.string("budget.edit"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") {
+                    Button(NumiLocalized.string("common.cancel")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("common.save") {
+                    Button(NumiLocalized.string("common.save")) {
                         save()
                     }
                     .disabled(!canSave)
@@ -1222,10 +1222,10 @@ private struct BudgetFormView: View {
                 }
             }
         }
-        .alert("budget.scope.conflict.title", isPresented: $showsScopeConflict) {
-            Button("common.ok", role: .cancel) {}
+        .alert(NumiLocalized.string("budget.scope.conflict.title"), isPresented: $showsScopeConflict) {
+            Button(NumiLocalized.string("common.ok"), role: .cancel) {}
         } message: {
-            Text("budget.scope.conflict.message")
+            Text(NumiLocalized.string("budget.scope.conflict.message"))
         }
         .membershipPaywall(context: $membershipPaywallContext)
     }
@@ -1333,11 +1333,11 @@ private struct SubscriptionFormView: View {
                         .monospacedDigit()
                         .accessibilityIdentifier("input.subscriptionAmount")
                 } header: {
-                    Text("subscription.info")
+                    Text(NumiLocalized.string("subscription.info"))
                 }
 
                 Section {
-                    Picker("subscription.cycle", selection: $cycle) {
+                    Picker(NumiLocalized.string("subscription.cycle"), selection: $cycle) {
                         ForEach(SubscriptionCycle.allCases, id: \.self) { c in
                             Text(c.displayName).tag(c)
                         }
@@ -1352,7 +1352,7 @@ private struct SubscriptionFormView: View {
                             .monospacedDigit()
                             .accessibilityIdentifier("input.subscriptionCustomIntervalValue")
 
-                        Picker("subscription.interval.unit", selection: $customIntervalUnit) {
+                        Picker(NumiLocalized.string("subscription.interval.unit"), selection: $customIntervalUnit) {
                             ForEach(SubscriptionIntervalUnit.allCases, id: \.self) { unit in
                                 Text(unit.displayName).tag(unit)
                             }
@@ -1370,15 +1370,15 @@ private struct SubscriptionFormView: View {
                     DatePicker("subscription.next.billing", selection: $nextBillingDate, displayedComponents: .date)
                         .accessibilityIdentifier("picker.subscriptionNextDate")
                 } header: {
-                    Text("subscription.billing.setting")
+                    Text(NumiLocalized.string("subscription.billing.setting"))
                 } footer: {
-                    Text("subscription.local.desc")
+                    Text(NumiLocalized.string("subscription.local.desc"))
                 }
             }
-            .navigationTitle(existing == nil ? Text("subscription.add") : Text("subscription.edit"))
+            .navigationTitle(existing == nil ? Text(NumiLocalized.string("subscription.add")) : Text(NumiLocalized.string("subscription.edit")))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") { dismiss() }
+                    Button(NumiLocalized.string("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(existing == nil ? NumiLocalized.string( "common.add") : NumiLocalized.string( "common.save")) {
@@ -1509,7 +1509,7 @@ private struct InstallmentFormView: View {
                     TextField("record.note", text: $note)
                         .accessibilityIdentifier("input.installmentNote")
                 } header: {
-                    Text("installment.info")
+                    Text(NumiLocalized.string("installment.info"))
                 }
 
                 Section {
@@ -1533,15 +1533,15 @@ private struct InstallmentFormView: View {
                     DatePicker("installment.first.date", selection: $firstPaymentDate, displayedComponents: .date)
                         .accessibilityIdentifier("picker.installmentFirstDate")
                 } header: {
-                    Text("installment.setting")
+                    Text(NumiLocalized.string("installment.setting"))
                 } footer: {
-                    Text("installment.calc.desc")
+                    Text(NumiLocalized.string("installment.calc.desc"))
                 }
             }
-            .navigationTitle(existing == nil ? Text("installment.add") : Text("installment.edit"))
+            .navigationTitle(existing == nil ? Text(NumiLocalized.string("installment.add")) : Text(NumiLocalized.string("installment.edit")))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") { dismiss() }
+                    Button(NumiLocalized.string("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(existing == nil ? NumiLocalized.string( "common.add") : NumiLocalized.string( "common.save")) {
@@ -1615,13 +1615,13 @@ private struct InstallmentPeriodDateEditor: View {
             Form {
                 DatePicker("installment.adjust.date", selection: $dueDate, displayedComponents: .date)
             }
-            .navigationTitle("installment.adjust.date")
+            .navigationTitle(NumiLocalized.string("installment.adjust.date"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") { dismiss() }
+                    Button(NumiLocalized.string("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("installment.adjust.date.save") {
+                    Button(NumiLocalized.string("installment.adjust.date.save")) {
                         onSave(dueDate)
                     }
                 }
@@ -1649,13 +1649,13 @@ private struct InstallmentPaymentDateEditor: View {
                 DatePicker("record.date", selection: $occurredAt, displayedComponents: .date)
                     .accessibilityIdentifier("picker.installmentPaymentDate")
             }
-            .navigationTitle("installment.record.payment")
+            .navigationTitle(NumiLocalized.string("installment.record.payment"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") { dismiss() }
+                    Button(NumiLocalized.string("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("installment.record.payment") {
+                    Button(NumiLocalized.string("installment.record.payment")) {
                         onSave(occurredAt)
                     }
                     .accessibilityIdentifier("action.saveInstallmentPaymentDate")
@@ -1728,7 +1728,7 @@ private struct SubscriptionDetailView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text("subscription.delete.title")
+                        Text(NumiLocalized.string("subscription.delete.title"))
                             .font(NumiFont.bodyStrong)
                             .foregroundStyle(NumiColor.negativeText)
                         Spacer()
@@ -1745,12 +1745,12 @@ private struct SubscriptionDetailView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.subscriptionDetail")
         .background(NumiColor.surfacePage)
-        .navigationTitle("subscription.detail")
+        .navigationTitle(NumiLocalized.string("subscription.detail"))
         .confirmationDialog(NumiLocalized.string("subscription.delete.confirm", subscription.name), isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-            Button("subscription.delete.title", role: .destructive) { onDelete() }
-            Button("common.cancel", role: .cancel) {}
+            Button(NumiLocalized.string("subscription.delete.title"), role: .destructive) { onDelete() }
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
         } message: {
-            Text("subscription.delete.msg")
+            Text(NumiLocalized.string("subscription.delete.msg"))
         }
         .modifier(LargeTitleNavigationChrome())
         .toolbar {
@@ -1867,7 +1867,7 @@ private struct InstallmentDetailView: View {
                     // Progress
                     let progress = plan.periodCount > 0 ? CGFloat(paidCount) / CGFloat(plan.periodCount) : 0
                     VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                        Text("installment.progress")
+                        Text(NumiLocalized.string("installment.progress"))
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
                         GeometryReader { proxy in
@@ -1887,7 +1887,7 @@ private struct InstallmentDetailView: View {
 
                 // Periods list
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text("installment.details")
+                    Text(NumiLocalized.string("installment.details"))
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
 
@@ -1985,7 +1985,7 @@ private struct InstallmentDetailView: View {
                     } label: {
                         HStack {
                             Image(systemName: "checkmark.seal")
-                            Text("installment.settle")
+                            Text(NumiLocalized.string("installment.settle"))
                             Spacer()
                         }
                         .font(NumiFont.bodyStrong)
@@ -2005,7 +2005,7 @@ private struct InstallmentDetailView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text("installment.delete.title")
+                        Text(NumiLocalized.string("installment.delete.title"))
                             .font(NumiFont.bodyStrong)
                             .foregroundStyle(NumiColor.negativeText)
                         Spacer()
@@ -2022,7 +2022,7 @@ private struct InstallmentDetailView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.installmentDetail")
         .background(NumiColor.surfacePage)
-        .navigationTitle("installment.detail")
+        .navigationTitle(NumiLocalized.string("installment.detail"))
         .modifier(LargeTitleNavigationChrome())
         .sheet(item: $editingPeriod) { period in
             InstallmentPeriodDateEditor(period: period) { updatedDate in
@@ -2039,14 +2039,14 @@ private struct InstallmentDetailView: View {
             }
         }
         .confirmationDialog(NumiLocalized.string("installment.delete.confirm", plan.name), isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-            Button("installment.delete.title", role: .destructive) { onDelete() }
-            Button("common.cancel", role: .cancel) {}
+            Button(NumiLocalized.string("installment.delete.title"), role: .destructive) { onDelete() }
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
         } message: {
-            Text("installment.delete.msg")
+            Text(NumiLocalized.string("installment.delete.msg"))
         }
         .confirmationDialog(NumiLocalized.string("installment.settle.confirm", plan.name), isPresented: $showSettleConfirm, titleVisibility: .visible) {
-            Button("installment.settle") { onSettlePlan(plan) }
-            Button("common.cancel", role: .cancel) {}
+            Button(NumiLocalized.string("installment.settle")) { onSettlePlan(plan) }
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
         }
         .toolbar {
             ToolbarItem(placement: .trailingBar) {

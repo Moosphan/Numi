@@ -112,7 +112,7 @@ struct ThiingsIconUsageExample: View {
                     }
                 }
             }
-            .navigationTitle("preview.icon.example.title")
+            .navigationTitle(NumiLocalized.string("preview.icon.example.title"))
         }
     }
 }

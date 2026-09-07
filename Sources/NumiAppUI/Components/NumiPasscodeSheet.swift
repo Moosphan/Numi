@@ -306,7 +306,7 @@ public struct NumiLockScreen: View {
                     .font(.system(size: 48, weight: .medium))
                     .foregroundStyle(NumiColor.textSecondary)
 
-                Text("security.app.locked")
+                Text(NumiLocalized.string("security.app.locked"))
                     .font(NumiFont.bodyStrong)
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -395,7 +395,7 @@ public struct NumiLockScreen: View {
                                 HStack {
                                     Image(systemName: "key.fill")
                                         .font(.system(size: 20, weight: .medium))
-                                    Text("security.passcode.unlock")
+                                    Text(NumiLocalized.string("security.passcode.unlock"))
                                         .font(NumiFont.bodyStrong)
                                 }
                                 .foregroundStyle(NumiColor.textPrimary)
@@ -412,7 +412,7 @@ public struct NumiLockScreen: View {
                                     showPasscodeEntry = true
                                 }
                             } label: {
-                                Text("security.use.passcode")
+                                Text(NumiLocalized.string("security.use.passcode"))
                                     .font(NumiFont.bodySmall)
                                     .foregroundStyle(NumiColor.textSecondary)
                             }

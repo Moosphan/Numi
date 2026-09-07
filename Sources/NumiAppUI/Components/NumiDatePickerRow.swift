@@ -40,7 +40,7 @@ public struct NumiDatePickerRow: View {
             Button {
                 isCustomDatePresented = true
             } label: {
-                Label("addRecordFlow.datePicker.title", systemImage: "calendar")
+                Label(NumiLocalized.string("addRecordFlow.datePicker.title"), systemImage: "calendar")
             }
             .accessibilityIdentifier("dateShortcut.custom")
         } label: {
@@ -73,10 +73,10 @@ public struct NumiDatePickerRow: View {
                 DatePicker("record.date", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(.graphical)
                     .padding(NumiSpacing.s5)
-                    .navigationTitle("addRecordFlow.datePicker.title")
+                    .navigationTitle(NumiLocalized.string("addRecordFlow.datePicker.title"))
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
-                            Button("common.done") {
+                            Button(NumiLocalized.string("common.done")) {
                                 isCustomDatePresented = false
                             }
                         }

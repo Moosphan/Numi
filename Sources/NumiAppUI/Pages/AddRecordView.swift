@@ -42,10 +42,10 @@ public struct AddRecordView: View {
 
     private var header: some View {
         HStack {
-            Picker("record.type", selection: $selectedType) {
-                Text("record.expense").tag(TransactionType.expense).accessibilityIdentifier("transactionType.expense")
-                Text("record.income").tag(TransactionType.income).accessibilityIdentifier("transactionType.income")
-                Text("record.transfer").tag(TransactionType.transfer).accessibilityIdentifier("transactionType.transfer")
+            Picker(NumiLocalized.string("record.type"), selection: $selectedType) {
+                Text(NumiLocalized.string("record.expense")).tag(TransactionType.expense).accessibilityIdentifier("transactionType.expense")
+                Text(NumiLocalized.string("record.income")).tag(TransactionType.income).accessibilityIdentifier("transactionType.income")
+                Text(NumiLocalized.string("record.transfer")).tag(TransactionType.transfer).accessibilityIdentifier("transactionType.transfer")
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("picker.transactionType")
@@ -60,10 +60,10 @@ public struct AddRecordView: View {
                     Image(systemName: "arrow.left.arrow.right.circle.fill")
                         .font(.system(size: 42, weight: .semibold))
                         .foregroundStyle(NumiColor.accentDeep)
-                    Text("record.transfer.title")
+                    Text(NumiLocalized.string("record.transfer.title"))
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
-                    Text("record.transfer.desc")
+                    Text(NumiLocalized.string("record.transfer.desc"))
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textTertiary)
                         .multilineTextAlignment(.center)
@@ -110,7 +110,7 @@ public struct AddRecordView: View {
         NumiGlassSurface(role: .modal) {
             VStack(spacing: NumiSpacing.s4) {
                 HStack {
-                    Text("record.amount")
+                    Text(NumiLocalized.string("record.amount"))
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textTertiary)
                     Spacer()
@@ -212,7 +212,7 @@ public struct AddRecordView: View {
                 save()
                 inputState.apply(.clear)
             } label: {
-                Text("addRecord.action.saveAndContinue")
+                Text(NumiLocalized.string("addRecord.action.saveAndContinue"))
                     .font(NumiFont.bodyStrong)
                     .frame(maxWidth: .infinity, minHeight: 52)
                     .background(NumiColor.accentPrimary.opacity(0.62))
@@ -225,7 +225,7 @@ public struct AddRecordView: View {
             Button {
                 save()
             } label: {
-                Text("record.new")
+                Text(NumiLocalized.string("record.new"))
                     .font(NumiFont.bodyStrong)
                     .frame(maxWidth: .infinity, minHeight: 52)
                     .background(NumiColor.accentPrimary)

@@ -26,7 +26,7 @@ public struct ThemeSelectionView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.themeSelection")
         .background(NumiColor.surfacePage)
-        .navigationTitle(Text("theme.title"))
+        .navigationTitle(Text(NumiLocalized.string("theme.title")))
         .modifier(LargeTitleNavigationChrome())
         .task { await membership.start() }
         .membershipPaywall(context: $membershipPaywallContext)
@@ -36,7 +36,7 @@ public struct ThemeSelectionView: View {
 
     private var appearanceSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-            Text("theme.appearance.mode")
+            Text(NumiLocalized.string("theme.appearance.mode"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -76,7 +76,7 @@ public struct ThemeSelectionView: View {
 
     private var themeSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("theme.style")
+            Text(NumiLocalized.string("theme.style"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -130,7 +130,7 @@ public struct ThemeSelectionView: View {
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
 
-            Text("theme.switch.desc")
+            Text(NumiLocalized.string("theme.switch.desc"))
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
                 .padding(.horizontal, NumiSpacing.s1)

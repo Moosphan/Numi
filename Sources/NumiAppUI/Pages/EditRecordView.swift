@@ -54,15 +54,15 @@ public struct EditRecordView: View {
             }
             .accessibilityIdentifier("page.editRecord")
             .background(NumiColor.surfacePage)
-            .navigationTitle("record.edit")
+            .navigationTitle(NumiLocalized.string("record.edit"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") {
+                    Button(NumiLocalized.string("common.cancel")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("common.save") {
+                    Button(NumiLocalized.string("common.save")) {
                         save()
                     }
                     .disabled(!canSave)
@@ -73,7 +73,7 @@ public struct EditRecordView: View {
                         isNoteFocused = false
                     }
                     Spacer()
-                    Button("common.save") {
+                    Button(NumiLocalized.string("common.save")) {
                         saveAndDismiss()
                     }
                     .disabled(!canSave)
@@ -104,10 +104,10 @@ public struct EditRecordView: View {
 
     private var typeCard: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s4) {
-            Picker("record.type", selection: $selectedType) {
-                Text("record.expense").tag(TransactionType.expense).accessibilityIdentifier("transactionType.expense")
-                Text("record.income").tag(TransactionType.income).accessibilityIdentifier("transactionType.income")
-                Text("record.transfer").tag(TransactionType.transfer).accessibilityIdentifier("transactionType.transfer")
+            Picker(NumiLocalized.string("record.type"), selection: $selectedType) {
+                Text(NumiLocalized.string("record.expense")).tag(TransactionType.expense).accessibilityIdentifier("transactionType.expense")
+                Text(NumiLocalized.string("record.income")).tag(TransactionType.income).accessibilityIdentifier("transactionType.income")
+                Text(NumiLocalized.string("record.transfer")).tag(TransactionType.transfer).accessibilityIdentifier("transactionType.transfer")
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("picker.transactionType")
@@ -121,10 +121,10 @@ public struct EditRecordView: View {
                         .background(NumiColor.surfaceCardSubtle)
                         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("record.transfer.title")
+                        Text(NumiLocalized.string("record.transfer.title"))
                             .font(NumiFont.bodyStrong)
                             .foregroundStyle(NumiColor.textPrimary)
-                        Text("editRecord.transfer.subtitle")
+                        Text(NumiLocalized.string("editRecord.transfer.subtitle"))
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -157,7 +157,7 @@ public struct EditRecordView: View {
             HStack(spacing: NumiSpacing.s3) {
                 CategoryIconView(iconName: selectedCategory?.icon ?? "ellipsis.circle", size: 24)
                     .foregroundStyle(NumiColor.textTertiary)
-                Text("record.category")
+                Text(NumiLocalized.string("record.category"))
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textSecondary)
                 Spacer()
@@ -198,7 +198,7 @@ public struct EditRecordView: View {
 
     private var amountHeader: some View {
         HStack(alignment: .firstTextBaseline, spacing: NumiSpacing.s3) {
-            Text("record.amount")
+            Text(NumiLocalized.string("record.amount"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textTertiary)
             Spacer(minLength: NumiSpacing.s2)

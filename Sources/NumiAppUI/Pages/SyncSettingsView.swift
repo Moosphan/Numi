@@ -295,7 +295,7 @@ public struct SyncSettingsView: View {
         .scrollIndicators(.hidden)
         .accessibilityIdentifier("scroll.syncSettings")
         .background(NumiColor.surfacePage)
-        .navigationTitle(Text("sync.title"))
+        .navigationTitle(Text(NumiLocalized.string("sync.title")))
         .modifier(LargeTitleNavigationChrome())
         .task { await membership.start() }
         .membershipPaywall(context: $membershipPaywallContext)
@@ -314,10 +314,10 @@ public struct SyncSettingsView: View {
                     .foregroundStyle(NumiColor.accentPrimary)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("sync.enable")
+                    Text(NumiLocalized.string("sync.enable"))
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
-                    Text("sync.enable.desc")
+                    Text(NumiLocalized.string("sync.enable.desc"))
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                 }
@@ -348,10 +348,10 @@ public struct SyncSettingsView: View {
                         .foregroundStyle(NumiColor.accentPrimary)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("sync.cellular")
+                        Text(NumiLocalized.string("sync.cellular"))
                             .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(NumiColor.textPrimary)
-                        Text("sync.cellular.desc")
+                        Text(NumiLocalized.string("sync.cellular.desc"))
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -400,7 +400,7 @@ public struct SyncSettingsView: View {
                 .foregroundStyle(NumiColor.accentPrimary)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("sync.network.status")
+                Text(NumiLocalized.string("sync.network.status"))
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
                 Text(syncService.isNetworkAvailable ? syncService.networkType.displayName : NumiLocalized.string( "sync.network.not.connected"))
@@ -433,7 +433,7 @@ public struct SyncSettingsView: View {
                 .foregroundStyle(NumiColor.accentPrimary)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("sync.icloud.connection")
+                Text(NumiLocalized.string("sync.icloud.connection"))
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
                 Text(syncService.isiCloudAvailable ? NumiLocalized.string( "sync.icloud.connected") : NumiLocalized.string( "sync.icloud.unavailable"))
@@ -466,7 +466,7 @@ public struct SyncSettingsView: View {
                 .foregroundStyle(NumiColor.accentPrimary)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("sync.status")
+                Text(NumiLocalized.string("sync.status"))
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
                 Text(statusText)
@@ -511,7 +511,7 @@ public struct SyncSettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("sync.manual")
+                    Text(NumiLocalized.string("sync.manual"))
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
                     if let lastDate = syncService.lastSyncDate {
@@ -527,7 +527,7 @@ public struct SyncSettingsView: View {
                     ProgressView()
                         .scaleEffect(0.8)
                 } else {
-                    Text("sync.button")
+                    Text(NumiLocalized.string("sync.button"))
                         .font(NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.accentDeep)
                 }
@@ -551,10 +551,10 @@ public struct SyncSettingsView: View {
 
     private var syncInfoCard: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-            Text("sync.notes")
+            Text(NumiLocalized.string("sync.notes"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
-            Text("sync.notes.detail")
+            Text(NumiLocalized.string("sync.notes.detail"))
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
         }

@@ -200,7 +200,7 @@ public struct InsightsView: View {
             .padding(.bottom, 120)
         }
         .background(NumiColor.surfacePage)
-        .navigationTitle(Text("insight.title"))
+        .navigationTitle(Text(NumiLocalized.string("insight.title")))
         .modifier(LargeTitleNavigationChrome())
         .sheet(isPresented: $showsCustomRangeEditor) {
             NavigationStack {
@@ -208,15 +208,15 @@ public struct InsightsView: View {
                     DatePicker("insight.custom.range.from", selection: $customRangeStart, displayedComponents: .date)
                     DatePicker("insight.custom.range.to", selection: $customRangeEnd, displayedComponents: .date)
                 }
-                .navigationTitle("insight.custom.range.title")
+                .navigationTitle(NumiLocalized.string("insight.custom.range.title"))
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("common.cancel") {
+                        Button(NumiLocalized.string("common.cancel")) {
                             showsCustomRangeEditor = false
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("common.done") {
+                        Button(NumiLocalized.string("common.done")) {
                             onApplyCustomRange(InsightsCustomRange(start: customRangeStart, end: customRangeEnd))
                             showsCustomRangeEditor = false
                         }
@@ -399,7 +399,7 @@ public struct CategoryTransactionsDetailView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("insight.total.amount")
+                        Text(NumiLocalized.string("insight.total.amount"))
                             .font(NumiFont.bodySmall)
                             .foregroundStyle(NumiColor.textSecondary)
                         Text(privacyAmountDisplayPolicy.display(totalAmount))
@@ -476,7 +476,7 @@ public struct CategoryTransactionsDetailView: View {
                         Image(systemName: "tray")
                             .font(.system(size: 36))
                             .foregroundStyle(NumiColor.textTertiary)
-                        Text("insight.no.transactions")
+                        Text(NumiLocalized.string("insight.no.transactions"))
                             .font(NumiFont.body)
                             .foregroundStyle(NumiColor.textTertiary)
                     }

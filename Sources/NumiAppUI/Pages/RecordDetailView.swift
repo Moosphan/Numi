@@ -40,14 +40,14 @@ public struct RecordDetailView: View {
             }
             .accessibilityIdentifier("page.recordDetail")
             .background(NumiColor.surfacePage)
-            .navigationTitle(Text("record.detail"))
+            .navigationTitle(Text(NumiLocalized.string("record.detail")))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.close", action: onClose)
+                    Button(NumiLocalized.string("common.close"), action: onClose)
                         .accessibilityIdentifier("action.closeRecordDetail")
                 }
                 ToolbarItem {
-                    Button("common.edit", action: onEdit)
+                    Button(NumiLocalized.string("common.edit"), action: onEdit)
                         .accessibilityIdentifier("action.editRecord")
                 }
             }

@@ -18,7 +18,7 @@ struct CategoryIconPreviewView: View {
                     }
                 }
             }
-            .navigationTitle("preview.icon.title")
+            .navigationTitle(NumiLocalized.string("preview.icon.title"))
         }
     }
 

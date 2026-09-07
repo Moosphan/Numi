@@ -54,7 +54,7 @@ public struct DataManagementView: View {
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("scroll.dataManagement")
             .background(NumiColor.surfacePage)
-            .navigationTitle("io.title")
+            .navigationTitle(NumiLocalized.string("io.title"))
             .modifier(LargeTitleNavigationChrome())
 
             // Toast
@@ -75,13 +75,13 @@ public struct DataManagementView: View {
             }
 #endif
         }
-        .alert("io.import.restore.confirm.title", isPresented: $showRestoreRecoveryConfirmation) {
-            Button("io.import.restore.confirm.action", role: .destructive) {
+        .alert(NumiLocalized.string("io.import.restore.confirm.title"), isPresented: $showRestoreRecoveryConfirmation) {
+            Button(NumiLocalized.string("io.import.restore.confirm.action"), role: .destructive) {
                 restoreRecoveryPoint()
             }
-            Button("common.cancel", role: .cancel) {}
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
         } message: {
-            Text("io.import.restore.confirm.message")
+            Text(NumiLocalized.string("io.import.restore.confirm.message"))
         }
         .sheet(isPresented: $showCSVImportReview) {
             if let csvImportDocument, let csvImportSnapshot {
@@ -98,7 +98,7 @@ public struct DataManagementView: View {
 
     private var exportSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("io.export")
+            Text(NumiLocalized.string("io.export"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -141,7 +141,7 @@ public struct DataManagementView: View {
 
     private var importSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("io.import")
+            Text(NumiLocalized.string("io.import"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -204,7 +204,7 @@ public struct DataManagementView: View {
             .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
             .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
 
-            Text("io.import.warning")
+            Text(NumiLocalized.string("io.import.warning"))
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.textTertiary)
         }
@@ -416,7 +416,7 @@ public struct BackupView: View {
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("scroll.backupManagement")
             .background(NumiColor.surfacePage)
-            .navigationTitle("backup.title")
+            .navigationTitle(NumiLocalized.string("backup.title"))
             .modifier(LargeTitleNavigationChrome())
 
             // Toast
@@ -443,7 +443,7 @@ public struct BackupView: View {
 
     private var createBackupSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("backup.create")
+            Text(NumiLocalized.string("backup.create"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
@@ -457,10 +457,10 @@ public struct BackupView: View {
                     .foregroundStyle(NumiColor.accentPrimary)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("backup.encrypted")
+                    Text(NumiLocalized.string("backup.encrypted"))
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
-                    Text("backup.encrypted.desc")
+                    Text(NumiLocalized.string("backup.encrypted.desc"))
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                 }
@@ -474,7 +474,7 @@ public struct BackupView: View {
 
             // Password input card
             HStack(spacing: NumiSpacing.s3) {
-                Text("backup.password")
+                Text(NumiLocalized.string("backup.password"))
                     .font(NumiFont.body)
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -498,7 +498,7 @@ public struct BackupView: View {
                 let isEnabled = !backupPassword.isEmpty
                 HStack {
                     Spacer()
-                    Text("backup.create")
+                    Text(NumiLocalized.string("backup.create"))
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(isEnabled ? .white : NumiColor.textTertiary)
                     Spacer()
@@ -525,12 +525,12 @@ public struct BackupView: View {
 
     private var restoreBackupSection: some View {
         VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-            Text("backup.restore")
+            Text(NumiLocalized.string("backup.restore"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
             HStack(spacing: NumiSpacing.s3) {
-                Text("backup.password")
+                Text(NumiLocalized.string("backup.password"))
                     .font(NumiFont.body)
                     .foregroundStyle(NumiColor.textPrimary)
 
@@ -560,10 +560,10 @@ public struct BackupView: View {
                         .foregroundStyle(NumiColor.accentPrimary)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("backup.restore.from")
+                        Text(NumiLocalized.string("backup.restore.from"))
                             .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(NumiColor.textPrimary)
-                        Text("backup.restore.file.hint")
+                        Text(NumiLocalized.string("backup.restore.file.hint"))
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -590,7 +590,7 @@ public struct BackupView: View {
                 handleRestore(result)
             }
 
-            Text("backup.restore.warning")
+            Text(NumiLocalized.string("backup.restore.warning"))
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.negativeText)
         }

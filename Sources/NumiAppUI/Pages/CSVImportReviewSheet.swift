@@ -63,10 +63,10 @@ public struct CSVImportReviewSheet: View {
                 }
             }
         }
-        .alert("io.import.csv.template.save.title", isPresented: $showsTemplateNameEditor) {
+        .alert(NumiLocalized.string("io.import.csv.template.save.title"), isPresented: $showsTemplateNameEditor) {
             TextField("io.import.csv.template.save.placeholder", text: $templateName)
-            Button("common.cancel", role: .cancel) {}
-            Button("io.import.csv.template.save") {
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
+            Button(NumiLocalized.string("io.import.csv.template.save")) {
                 saveTemplate()
             }
             .disabled(templateName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -114,7 +114,7 @@ public struct CSVImportReviewSheet: View {
     private var mappingTemplateMenu: some View {
         Menu {
             if !templates.isEmpty {
-                Menu("io.import.csv.template.load") {
+                Menu(NumiLocalized.string("io.import.csv.template.load")) {
                     ForEach(templates) { template in
                         Button(template.name) {
                             mapping = template.mapping.applying(to: document.headers)
@@ -123,11 +123,11 @@ public struct CSVImportReviewSheet: View {
                 }
                 Divider()
             }
-            Button("io.import.csv.template.save") {
+            Button(NumiLocalized.string("io.import.csv.template.save")) {
                 startSavingTemplate()
             }
             if !templates.isEmpty {
-                Menu("io.import.csv.template.delete") {
+                Menu(NumiLocalized.string("io.import.csv.template.delete")) {
                     ForEach(templates) { template in
                         Button(template.name, role: .destructive) {
                             deleteTemplate(template)
@@ -136,7 +136,7 @@ public struct CSVImportReviewSheet: View {
                 }
             }
         } label: {
-            Label("io.import.csv.template.label", systemImage: "bookmark")
+            Label(NumiLocalized.string("io.import.csv.template.label"), systemImage: "bookmark")
                 .font(NumiFont.footnote)
                 .foregroundStyle(NumiColor.accentDeep)
         }

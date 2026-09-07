@@ -81,10 +81,10 @@ public struct AddRecordFlowView: View {
     private var categorySelectionPage: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
-                Picker("record.type", selection: $selectedType) {
-                    Text("record.expense").tag(TransactionType.expense).accessibilityIdentifier("transactionType.expense")
-                    Text("record.income").tag(TransactionType.income).accessibilityIdentifier("transactionType.income")
-                    Text("record.transfer").tag(TransactionType.transfer).accessibilityIdentifier("transactionType.transfer")
+                Picker(NumiLocalized.string("record.type"), selection: $selectedType) {
+                    Text(NumiLocalized.string("record.expense")).tag(TransactionType.expense).accessibilityIdentifier("transactionType.expense")
+                    Text(NumiLocalized.string("record.income")).tag(TransactionType.income).accessibilityIdentifier("transactionType.income")
+                    Text(NumiLocalized.string("record.transfer")).tag(TransactionType.transfer).accessibilityIdentifier("transactionType.transfer")
                 }
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("picker.transactionType")
@@ -119,10 +119,10 @@ public struct AddRecordFlowView: View {
             .padding(.bottom, 40)
         }
         .accessibilityIdentifier("sheet.addRecord")
-        .navigationTitle("record.select.category")
+        .navigationTitle(NumiLocalized.string("record.select.category"))
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("common.cancel") {
+                Button(NumiLocalized.string("common.cancel")) {
                     dismiss()
                 }
                 .tint(NumiColor.accentDeep)
@@ -154,11 +154,11 @@ public struct AddRecordFlowView: View {
                     Image(systemName: "arrow.left.arrow.right.circle.fill")
                         .font(.system(size: 30, weight: .semibold))
                         .foregroundStyle(NumiColor.accentDeep)
-                    Text("record.new.transfer")
+                    Text(NumiLocalized.string("record.new.transfer"))
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
                 }
-                Text("addRecordFlow.transfer.description")
+                Text(NumiLocalized.string("addRecordFlow.transfer.description"))
                     .font(NumiFont.bodySmall)
                     .foregroundStyle(NumiColor.textTertiary)
                     .multilineTextAlignment(.leading)
@@ -233,7 +233,7 @@ private struct AddRecordEditorOverlay: View {
                             .padding(.bottom, 8)
 
                         HStack(spacing: NumiSpacing.s3) {
-                            Button("common.back", action: onBack)
+                            Button(NumiLocalized.string("common.back"), action: onBack)
                                 .font(NumiFont.body)
                                 .foregroundStyle(NumiColor.textSecondary)
                                 .accessibilityIdentifier("sheet.addRecordEditor.back")
@@ -459,7 +459,7 @@ private struct AddRecordEntryContent: View {
                     save()
                     onAddAnother()
                 } label: {
-                    Text("addRecordFlow.action.saveAndAddAnother")
+                    Text(NumiLocalized.string("addRecordFlow.action.saveAndAddAnother"))
                         .font(NumiFont.bodyStrong)
                         .frame(maxWidth: .infinity, minHeight: 50)
                         .background(NumiColor.controlFill)
@@ -501,7 +501,7 @@ private struct AddRecordEntryContent: View {
 
     private var amountHeader: some View {
         HStack(alignment: .firstTextBaseline, spacing: NumiSpacing.s3) {
-            Text("record.amount")
+            Text(NumiLocalized.string("record.amount"))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textTertiary)
             Spacer(minLength: NumiSpacing.s2)

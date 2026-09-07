@@ -109,6 +109,60 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testRecordDetailRuntimeCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (title: "账单详情", close: "关闭", edit: "编辑"),
+            "en": (title: "Record Details", close: "Close", edit: "Edit"),
+            "zh-Hant": (title: "帳單詳情", close: "關閉", edit: "編輯"),
+            "ja": (title: "記録詳細", close: "閉じる", edit: "編集")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("record.detail", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("common.close", locale: locale), expected.close)
+            XCTAssertEqual(NumiLocalized.lookup("common.edit", locale: locale), expected.edit)
+        }
+    }
+
+    func testRuntimeLocalizedSwiftUIKeysDoNotUseDirectLiterals() throws {
+        let sourceRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let sourceDirectories = [
+            sourceRoot.appendingPathComponent("Sources/NumiAppUI"),
+            sourceRoot.appendingPathComponent("App/NumiApp")
+        ]
+        let pattern = #"\b(?:Text|Button|Label|Toggle|Picker|Section|Menu|NavigationLink|GroupBox|LabeledContent|ShareLink|alert|confirmationDialog|navigationTitle|accessibilityLabel|accessibilityHint)\s*\(\s*\"([a-z][A-Za-z0-9_.-]*\.[A-Za-z0-9_.-]*)\""#
+        let expression = try NSRegularExpression(pattern: pattern)
+        var violations = [String]()
+
+        for directory in sourceDirectories {
+            let files = FileManager.default.enumerator(
+                at: directory,
+                includingPropertiesForKeys: nil
+            )?.compactMap { $0 as? URL }.filter { $0.pathExtension == "swift" } ?? []
+
+            for file in files {
+                let source = try String(contentsOf: file, encoding: .utf8)
+                let range = NSRange(source.startIndex..., in: source)
+                for match in expression.matches(in: source, range: range) {
+                    let line = source[..<Range(match.range, in: source)!.lowerBound]
+                        .reduce(into: 1) { count, character in
+                            if character == "\n" { count += 1 }
+                        }
+                    violations.append("\(file.path.replacingOccurrences(of: sourceRoot.path + "/", with: "")):\(line)")
+                }
+            }
+        }
+
+        XCTAssertTrue(
+            violations.isEmpty,
+            "Direct SwiftUI localization key literals bypass NumiLocalized:\n\(violations.sorted().joined(separator: "\n"))"
+        )
+    }
+
     func testMembershipV1BenefitsOnlyDescribeReleasedOfferings() {
         let expectedValues = [
             "zh-Hans": (subscriptions: "更多订阅与循环记账", installments: "更多分期与还款计划", backup: "加密备份"),

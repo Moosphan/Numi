@@ -106,7 +106,7 @@ struct RootShellView: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 36, weight: .semibold))
                         .foregroundStyle(NumiColor.negativeText)
-                    Text("error.data.init.failed")
+                    Text(NumiLocalized.string("error.data.init.failed"))
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
                     Text(initializationError)
@@ -1732,7 +1732,7 @@ private extension RootShellView {
                         .font(.system(size: 48, weight: .medium))
                         .foregroundStyle(NumiColor.textSecondary)
 
-                    Text("security.app.blurred")
+                    Text(NumiLocalized.string("security.app.blurred"))
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
                 }

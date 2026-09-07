@@ -65,7 +65,7 @@ public struct LedgerManagementView: View {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // 说明卡片
                 VStack(alignment: .leading, spacing: NumiSpacing.s2) {
-                    Text("ledger.info")
+                    Text(NumiLocalized.string("ledger.info"))
                         .font(NumiFont.footnote)
                         .foregroundStyle(NumiColor.textTertiary)
                 }
@@ -77,7 +77,7 @@ public struct LedgerManagementView: View {
 
                 // 账本列表
                 VStack(alignment: .leading, spacing: NumiSpacing.s3) {
-                    Text("ledger.section")
+                    Text(NumiLocalized.string("ledger.section"))
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(NumiColor.textSecondary)
 
@@ -100,7 +100,7 @@ public struct LedgerManagementView: View {
         }
         .scrollIndicators(.hidden)
         .background(NumiColor.surfacePage)
-        .navigationTitle("ledger.title")
+        .navigationTitle(NumiLocalized.string("ledger.title"))
         .modifier(LargeTitleNavigationChrome())
         .tint(NumiColor.accentDeep)
         .toolbar {
@@ -129,11 +129,11 @@ public struct LedgerManagementView: View {
             .presentationCornerRadius(28)
         }
         .membershipPaywall(context: $membershipPaywallContext)
-        .alert("ledger.delete.confirm", isPresented: $showDeleteConfirm) {
-            Button("common.cancel", role: .cancel) {
+        .alert(NumiLocalized.string("ledger.delete.confirm"), isPresented: $showDeleteConfirm) {
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {
                 pendingDelete = nil
             }
-            Button("common.delete", role: .destructive) {
+            Button(NumiLocalized.string("common.delete"), role: .destructive) {
                 if let ledger = pendingDelete {
                     onDelete(ledger)
                     pendingDelete = nil
@@ -181,7 +181,7 @@ public struct LedgerManagementView: View {
                         .font(NumiFont.bodyStrong)
                         .foregroundStyle(NumiColor.textPrimary)
                     if isCurrent {
-                        Text("ledger.current")
+                        Text(NumiLocalized.string("ledger.current"))
                             .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(NumiColor.accentDeep)
                             .padding(.horizontal, 6)
@@ -202,20 +202,20 @@ public struct LedgerManagementView: View {
                     Button {
                         onSelect(ledger)
                     } label: {
-                        Label("ledger.switch", systemImage: "arrow.left.arrow.right")
+                        Label(NumiLocalized.string("ledger.switch"), systemImage: "arrow.left.arrow.right")
                     }
                 }
                 Button {
                     editingDraft = .existing(ledger)
                 } label: {
-                    Label("common.edit", systemImage: "pencil")
+                    Label(NumiLocalized.string("common.edit"), systemImage: "pencil")
                 }
                 if sortedLedgers.count > 1 {
                     Button(role: .destructive) {
                         pendingDelete = ledger
                         showDeleteConfirm = true
                     } label: {
-                        Label("common.delete", systemImage: "trash")
+                        Label(NumiLocalized.string("common.delete"), systemImage: "trash")
                     }
                 }
             } label: {
@@ -270,17 +270,17 @@ private struct LedgerFormSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("account.name") {
+                Section(NumiLocalized.string("account.name")) {
                     TextField("ledger.name.placeholder", text: $draft.name)
                         .font(NumiFont.body)
                 }
 
-                Section("ledger.currency") {
+                Section(NumiLocalized.string("ledger.currency")) {
                     Button {
                         showCurrencyPicker = true
                     } label: {
                         HStack {
-                            Text("ledger.currency")
+                            Text(NumiLocalized.string("ledger.currency"))
                                 .foregroundStyle(NumiColor.textPrimary)
                             Spacer()
                             Text("\(draft.currencyCode) \(currencyDisplayName)")
@@ -295,22 +295,22 @@ private struct LedgerFormSheet: View {
 
                 if !isValid && !draft.name.trimmingCharacters(in: .whitespaces).isEmpty {
                     Section {
-                        Text("ledger.name.exists")
+                        Text(NumiLocalized.string("ledger.name.exists"))
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.negativeText)
                     }
                 }
             }
-            .navigationTitle(draft.isNew ? Text("ledger.new") : Text("ledger.edit"))
+            .navigationTitle(draft.isNew ? Text(NumiLocalized.string("ledger.new")) : Text(NumiLocalized.string("ledger.edit")))
 #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
 #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") { dismiss() }
+                    Button(NumiLocalized.string("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("common.save") {
+                    Button(NumiLocalized.string("common.save")) {
                         draft.name = draft.name.trimmingCharacters(in: .whitespaces)
                         onSave(draft)
                     }
@@ -338,13 +338,13 @@ private struct LedgerFormSheet: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    .navigationTitle("ledger.select.currency")
+                    .navigationTitle(NumiLocalized.string("ledger.select.currency"))
 #if os(iOS)
                     .navigationBarTitleDisplayMode(.inline)
 #endif
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("common.cancel") { showCurrencyPicker = false }
+                            Button(NumiLocalized.string("common.cancel")) { showCurrencyPicker = false }
                         }
                     }
                 }
