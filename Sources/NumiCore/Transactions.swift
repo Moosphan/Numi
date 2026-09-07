@@ -18,10 +18,41 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
     public let note: String
     public let reimbursementID: UUID?
     public let refundOfTransactionID: UUID?
+    /// A converted amount captured when the record was created. It keeps the ledger's
+    /// historical totals stable even if shared rate history is later corrected.
+    public let convertedAmountAtRecord: Money?
 
     private enum CodingKeys: String, CodingKey {
         case id, type, amount, occurredAt, categoryID, accountID, targetAccountID, ledgerID, note
-        case reimbursementID, refundOfTransactionID
+        case reimbursementID, refundOfTransactionID, convertedAmountAtRecord
+    }
+
+    public init(
+        id: UUID = UUID(),
+        type: TransactionType,
+        amount: Money,
+        occurredAt: Date = Date(),
+        categoryID: UUID? = nil,
+        accountID: UUID? = nil,
+        targetAccountID: UUID? = nil,
+        ledgerID: UUID = UUID(),
+        note: String = "",
+        reimbursementID: UUID? = nil,
+        refundOfTransactionID: UUID? = nil,
+        convertedAmountAtRecord: Money?
+    ) {
+        self.id = id
+        self.type = type
+        self.amount = amount
+        self.occurredAt = occurredAt
+        self.categoryID = categoryID
+        self.accountID = accountID
+        self.targetAccountID = targetAccountID
+        self.ledgerID = ledgerID
+        self.note = note
+        self.reimbursementID = reimbursementID
+        self.refundOfTransactionID = refundOfTransactionID
+        self.convertedAmountAtRecord = convertedAmountAtRecord
     }
 
     public init(
@@ -37,17 +68,20 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
         reimbursementID: UUID? = nil,
         refundOfTransactionID: UUID? = nil
     ) {
-        self.id = id
-        self.type = type
-        self.amount = amount
-        self.occurredAt = occurredAt
-        self.categoryID = categoryID
-        self.accountID = accountID
-        self.targetAccountID = targetAccountID
-        self.ledgerID = ledgerID
-        self.note = note
-        self.reimbursementID = reimbursementID
-        self.refundOfTransactionID = refundOfTransactionID
+        self.init(
+            id: id,
+            type: type,
+            amount: amount,
+            occurredAt: occurredAt,
+            categoryID: categoryID,
+            accountID: accountID,
+            targetAccountID: targetAccountID,
+            ledgerID: ledgerID,
+            note: note,
+            reimbursementID: reimbursementID,
+            refundOfTransactionID: refundOfTransactionID,
+            convertedAmountAtRecord: nil
+        )
     }
 
     public init(
@@ -89,6 +123,7 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
         self.note = try container.decodeIfPresent(String.self, forKey: .note) ?? ""
         self.reimbursementID = try container.decodeIfPresent(UUID.self, forKey: .reimbursementID)
         self.refundOfTransactionID = try container.decodeIfPresent(UUID.self, forKey: .refundOfTransactionID)
+        self.convertedAmountAtRecord = try container.decodeIfPresent(Money.self, forKey: .convertedAmountAtRecord)
     }
 
     public static func sample(
@@ -168,13 +203,18 @@ public struct TransactionSummary: Equatable {
         currencyCode: String,
         exchangeRateHistory: ExchangeRateHistory?
     ) throws -> Money {
-        guard transaction.amount.currencyCode != currencyCode.uppercased() else { return transaction.amount }
+        let normalizedCurrencyCode = currencyCode.uppercased()
+        guard transaction.amount.currencyCode != normalizedCurrencyCode else { return transaction.amount }
+        if let convertedAmountAtRecord = transaction.convertedAmountAtRecord,
+           convertedAmountAtRecord.currencyCode == normalizedCurrencyCode {
+            return convertedAmountAtRecord
+        }
         guard let exchangeRateHistory,
-              let converted = exchangeRateHistory.convert(transaction.amount, to: currencyCode, on: transaction.occurredAt)
+              let converted = exchangeRateHistory.convert(transaction.amount, to: normalizedCurrencyCode, on: transaction.occurredAt)
         else {
             throw TransactionSummaryError.missingExchangeRate(
                 sourceCurrencyCode: transaction.amount.currencyCode,
-                targetCurrencyCode: currencyCode.uppercased()
+                targetCurrencyCode: normalizedCurrencyCode
             )
         }
         return converted
@@ -231,6 +271,9 @@ public enum CategoryDistribution {
             let amount: Money
             if transaction.amount.currencyCode == currencyCode.uppercased() {
                 amount = transaction.amount
+            } else if let convertedAmountAtRecord = transaction.convertedAmountAtRecord,
+                      convertedAmountAtRecord.currencyCode == currencyCode.uppercased() {
+                amount = convertedAmountAtRecord
             } else if let exchangeRateHistory,
                       let converted = exchangeRateHistory.convert(transaction.amount, to: currencyCode, on: transaction.occurredAt) {
                 amount = converted

@@ -298,7 +298,8 @@ struct RootShellView: View {
                         targetAccountID: targetAccountID,
                         ledgerID: ledgerID,
                         note: note,
-                        occurredAt: occurredAt
+                        occurredAt: occurredAt,
+                        convertedAmountAtRecord: convertedAmountCapturedAtRecord(for: money, occurredAt: occurredAt)
                     )
                     alignHomeAnchorDate(to: occurredAt)
                     return true
@@ -350,7 +351,9 @@ struct RootShellView: View {
                         accountID: accountID,
                         targetAccountID: targetAccountID,
                         note: note,
-                        occurredAt: occurredAt
+                        occurredAt: occurredAt,
+                        convertedAmountAtRecord: convertedAmountCapturedAtRecord(for: money, occurredAt: occurredAt),
+                        replaceConvertedAmountAtRecord: true
                     )
                     editingTransactionID = nil
                     selectedTransactionID = nil
@@ -1451,6 +1454,11 @@ struct RootShellView: View {
 
     private var activeCurrencyCode: String {
         currentLedger?.currencyCode ?? defaultCurrencyCode
+    }
+
+    private func convertedAmountCapturedAtRecord(for amount: Money, occurredAt: Date) -> Money? {
+        guard amount.currencyCode != activeCurrencyCode.uppercased(), occurredAt <= Date() else { return nil }
+        return rateService.history.convert(amount, to: activeCurrencyCode, on: occurredAt)
     }
 
     private var ledgerTransactionCounts: [UUID: Int] {

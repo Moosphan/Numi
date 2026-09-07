@@ -1057,6 +1057,31 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testTransactionPersistsConvertedAmountCapturedAtRecordTime() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let dollarAccount = try store.createAccount(
+            name: "Dollar Wallet",
+            type: .cash,
+            balance: .zero(currencyCode: "USD")
+        )
+
+        let created = try store.createTransaction(
+            type: .expense,
+            amount: try Money(decimalString: "10.00", currencyCode: "USD"),
+            categoryID: nil,
+            accountID: dollarAccount.id,
+            ledgerID: ledgerID,
+            note: "Lunch",
+            convertedAmountAtRecord: try Money(decimalString: "72.00", currencyCode: "CNY")
+        )
+
+        XCTAssertEqual(created.convertedAmountAtRecord, try Money(decimalString: "72.00", currencyCode: "CNY"))
+        XCTAssertEqual(store.visibleTransactions.first?.convertedAmountAtRecord, try Money(decimalString: "72.00", currencyCode: "CNY"))
+    }
+
+    @MainActor
     func testInvalidTransferUpdateLeavesOriginalTransactionAndBalancesUntouched() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

@@ -2,6 +2,56 @@ import XCTest
 @testable import NumiCore
 
 final class TransactionSummaryTests: XCTestCase {
+    func testMonthlySummaryPrefersRateLockedWhenTheTransactionWasRecorded() throws {
+        let occurredAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let transaction = Transaction(
+            type: .expense,
+            amount: try Money(decimalString: "10.00", currencyCode: "USD"),
+            occurredAt: occurredAt,
+            ledgerID: UUID(),
+            convertedAmountAtRecord: try Money(decimalString: "72.00", currencyCode: "CNY")
+        )
+        let laterCorrectedHistory = ExchangeRateHistory(snapshots: [
+            ExchangeRateSnapshot(
+                baseCode: "CNY",
+                rates: ["CNY": 1, "USD": 0.10],
+                effectiveDate: occurredAt
+            )
+        ])
+
+        let summary = try TransactionSummary.monthly(
+            transactions: [transaction],
+            currencyCode: "CNY",
+            exchangeRateHistory: laterCorrectedHistory
+        )
+
+        XCTAssertEqual(summary.expense, try Money(decimalString: "72.00", currencyCode: "CNY"))
+    }
+
+    func testCategoryDistributionPrefersAmountLockedWhenTheTransactionWasRecorded() throws {
+        let occurredAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let categoryID = UUID()
+        let transaction = Transaction(
+            type: .expense,
+            amount: try Money(decimalString: "10.00", currencyCode: "USD"),
+            occurredAt: occurredAt,
+            categoryID: categoryID,
+            ledgerID: UUID(),
+            convertedAmountAtRecord: try Money(decimalString: "72.00", currencyCode: "CNY")
+        )
+        let history = ExchangeRateHistory(snapshots: [
+            ExchangeRateSnapshot(baseCode: "CNY", rates: ["CNY": 1, "USD": 0.10], effectiveDate: occurredAt)
+        ])
+
+        let items = try CategoryDistribution.expense(
+            transactions: [transaction],
+            currencyCode: "CNY",
+            exchangeRateHistory: history
+        )
+
+        XCTAssertEqual(items.first?.amount, try Money(decimalString: "72.00", currencyCode: "CNY"))
+    }
+
     func testMonthlySummaryExcludesTransfersFromIncomeAndExpense() throws {
         let transactions = [
             Transaction.sample(type: .expense, amount: try Money(decimalString: "80", currencyCode: "CNY")),

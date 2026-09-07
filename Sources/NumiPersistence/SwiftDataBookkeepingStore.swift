@@ -83,6 +83,8 @@ final class TransactionEntity {
     var note: String
     var reimbursementID: UUID?
     var refundOfTransactionID: UUID?
+    var convertedAmountMinorUnits: Int64?
+    var convertedCurrencyCode: String?
     var isSoftDeleted: Bool
 
     init(
@@ -97,6 +99,7 @@ final class TransactionEntity {
         note: String,
         reimbursementID: UUID? = nil,
         refundOfTransactionID: UUID? = nil,
+        convertedAmountAtRecord: Money? = nil,
         isSoftDeleted: Bool
     ) {
         self.id = id
@@ -111,6 +114,8 @@ final class TransactionEntity {
         self.note = note
         self.reimbursementID = reimbursementID
         self.refundOfTransactionID = refundOfTransactionID
+        self.convertedAmountMinorUnits = convertedAmountAtRecord?.minorUnits
+        self.convertedCurrencyCode = convertedAmountAtRecord?.currencyCode
         self.isSoftDeleted = isSoftDeleted
     }
 }
@@ -963,6 +968,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
                 note: tx.note,
                 reimbursementID: tx.reimbursementID,
                 refundOfTransactionID: tx.refundOfTransactionID,
+                convertedAmountAtRecord: tx.convertedAmountAtRecord,
                 isSoftDeleted: false
             )
             context.insert(entity)
@@ -1077,7 +1083,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         note: String,
         occurredAt: Date = Date(),
         reimbursementID: UUID? = nil,
-        refundOfTransactionID: UUID? = nil
+        refundOfTransactionID: UUID? = nil,
+        convertedAmountAtRecord: Money? = nil
     ) throws -> Transaction {
         try validateTransactionAccounts(
             type: type,
@@ -1097,6 +1104,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             note: note,
             reimbursementID: reimbursementID,
             refundOfTransactionID: refundOfTransactionID,
+            convertedAmountAtRecord: convertedAmountAtRecord,
             isSoftDeleted: false
         )
         context.insert(transaction)
@@ -1129,6 +1137,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
                 note: transaction.note,
                 reimbursementID: transaction.reimbursementID,
                 refundOfTransactionID: transaction.refundOfTransactionID,
+                convertedAmountAtRecord: transaction.convertedAmountAtRecord,
                 isSoftDeleted: false
             )
             context.insert(entity)
@@ -1157,7 +1166,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         note: String,
         occurredAt: Date? = nil,
         reimbursementID: UUID? = nil,
-        refundOfTransactionID: UUID? = nil
+        refundOfTransactionID: UUID? = nil,
+        convertedAmountAtRecord: Money? = nil,
+        replaceConvertedAmountAtRecord: Bool = false
     ) throws -> Transaction {
         guard let transaction = fetchTransactionEntity(id: id) else {
             throw SwiftDataBookkeepingStoreError.transactionNotFound
@@ -1182,7 +1193,10 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             ledgerID: transaction.ledgerID,
             note: note,
             reimbursementID: reimbursementID ?? oldDomain.reimbursementID,
-            refundOfTransactionID: refundOfTransactionID ?? oldDomain.refundOfTransactionID
+            refundOfTransactionID: refundOfTransactionID ?? oldDomain.refundOfTransactionID,
+            convertedAmountAtRecord: replaceConvertedAmountAtRecord
+                ? convertedAmountAtRecord
+                : (convertedAmountAtRecord ?? oldDomain.convertedAmountAtRecord)
         )
 
         if !transaction.isSoftDeleted {
@@ -1199,6 +1213,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         transaction.note = note
         transaction.reimbursementID = updatedDomain.reimbursementID
         transaction.refundOfTransactionID = updatedDomain.refundOfTransactionID
+        transaction.convertedAmountMinorUnits = updatedDomain.convertedAmountAtRecord?.minorUnits
+        transaction.convertedCurrencyCode = updatedDomain.convertedAmountAtRecord?.currencyCode
         try save()
         objectWillChange.send()
         return transaction.domainModel
@@ -1678,7 +1694,11 @@ private extension TransactionEntity {
             ledgerID: ledgerID,
             note: note,
             reimbursementID: reimbursementID,
-            refundOfTransactionID: refundOfTransactionID
+            refundOfTransactionID: refundOfTransactionID,
+            convertedAmountAtRecord: {
+                guard let convertedAmountMinorUnits, let convertedCurrencyCode else { return nil }
+                return Money(minorUnits: convertedAmountMinorUnits, currencyCode: convertedCurrencyCode)
+            }()
         )
     }
 }

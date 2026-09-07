@@ -63,6 +63,18 @@ final class ImportExportTests: XCTestCase {
         XCTAssertTrue(csv.contains(",expense,12.34,CNY,"))
     }
 
+    func testCSVRoundTripPreservesAmountConvertedAtRecordTime() throws {
+        let transaction = Transaction(
+            type: .expense,
+            amount: try Money(decimalString: "10.00", currencyCode: "USD"),
+            convertedAmountAtRecord: try Money(decimalString: "72.00", currencyCode: "CNY")
+        )
+
+        let result = NumiCSVImporter.importTransactions(csv: NumiCSVExporter.exportTransactions([transaction]))
+
+        XCTAssertEqual(result.transactions.first?.convertedAmountAtRecord, try Money(decimalString: "72.00", currencyCode: "CNY"))
+    }
+
     func testCSVImporterReportsInvalidRows() {
         let csv = """
         type,amount,currency,note
