@@ -24,6 +24,9 @@ public struct BudgetSetting: Codable, Equatable, Identifiable, Sendable {
     public var period: BudgetPeriod
     public var amount: Money
     public var isEnabled: Bool
+    /// When enabled, the previous period's unused balance is added to this period.
+    /// This is an opt-in Pro enhancement; existing budgets remain unchanged.
+    public var isRolloverEnabled: Bool
     public var ledgerID: UUID
     public var categoryID: UUID?
     public var accountID: UUID?
@@ -33,6 +36,7 @@ public struct BudgetSetting: Codable, Equatable, Identifiable, Sendable {
         period: BudgetPeriod,
         amount: Money,
         isEnabled: Bool = true,
+        isRolloverEnabled: Bool = false,
         ledgerID: UUID = UUID(),
         categoryID: UUID? = nil,
         accountID: UUID? = nil
@@ -41,9 +45,26 @@ public struct BudgetSetting: Codable, Equatable, Identifiable, Sendable {
         self.period = period
         self.amount = amount
         self.isEnabled = isEnabled
+        self.isRolloverEnabled = isRolloverEnabled
         self.ledgerID = ledgerID
         self.categoryID = categoryID
         self.accountID = accountID
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, period, amount, isEnabled, isRolloverEnabled, ledgerID, categoryID, accountID
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        period = try container.decode(BudgetPeriod.self, forKey: .period)
+        amount = try container.decode(Money.self, forKey: .amount)
+        isEnabled = try container.decode(Bool.self, forKey: .isEnabled)
+        isRolloverEnabled = try container.decodeIfPresent(Bool.self, forKey: .isRolloverEnabled) ?? false
+        ledgerID = try container.decode(UUID.self, forKey: .ledgerID)
+        categoryID = try container.decodeIfPresent(UUID.self, forKey: .categoryID)
+        accountID = try container.decodeIfPresent(UUID.self, forKey: .accountID)
     }
 }
 
@@ -114,6 +135,19 @@ public struct BudgetStatus: Equatable, Sendable {
 }
 
 public enum BudgetCalculator {
+    /// Carries forward only unused funds. A prior overspend never silently reduces
+    /// the next period's budget, which keeps the user's configured limit stable.
+    public static func unusedCarryover(
+        budgetAmount: Money,
+        previousSpent: Money
+    ) throws -> Money {
+        let remaining = try budgetAmount.subtracting(previousSpent)
+        guard remaining.minorUnits > 0 else {
+            return .zero(currencyCode: budgetAmount.currencyCode)
+        }
+        return remaining
+    }
+
     public static func status(
         for budget: BudgetLimit,
         spent: Money,

@@ -9,6 +9,8 @@ public struct BudgetCardModel: Identifiable, Equatable {
     public let spent: Money
     public let status: BudgetStatus
     public let isEnabled: Bool
+    public let isRolloverEnabled: Bool
+    public let carriedOverAmount: Money
     public let categoryID: UUID?
     public let accountID: UUID?
     public let scopeName: String?
@@ -19,6 +21,8 @@ public struct BudgetCardModel: Identifiable, Equatable {
         spent: Money,
         status: BudgetStatus,
         isEnabled: Bool,
+        isRolloverEnabled: Bool = false,
+        carriedOverAmount: Money? = nil,
         id: UUID = UUID(),
         persistedBudgetID: UUID? = nil,
         categoryID: UUID? = nil,
@@ -30,6 +34,8 @@ public struct BudgetCardModel: Identifiable, Equatable {
         self.spent = spent
         self.status = status
         self.isEnabled = isEnabled
+        self.isRolloverEnabled = isRolloverEnabled
+        self.carriedOverAmount = carriedOverAmount ?? .zero(currencyCode: amount.currencyCode)
         self.id = id
         self.persistedBudgetID = persistedBudgetID
         self.categoryID = categoryID
@@ -42,6 +48,13 @@ public struct BudgetCardModel: Identifiable, Equatable {
         case .week: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
         case .month: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
         }
+    }
+
+    public var availableAmount: Money {
+        Money(
+            minorUnits: amount.minorUnits + carriedOverAmount.minorUnits,
+            currencyCode: amount.currencyCode
+        )
     }
 }
 
@@ -68,7 +81,7 @@ public struct PlansView: View {
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
     private let defaultCurrencyCode: String
-    private let onSaveBudget: (UUID?, BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void
+    private let onSaveBudget: (UUID?, BudgetPeriod, Money, Bool, Bool, UUID?, UUID?) -> Void
     private let onAddSubscription: (Subscription) -> Void
     private let onUpdateSubscription: (Subscription) -> Void
     private let onDeleteSubscription: (UUID) -> Void
@@ -92,7 +105,7 @@ public struct PlansView: View {
         categories: [NumiCore.Category] = [],
         accounts: [Account] = [],
         defaultCurrencyCode: String = "CNY",
-        onSaveBudget: @escaping (UUID?, BudgetPeriod, Money, Bool, UUID?, UUID?) -> Void = { _, _, _, _, _, _ in },
+        onSaveBudget: @escaping (UUID?, BudgetPeriod, Money, Bool, Bool, UUID?, UUID?) -> Void = { _, _, _, _, _, _, _ in },
         onAddSubscription: @escaping (Subscription) -> Void = { _ in },
         onUpdateSubscription: @escaping (Subscription) -> Void = { _ in },
         onDeleteSubscription: @escaping (UUID) -> Void = { _ in },
@@ -241,6 +254,7 @@ public struct PlansView: View {
                     savedDraft.period,
                     amount,
                     savedDraft.isEnabled,
+                    savedDraft.isRolloverEnabled,
                     savedDraft.categoryID,
                     savedDraft.accountID
                 )
@@ -825,16 +839,36 @@ private struct BudgetProgressCard: View {
                     Text("/")
                         .font(style == .hero ? NumiFont.body : NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textTertiary)
-                    Text(privacyAmountDisplayPolicy.display(model.amount))
+                    Text(privacyAmountDisplayPolicy.display(model.availableAmount))
                         .font(style == .hero ? NumiFont.body : NumiFont.bodySmall)
                         .foregroundStyle(NumiColor.textTertiary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .accessibilityIdentifier("budget.\(model.period.rawValue).amount")
                 }
-                Text(NumiLocalized.string("budget.used.budget"))
+                Text(NumiLocalized.string(
+                    model.carriedOverAmount.minorUnits > 0 ? "budget.used.available" : "budget.used.budget"
+                ))
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
+                if model.carriedOverAmount.minorUnits > 0 {
+                    Text(NumiLocalized.string(
+                        "budget.rollover.base",
+                        privacyAmountDisplayPolicy.display(model.amount)
+                    ))
+                    .font(NumiFont.caption)
+                    .foregroundStyle(NumiColor.textTertiary)
+                    Label(
+                        NumiLocalized.string(
+                            "budget.rollover.carried",
+                            privacyAmountDisplayPolicy.display(model.carriedOverAmount)
+                        ),
+                        systemImage: "arrow.turn.down.right"
+                    )
+                    .font(NumiFont.caption)
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .accessibilityIdentifier("budget.\(model.period.rawValue).rollover")
+                }
             }
             Spacer(minLength: NumiSpacing.s3)
             VStack(alignment: .trailing, spacing: NumiSpacing.s1) {
@@ -904,9 +938,9 @@ private struct BudgetProgressCard: View {
     }
 
     private var progress: CGFloat {
-        guard model.amount.minorUnits > 0 else { return 0 }
+        guard model.availableAmount.minorUnits > 0 else { return 0 }
         let spent = max(model.spent.minorUnits, 0)
-        return min(CGFloat(Double(spent) / Double(model.amount.minorUnits)), 1)
+        return min(CGFloat(Double(spent) / Double(model.availableAmount.minorUnits)), 1)
     }
 
     private var progressColor: Color {
@@ -941,8 +975,8 @@ private struct BudgetProgressCard: View {
     }
 
     private var usedPercent: Int {
-        guard model.amount.minorUnits > 0 else { return 0 }
-        let ratio = Double(max(model.spent.minorUnits, 0)) / Double(model.amount.minorUnits)
+        guard model.availableAmount.minorUnits > 0 else { return 0 }
+        let ratio = Double(max(model.spent.minorUnits, 0)) / Double(model.availableAmount.minorUnits)
         return min(Int(ratio * 100), 100)
     }
 
@@ -1056,6 +1090,8 @@ private struct BudgetDraft: Identifiable {
     var amountText: String
     var currencyCode: String
     var isEnabled: Bool
+    var isRolloverEnabled: Bool
+    var carriedOverAmount: Money
     var categoryID: UUID?
     var accountID: UUID?
 
@@ -1067,6 +1103,8 @@ private struct BudgetDraft: Identifiable {
         self.amountText = Self.decimalText(for: model.amount)
         self.currencyCode = model.amount.currencyCode
         self.isEnabled = model.isEnabled
+        self.isRolloverEnabled = model.isRolloverEnabled
+        self.carriedOverAmount = model.carriedOverAmount
         self.categoryID = model.categoryID
         self.accountID = model.accountID
     }
@@ -1080,6 +1118,8 @@ private struct BudgetDraft: Identifiable {
             amountText: "",
             currencyCode: currencyCode,
             isEnabled: true,
+            isRolloverEnabled: false,
+            carriedOverAmount: .zero(currencyCode: currencyCode),
             categoryID: nil,
             accountID: nil
         )
@@ -1093,6 +1133,8 @@ private struct BudgetDraft: Identifiable {
         amountText: String,
         currencyCode: String,
         isEnabled: Bool,
+        isRolloverEnabled: Bool,
+        carriedOverAmount: Money,
         categoryID: UUID?,
         accountID: UUID?
     ) {
@@ -1103,6 +1145,8 @@ private struct BudgetDraft: Identifiable {
         self.amountText = amountText
         self.currencyCode = currencyCode.uppercased()
         self.isEnabled = isEnabled
+        self.isRolloverEnabled = isRolloverEnabled
+        self.carriedOverAmount = carriedOverAmount
         self.categoryID = categoryID
         self.accountID = accountID
     }
@@ -1125,6 +1169,7 @@ private struct BudgetFormView: View {
     @State private var draft: BudgetDraft
     @State private var membershipPaywallContext: MembershipPaywallContext?
     @State private var showsScopeConflict = false
+    @State private var showsRolloverDisableConfirmation = false
 
     private let originalCategoryID: UUID?
     private let originalAccountID: UUID?
@@ -1153,7 +1198,7 @@ private struct BudgetFormView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("budget.amount", text: $draft.amountText)
+                    TextField(NumiLocalized.string("budget.amount"), text: $draft.amountText)
                         #if os(iOS)
                         .keyboardType(.decimalPad)
                         #endif
@@ -1179,6 +1224,36 @@ private struct BudgetFormView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("toggle.budgetEnabled")
+
+                    Toggle(isOn: Binding(
+                        get: { draft.isRolloverEnabled },
+                        set: { setRollover($0) }
+                    )) {
+                        HStack(spacing: NumiSpacing.s3) {
+                            Image(systemName: "arrow.turn.down.right")
+                                .foregroundStyle(NumiColor.accentDeep)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: NumiSpacing.s2) {
+                                    Text(NumiLocalized.string("budget.rollover.title"))
+                                        .foregroundStyle(NumiColor.textPrimary)
+                                    Text("Pro")
+                                        .font(NumiFont.caption.weight(.semibold))
+                                        .foregroundStyle(NumiColor.accentDeep)
+                                        .padding(.horizontal, NumiSpacing.s2)
+                                        .padding(.vertical, 2)
+                                        .background(NumiColor.controlFill, in: Capsule())
+                                }
+                                Text(NumiLocalized.string("budget.rollover.detail"))
+                                    .font(NumiFont.footnote)
+                                    .foregroundStyle(NumiColor.textTertiary)
+                            }
+                            Spacer()
+                        }
+                    }
+                    .tint(NumiColor.accentDeep)
+                    .disabled(!draft.isEnabled)
+                    .accessibilityIdentifier("toggle.budgetRollover")
                 } header: {
                     Text(title)
                 } footer: {
@@ -1226,6 +1301,17 @@ private struct BudgetFormView: View {
             Button(NumiLocalized.string("common.ok"), role: .cancel) {}
         } message: {
             Text(NumiLocalized.string("budget.scope.conflict.message"))
+        }
+        .alert(NumiLocalized.string("budget.rollover.disable.title"), isPresented: $showsRolloverDisableConfirmation) {
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
+            Button(NumiLocalized.string("budget.rollover.disable.confirm"), role: .destructive) {
+                draft.isRolloverEnabled = false
+            }
+        } message: {
+            Text(NumiLocalized.string(
+                "budget.rollover.disable.message",
+                draft.carriedOverAmount.formatted()
+            ))
         }
         .membershipPaywall(context: $membershipPaywallContext)
     }
@@ -1276,6 +1362,23 @@ private struct BudgetFormView: View {
         case .blocked(let context):
             draft.categoryID = originalCategoryID
             draft.accountID = originalAccountID
+            membershipPaywallContext = context
+        }
+    }
+
+    private func setRollover(_ isEnabled: Bool) {
+        guard isEnabled else {
+            if draft.isRolloverEnabled, draft.carriedOverAmount.minorUnits > 0 {
+                showsRolloverDisableConfirmation = true
+                return
+            }
+            draft.isRolloverEnabled = false
+            return
+        }
+        switch membership.decision(for: .openAdvancedBudget) {
+        case .granted:
+            draft.isRolloverEnabled = true
+        case .blocked(let context):
             membershipPaywallContext = context
         }
     }

@@ -3754,6 +3754,78 @@
         "ja": { "stringUnit": { "state": "translated", "value": "赤は支出、緑は収入" } }
       }
     },
+    "budget.rollover.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "结转未用预算" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Roll Over Unused Budget" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "結轉未用預算" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "未使用予算を繰り越す" } }
+      }
+    },
+    "budget.rollover.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "仅结转上一周期基础预算的未用余额；超支不抵扣下期，结转不跨期累计" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Carry over only unused funds from the previous period’s base budget. Overspending is not deducted and carryover does not compound." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "僅結轉上一期基礎預算的未用餘額；超支不扣抵下期，結轉不跨期累計" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "前期の基本予算の未使用額のみを繰り越します。超過分は次期から差し引かれず、繰り越しは累積しません。" } }
+      }
+    },
+    "budget.rollover.carried": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已结转 %@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%@ carried over" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已結轉 %@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%@ を繰り越し" } }
+      }
+    },
+    "budget.rollover.base": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "基础预算 %@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Base budget %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "基礎預算 %@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "基本予算 %@" } }
+      }
+    },
+    "budget.rollover.disable.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "关闭预算结转？" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Turn Off Budget Rollover?" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "關閉預算結轉？" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "予算の繰り越しをオフにしますか？" } }
+      }
+    },
+    "budget.rollover.disable.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "本期可用预算将减少 %@。历史交易不会受影响。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "This period’s available budget will decrease by %@. Past transactions are unaffected." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "本期可用預算將減少 %@。歷史交易不受影響。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "今期の利用可能な予算が %@ 減少します。過去の取引には影響しません。" } }
+      }
+    },
+    "budget.rollover.disable.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "关闭结转" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Turn Off" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "關閉結轉" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "オフにする" } }
+      }
+    },
+    "budget.used.available": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已用 / 含结转可用额度" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Used / Available incl. rollover" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已用 / 含結轉可用額度" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "使用済み / 繰り越しを含む利用可能額" } }
+      }
+    },
     "budget.title": {
       "extractionState": "manual",
       "localizations": {

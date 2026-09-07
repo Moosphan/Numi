@@ -127,16 +127,27 @@ final class BudgetSettingEntity {
     var amountMinorUnits: Int64
     var currencyCode: String
     var isEnabled: Bool
+    var isRolloverEnabled: Bool = false
     var ledgerID: UUID
     var categoryID: UUID?
     var accountID: UUID?
 
-    init(id: UUID, period: BudgetPeriod, amount: Money, isEnabled: Bool, ledgerID: UUID, categoryID: UUID? = nil, accountID: UUID? = nil) {
+    init(
+        id: UUID,
+        period: BudgetPeriod,
+        amount: Money,
+        isEnabled: Bool,
+        isRolloverEnabled: Bool = false,
+        ledgerID: UUID,
+        categoryID: UUID? = nil,
+        accountID: UUID? = nil
+    ) {
         self.id = id
         self.periodRawValue = period.rawValue
         self.amountMinorUnits = amount.minorUnits
         self.currencyCode = amount.currencyCode
         self.isEnabled = isEnabled
+        self.isRolloverEnabled = isRolloverEnabled
         self.ledgerID = ledgerID
         self.categoryID = categoryID
         self.accountID = accountID
@@ -987,6 +998,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             let entity = BudgetSettingEntity(
                 id: budget.id, period: budget.period,
                 amount: budget.amount, isEnabled: budget.isEnabled,
+                isRolloverEnabled: budget.isRolloverEnabled,
                 ledgerID: budget.ledgerID,
                 categoryID: budget.categoryID,
                 accountID: budget.accountID
@@ -1382,6 +1394,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         period: BudgetPeriod,
         amount: Money,
         isEnabled: Bool,
+        isRolloverEnabled: Bool? = nil,
         ledgerID: UUID,
         categoryID: UUID? = nil,
         accountID: UUID? = nil
@@ -1393,7 +1406,11 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         }) {
             setting = existing
         } else {
-            setting = BudgetSettingEntity(id: UUID(), period: period, amount: amount, isEnabled: isEnabled, ledgerID: ledgerID, categoryID: categoryID, accountID: accountID)
+            setting = BudgetSettingEntity(
+                id: UUID(), period: period, amount: amount, isEnabled: isEnabled,
+                isRolloverEnabled: isRolloverEnabled ?? false, ledgerID: ledgerID,
+                categoryID: categoryID, accountID: accountID
+            )
             context.insert(setting)
         }
 
@@ -1401,6 +1418,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         setting.amountMinorUnits = amount.minorUnits
         setting.currencyCode = amount.currencyCode
         setting.isEnabled = isEnabled
+        if let isRolloverEnabled {
+            setting.isRolloverEnabled = isRolloverEnabled
+        }
         setting.categoryID = categoryID
         setting.accountID = accountID
         try save()
@@ -1416,7 +1436,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         amount: Money,
         isEnabled: Bool,
         categoryID: UUID?,
-        accountID: UUID?
+        accountID: UUID?,
+        isRolloverEnabled: Bool? = nil
     ) throws -> Bool {
         guard let setting = fetchBudgetSettingEntities().first(where: { $0.id == id }) else {
             return false
@@ -1426,6 +1447,9 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         setting.amountMinorUnits = amount.minorUnits
         setting.currencyCode = amount.currencyCode
         setting.isEnabled = isEnabled
+        if let isRolloverEnabled {
+            setting.isRolloverEnabled = isRolloverEnabled
+        }
         setting.categoryID = categoryID
         setting.accountID = accountID
         try save()
@@ -1718,6 +1742,7 @@ private extension BudgetSettingEntity {
             period: BudgetPeriod(rawValue: periodRawValue) ?? .month,
             amount: Money(minorUnits: amountMinorUnits, currencyCode: currencyCode),
             isEnabled: isEnabled,
+            isRolloverEnabled: isRolloverEnabled,
             ledgerID: ledgerID,
             categoryID: categoryID,
             accountID: accountID

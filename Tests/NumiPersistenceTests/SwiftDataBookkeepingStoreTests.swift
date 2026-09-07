@@ -1306,6 +1306,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
                 period: .month,
                 amount: Money(decimalString: "3000", currencyCode: "CNY"),
                 isEnabled: true,
+                isRolloverEnabled: true,
                 ledgerID: store.ledgers.first!.id
             )
 
@@ -1319,6 +1320,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
 
         XCTAssertEqual(reopenedStore.budgetSettings.first { $0.period == .week }?.amount.formatted(), "¥500.00")
         XCTAssertEqual(reopenedStore.budgetSettings.first { $0.period == .month }?.amount.formatted(), "¥3,000.00")
+        XCTAssertTrue(reopenedStore.budgetSettings.first { $0.period == .month }?.isRolloverEnabled ?? false)
     }
 
     @MainActor
@@ -1345,7 +1347,8 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
             amount: Money(decimalString: "250", currencyCode: "CNY"),
             isEnabled: false,
             categoryID: updatedCategoryID,
-            accountID: accountID
+            accountID: accountID,
+            isRolloverEnabled: true
         )
 
         XCTAssertTrue(didUpdate)
@@ -1354,6 +1357,7 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
         XCTAssertEqual(updated.id, original.id)
         XCTAssertEqual(updated.amount, try Money(decimalString: "250", currencyCode: "CNY"))
         XCTAssertFalse(updated.isEnabled)
+        XCTAssertTrue(updated.isRolloverEnabled)
         XCTAssertEqual(updated.categoryID, updatedCategoryID)
         XCTAssertEqual(updated.accountID, accountID)
     }

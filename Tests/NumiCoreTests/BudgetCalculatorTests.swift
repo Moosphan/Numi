@@ -112,4 +112,29 @@ final class BudgetCalculatorTests: XCTestCase {
         XCTAssertTrue(status.isOverBudget)
         XCTAssertEqual(status.dailySuggestion.formatted(), "¥0.00")
     }
+
+    func testUnusedBudgetCarryoverOnlyBringsForwardPositiveRemainingBalance() throws {
+        let amount = try Money(decimalString: "100", currencyCode: "CNY")
+        let underspent = try Money(decimalString: "64", currencyCode: "CNY")
+        let overspent = try Money(decimalString: "135", currencyCode: "CNY")
+
+        XCTAssertEqual(
+            try BudgetCalculator.unusedCarryover(budgetAmount: amount, previousSpent: underspent),
+            try Money(decimalString: "36", currencyCode: "CNY")
+        )
+        XCTAssertEqual(
+            try BudgetCalculator.unusedCarryover(budgetAmount: amount, previousSpent: overspent),
+            .zero(currencyCode: "CNY")
+        )
+    }
+
+    func testLegacyBudgetJSONDefaultsRolloverToDisabled() throws {
+        let json = """
+        {"id":"00000000-0000-0000-0000-000000000001","period":"month","amount":{"minorUnits":10000,"currencyCode":"CNY"},"isEnabled":true,"ledgerID":"00000000-0000-0000-0000-000000000002"}
+        """.data(using: .utf8)!
+
+        let budget = try JSONDecoder().decode(BudgetSetting.self, from: json)
+
+        XCTAssertFalse(budget.isRolloverEnabled)
+    }
 }

@@ -653,7 +653,7 @@ struct RootShellView: View {
                 categories: store.categories,
                 accounts: store.accounts,
                 defaultCurrencyCode: activeCurrencyCode,
-                onSaveBudget: { existingID, period, amount, isEnabled, categoryID, accountID in
+                onSaveBudget: { existingID, period, amount, isEnabled, isRolloverEnabled, categoryID, accountID in
                     do {
                         if let existingID {
                             _ = try store.updateBudgetSetting(
@@ -662,7 +662,8 @@ struct RootShellView: View {
                                 amount: amount,
                                 isEnabled: isEnabled,
                                 categoryID: categoryID,
-                                accountID: accountID
+                                accountID: accountID,
+                                isRolloverEnabled: isRolloverEnabled
                             )
                         } else {
                             guard let ledgerID = currentLedger?.id else { return }
@@ -670,6 +671,7 @@ struct RootShellView: View {
                                 period: period,
                                 amount: amount,
                                 isEnabled: isEnabled,
+                                isRolloverEnabled: isRolloverEnabled,
                                 ledgerID: ledgerID,
                                 categoryID: categoryID,
                                 accountID: accountID
@@ -1262,7 +1264,12 @@ struct RootShellView: View {
             let amount = setting?.amount ?? defaultBudgetAmount(for: period)
             let range = budgetDateRange(for: period, today: today, calendar: calendar)
             let spent = spentAmount(from: range.start, to: range.end, categoryID: nil, accountID: nil)
-            let limit = BudgetLimit(amount: amount, period: period, startsOn: range.start, endsOn: range.end)
+            let carriedOverAmount = rolloverAmount(for: setting, currentRange: range, calendar: calendar)
+            let availableAmount = Money(
+                minorUnits: amount.minorUnits + carriedOverAmount.minorUnits,
+                currencyCode: amount.currencyCode
+            )
+            let limit = BudgetLimit(amount: availableAmount, period: period, startsOn: range.start, endsOn: range.end)
             let status = (try? BudgetCalculator.status(for: limit, spent: spent, today: today, calendar: calendar))
                 ?? BudgetStatus(remaining: amount, dailySuggestion: amount, isOverBudget: false)
 
@@ -1272,6 +1279,8 @@ struct RootShellView: View {
                 spent: spent,
                 status: status,
                 isEnabled: setting?.isEnabled ?? true,
+                isRolloverEnabled: setting?.isRolloverEnabled ?? false,
+                carriedOverAmount: carriedOverAmount,
                 id: setting?.id ?? BudgetCardModel.defaultID(for: period),
                 persistedBudgetID: setting?.id
             )
@@ -1281,7 +1290,12 @@ struct RootShellView: View {
             .map { setting in
                 let range = budgetDateRange(for: setting.period, today: today, calendar: calendar)
                 let spent = spentAmount(from: range.start, to: range.end, categoryID: setting.categoryID, accountID: setting.accountID)
-                let limit = BudgetLimit(amount: setting.amount, period: setting.period, startsOn: range.start, endsOn: range.end)
+                let carriedOverAmount = rolloverAmount(for: setting, currentRange: range, calendar: calendar)
+                let availableAmount = Money(
+                    minorUnits: setting.amount.minorUnits + carriedOverAmount.minorUnits,
+                    currencyCode: setting.amount.currencyCode
+                )
+                let limit = BudgetLimit(amount: availableAmount, period: setting.period, startsOn: range.start, endsOn: range.end)
                 let status = (try? BudgetCalculator.status(for: limit, spent: spent, today: today, calendar: calendar))
                     ?? BudgetStatus(remaining: setting.amount, dailySuggestion: setting.amount, isOverBudget: false)
                 let scopeName = setting.categoryID.flatMap { id in store.categories.first { $0.id == id }?.localizedDisplayName }
@@ -1292,6 +1306,8 @@ struct RootShellView: View {
                     spent: spent,
                     status: status,
                     isEnabled: setting.isEnabled,
+                    isRolloverEnabled: setting.isRolloverEnabled,
+                    carriedOverAmount: carriedOverAmount,
                     id: setting.id,
                     persistedBudgetID: setting.id,
                     categoryID: setting.categoryID,
@@ -1300,6 +1316,31 @@ struct RootShellView: View {
                 )
             }
         return globalCards + scopedCards
+    }
+
+    private func rolloverAmount(
+        for setting: BudgetSetting?,
+        currentRange: (start: Date, end: Date),
+        calendar: Calendar
+    ) -> Money {
+        guard let setting, setting.isEnabled, setting.isRolloverEnabled else {
+            return .zero(currencyCode: setting?.amount.currencyCode ?? activeCurrencyCode)
+        }
+        let component: Calendar.Component = setting.period == .week ? .weekOfYear : .month
+        guard let priorAnchor = calendar.date(byAdding: component, value: -1, to: currentRange.start) else {
+            return .zero(currencyCode: setting.amount.currencyCode)
+        }
+        let previousRange = budgetDateRange(for: setting.period, today: priorAnchor, calendar: calendar)
+        let previousSpent = spentAmount(
+            from: previousRange.start,
+            to: previousRange.end,
+            categoryID: setting.categoryID,
+            accountID: setting.accountID
+        )
+        return (try? BudgetCalculator.unusedCarryover(
+            budgetAmount: setting.amount,
+            previousSpent: previousSpent
+        )) ?? .zero(currencyCode: setting.amount.currencyCode)
     }
 
     private func defaultBudgetAmount(for period: BudgetPeriod) -> Money {

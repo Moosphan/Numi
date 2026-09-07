@@ -127,6 +127,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testBudgetRolloverCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (title: "结转未用预算", detail: "仅结转上一周期基础预算的未用余额；超支不抵扣下期，结转不跨期累计", carried: "已结转 %@", available: "已用 / 含结转可用额度"),
+            "en": (title: "Roll Over Unused Budget", detail: "Carry over only unused funds from the previous period’s base budget. Overspending is not deducted and carryover does not compound.", carried: "%@ carried over", available: "Used / Available incl. rollover"),
+            "zh-Hant": (title: "結轉未用預算", detail: "僅結轉上一期基礎預算的未用餘額；超支不扣抵下期，結轉不跨期累計", carried: "已結轉 %@", available: "已用 / 含結轉可用額度"),
+            "ja": (title: "未使用予算を繰り越す", detail: "前期の基本予算の未使用額のみを繰り越します。超過分は次期から差し引かれず、繰り越しは累積しません。", carried: "%@ を繰り越し", available: "使用済み / 繰り越しを含む利用可能額")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("budget.rollover.title", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("budget.rollover.detail", locale: locale), expected.detail)
+            XCTAssertEqual(NumiLocalized.lookup("budget.rollover.carried", locale: locale), expected.carried)
+            XCTAssertEqual(NumiLocalized.lookup("budget.used.available", locale: locale), expected.available)
+        }
+    }
+
     func testMissingHistoricalRateCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": "缺少历史汇率，无法汇总",
