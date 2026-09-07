@@ -28,4 +28,20 @@ public enum InsightsCustomRangePolicy {
     public static func contains(_ date: Date, in interval: DateInterval) -> Bool {
         date >= interval.start && date < interval.end
     }
+
+    /// Returns the immediately preceding interval with the same count of local calendar days.
+    /// Using calendar arithmetic instead of a fixed duration keeps the comparison aligned
+    /// when a selected range crosses a daylight-saving transition.
+    public static func previousInterval(
+        for interval: DateInterval,
+        calendar: Calendar
+    ) -> DateInterval {
+        let dayCount = max(
+            1,
+            calendar.dateComponents([.day], from: interval.start, to: interval.end).day ?? 1
+        )
+        let previousStart = calendar.date(byAdding: .day, value: -dayCount, to: interval.start)
+            ?? interval.start.addingTimeInterval(-interval.duration)
+        return DateInterval(start: previousStart, end: interval.start)
+    }
 }

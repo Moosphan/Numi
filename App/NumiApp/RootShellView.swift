@@ -523,6 +523,7 @@ struct RootShellView: View {
 
     private var insightsRoot: some View {
         let summaryResult = insightsSummary()
+        let previousSummaryResult = insightsPreviousPeriodSummary()
         let distribution = insightsDistribution()
         let income = insightsIncomeDistribution()
         let periodTitle = insightsPeriodTitle
@@ -530,7 +531,8 @@ struct RootShellView: View {
         return NavigationStack {
             InsightsView(
                 summary: summaryResult.summary,
-                hasUnavailableHistoricalRate: summaryResult.hasUnavailableHistoricalRate,
+                previousPeriodSummary: previousSummaryResult?.summary,
+                hasUnavailableHistoricalRate: summaryResult.hasUnavailableHistoricalRate || (previousSummaryResult?.hasUnavailableHistoricalRate ?? false),
                 distribution: distribution,
                 incomeDistribution: income,
                 categories: store.categories,
@@ -1032,6 +1034,20 @@ struct RootShellView: View {
 
     private func insightsSummary() -> CurrencySummaryResult {
         currencySummary(for: insightsFilteredTransactions)
+    }
+
+    private func insightsPreviousPeriodSummary() -> CurrencySummaryResult? {
+        guard insightsCustomRange != nil else { return nil }
+        let previousInterval = InsightsCustomRangePolicy.previousInterval(
+            for: insightsDateInterval,
+            calendar: calendar
+        )
+        let ledgerID = currentLedger?.id
+        let transactions = store.visibleTransactions.filter { transaction in
+            InsightsCustomRangePolicy.contains(transaction.occurredAt, in: previousInterval)
+                && (ledgerID == nil || transaction.ledgerID == ledgerID)
+        }
+        return currencySummary(for: transactions)
     }
 
     private func insightsDistribution() -> [InsightsDistributionRow] {

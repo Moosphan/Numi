@@ -49,6 +49,7 @@ public struct InsightsView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     @ObservedObject private var membership = MembershipController.shared
     private let summary: TransactionSummary
+    private let previousPeriodSummary: TransactionSummary?
     private let hasUnavailableHistoricalRate: Bool
     private let expenseDistribution: [InsightsDistributionRow]
     private let incomeDistribution: [InsightsDistributionRow]
@@ -69,6 +70,7 @@ public struct InsightsView: View {
 
     public init(
         summary: TransactionSummary,
+        previousPeriodSummary: TransactionSummary? = nil,
         hasUnavailableHistoricalRate: Bool = false,
         distribution: [InsightsDistributionRow],
         incomeDistribution: [InsightsDistributionRow] = [],
@@ -82,6 +84,7 @@ public struct InsightsView: View {
         onSelectCategory: @escaping (InsightsDistributionRow, String) -> Void = { _, _ in }
     ) {
         self.summary = summary
+        self.previousPeriodSummary = previousPeriodSummary
         self.hasUnavailableHistoricalRate = hasUnavailableHistoricalRate
         self.expenseDistribution = distribution
         self.incomeDistribution = incomeDistribution
@@ -179,6 +182,10 @@ public struct InsightsView: View {
                     NumiSummaryTile(title: NumiLocalized.string( "insight.record.count"), value: "\(summary.recordCount)", variant: .neutral, accessibilityKey: "insights.recordCount")
                 }
 
+                if customRange != nil, let previousPeriodSummary {
+                    periodComparisonSection(previousPeriodSummary)
+                }
+
                 if hasUnavailableHistoricalRate {
                     Label(NumiLocalized.string("currency.summary.unavailable"), systemImage: "exclamationmark.triangle.fill")
                         .font(NumiFont.footnote)
@@ -240,6 +247,87 @@ public struct InsightsView: View {
         }
         .task { await membership.start() }
         .membershipPaywall(context: $membershipPaywallContext)
+    }
+
+    @ViewBuilder
+    private func periodComparisonSection(_ previous: TransactionSummary) -> some View {
+        VStack(alignment: .leading, spacing: NumiSpacing.s3) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(NumiLocalized.string("insight.comparison.title"))
+                        .font(NumiFont.bodyStrong)
+                        .foregroundStyle(NumiColor.textPrimary)
+                    Text(NumiLocalized.string("insight.comparison.subtitle"))
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "arrow.left.arrow.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(NumiColor.accentDeep)
+            }
+
+            comparisonRow(
+                title: NumiLocalized.string("insight.expense"),
+                current: summary.expense,
+                previous: previous.expense,
+                tint: NumiColor.expenseText,
+                accessibilityKey: "expense"
+            )
+            comparisonRow(
+                title: NumiLocalized.string("insight.income"),
+                current: summary.income,
+                previous: previous.income,
+                tint: NumiColor.incomeText,
+                accessibilityKey: "income"
+            )
+            comparisonRow(
+                title: NumiLocalized.string("insight.balance"),
+                current: summary.balance,
+                previous: previous.balance,
+                tint: summary.balance.minorUnits >= previous.balance.minorUnits ? NumiColor.incomeText : NumiColor.expenseText,
+                accessibilityKey: "balance"
+            )
+        }
+        .padding(NumiSpacing.s4)
+        .background(NumiColor.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+        .accessibilityIdentifier("insights.periodComparison")
+    }
+
+    @ViewBuilder
+    private func comparisonRow(
+        title: String,
+        current: Money,
+        previous: Money,
+        tint: Color,
+        accessibilityKey: String
+    ) -> some View {
+        let delta = current.minorUnits - previous.minorUnits
+        let deltaAmount = Money(minorUnits: abs(delta), currencyCode: current.currencyCode)
+
+        HStack(spacing: NumiSpacing.s3) {
+            Circle()
+                .fill(tint.opacity(0.14))
+                .frame(width: 8, height: 8)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(NumiFont.bodySmall)
+                    .foregroundStyle(NumiColor.textPrimary)
+                Text(NumiLocalized.string(
+                    "insight.comparison.previous",
+                    privacyAmountDisplayPolicy.display(previous)
+                ))
+                .font(NumiFont.footnote)
+                .foregroundStyle(NumiColor.textSecondary)
+            }
+            Spacer()
+            Text(delta == 0 ? "–" : "\(delta > 0 ? "+" : "−")\(privacyAmountDisplayPolicy.display(deltaAmount))")
+                .font(NumiFont.bodyStrong)
+                .foregroundStyle(delta == 0 ? NumiColor.textSecondary : tint)
+                .accessibilityIdentifier("insights.periodComparison.\(accessibilityKey)")
+        }
     }
 
     private func startCustomRangeSelection() {

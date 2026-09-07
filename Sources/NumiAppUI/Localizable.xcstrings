@@ -3565,6 +3565,33 @@
         "ja": { "stringUnit": { "state": "translated", "value": "終了日" } }
       }
     },
+    "insight.comparison.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "与上一周期对比" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Compare with Previous Period" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "與上一期比較" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "前の期間と比較" } }
+      }
+    },
+    "insight.comparison.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "按相同天数比较" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Compared over the same number of days" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "按相同天數比較" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "同じ日数で比較" } }
+      }
+    },
+    "insight.comparison.previous": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "上一期：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Previous: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "上一期：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "前の期間：%@" } }
+      }
+    },
     "budget.title": {
       "extractionState": "manual",
       "localizations": {

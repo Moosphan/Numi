@@ -128,6 +128,28 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testInsightsComparisonCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (title: "与上一周期对比", previous: "上一期：¥100.00"),
+            "en": (title: "Compare with Previous Period", previous: "Previous: ¥100.00"),
+            "zh-Hant": (title: "與上一期比較", previous: "上一期：¥100.00"),
+            "ja": (title: "前の期間と比較", previous: "前の期間：¥100.00")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("insight.comparison.title", locale: locale), expected.title)
+            XCTAssertEqual(
+                NumiLocalized.format(
+                    "insight.comparison.previous",
+                    arguments: ["¥100.00"],
+                    locale: locale
+                ),
+                expected.previous
+            )
+        }
+    }
+
     func testCSVForeignCurrencyImportWarningCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (
