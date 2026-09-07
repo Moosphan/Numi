@@ -71,6 +71,7 @@ struct RootShellView: View {
     @State private var insightsDimension: InsightsTimeDimension = .month
     @State private var insightsAnchorDate = Date()
     @State private var insightsCustomRange: InsightsCustomRange?
+    @State private var insightsAccountID: UUID?
     @State private var selectedCategoryID: UUID?
     @State private var selectedCategoryType: String = "expense"
     @State private var isBottomAccessoryHiddenByPage = false
@@ -536,8 +537,10 @@ struct RootShellView: View {
                 distribution: distribution,
                 incomeDistribution: income,
                 categories: store.categories,
+                accounts: store.accounts,
                 periodTitle: periodTitle,
                 customRange: insightsCustomRange,
+                selectedAccountID: effectiveInsightsAccountID,
                 onPreviousPeriod: { moveInsightsPeriod(-1) },
                 onNextPeriod: { moveInsightsPeriod(1) },
                 onTimeDimensionChange: { dim in
@@ -547,6 +550,9 @@ struct RootShellView: View {
                 },
                 onApplyCustomRange: { range in
                     insightsCustomRange = range
+                },
+                onApplyAccountFilter: { accountID in
+                    insightsAccountID = accountID
                 },
                 onSelectCategory: { row, type in
                     selectedCategoryID = row.categoryID
@@ -954,7 +960,16 @@ struct RootShellView: View {
         return store.visibleTransactions.filter { tx in
             InsightsCustomRangePolicy.contains(tx.occurredAt, in: interval)
                 && (ledgerID == nil || tx.ledgerID == ledgerID)
+                && InsightsAccountFilterPolicy.includes(tx, accountID: effectiveInsightsAccountID)
         }
+    }
+
+    private var effectiveInsightsAccountID: UUID? {
+        guard let insightsAccountID,
+              store.accounts.contains(where: { $0.id == insightsAccountID }) else {
+            return nil
+        }
+        return insightsAccountID
     }
 
     private var insightsDateInterval: DateInterval {
@@ -1046,6 +1061,7 @@ struct RootShellView: View {
         let transactions = store.visibleTransactions.filter { transaction in
             InsightsCustomRangePolicy.contains(transaction.occurredAt, in: previousInterval)
                 && (ledgerID == nil || transaction.ledgerID == ledgerID)
+                && InsightsAccountFilterPolicy.includes(transaction, accountID: effectiveInsightsAccountID)
         }
         return currencySummary(for: transactions)
     }

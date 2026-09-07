@@ -3637,6 +3637,24 @@
         "ja": { "stringUnit": { "state": "translated", "value": "モジュールを下へ移動" } }
       }
     },
+    "insight.account.all": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "全部账户" } },
+        "en": { "stringUnit": { "state": "translated", "value": "All Accounts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "全部帳戶" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "すべての口座" } }
+      }
+    },
+    "insight.account.filter.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "筛选账户" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Filter Accounts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "篩選帳戶" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "口座を絞り込む" } }
+      }
+    },
     "budget.title": {
       "extractionState": "manual",
       "localizations": {

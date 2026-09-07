@@ -54,12 +54,15 @@ public struct InsightsView: View {
     private let expenseDistribution: [InsightsDistributionRow]
     private let incomeDistribution: [InsightsDistributionRow]
     private let categories: [NumiCore.Category]
+    private let accounts: [Account]
     private let periodTitle: String
     private let customRange: InsightsCustomRange?
+    private let selectedAccountID: UUID?
     private let onPreviousPeriod: () -> Void
     private let onNextPeriod: () -> Void
     private let onTimeDimensionChange: (InsightsTimeDimension) -> Void
     private let onApplyCustomRange: (InsightsCustomRange) -> Void
+    private let onApplyAccountFilter: (UUID?) -> Void
     private let onSelectCategory: (InsightsDistributionRow, String) -> Void
 
     @State private var selectedDimension: InsightsTimeDimension = .month
@@ -67,6 +70,8 @@ public struct InsightsView: View {
     @State private var customRangeEnd = Date()
     @State private var showsCustomRangeEditor = false
     @State private var showsModuleCustomizer = false
+    @State private var showsAccountFilterPicker = false
+    @State private var draftAccountID: UUID?
     @State private var draftModuleOrder = InsightsModule.allCases
     @State private var draftShowsExpenseDistribution = true
     @State private var draftShowsIncomeDistribution = true
@@ -82,12 +87,15 @@ public struct InsightsView: View {
         distribution: [InsightsDistributionRow],
         incomeDistribution: [InsightsDistributionRow] = [],
         categories: [NumiCore.Category] = [],
+        accounts: [Account] = [],
         periodTitle: String = "",
         customRange: InsightsCustomRange? = nil,
+        selectedAccountID: UUID? = nil,
         onPreviousPeriod: @escaping () -> Void = {},
         onNextPeriod: @escaping () -> Void = {},
         onTimeDimensionChange: @escaping (InsightsTimeDimension) -> Void = { _ in },
         onApplyCustomRange: @escaping (InsightsCustomRange) -> Void = { _ in },
+        onApplyAccountFilter: @escaping (UUID?) -> Void = { _ in },
         onSelectCategory: @escaping (InsightsDistributionRow, String) -> Void = { _, _ in }
     ) {
         self.summary = summary
@@ -96,12 +104,15 @@ public struct InsightsView: View {
         self.expenseDistribution = distribution
         self.incomeDistribution = incomeDistribution
         self.categories = categories
+        self.accounts = accounts
         self.periodTitle = periodTitle
         self.customRange = customRange
+        self.selectedAccountID = selectedAccountID
         self.onPreviousPeriod = onPreviousPeriod
         self.onNextPeriod = onNextPeriod
         self.onTimeDimensionChange = onTimeDimensionChange
         self.onApplyCustomRange = onApplyCustomRange
+        self.onApplyAccountFilter = onApplyAccountFilter
         self.onSelectCategory = onSelectCategory
     }
 
@@ -156,6 +167,28 @@ public struct InsightsView: View {
                     .accessibilityLabel(NumiLocalized.string("insight.customize.modules"))
                     .accessibilityIdentifier("action.insightsCustomizeModules")
                 }
+
+                Button {
+                    startAccountFilterSelection()
+                } label: {
+                    HStack(spacing: NumiSpacing.s3) {
+                        Image(systemName: "building.2")
+                            .font(.system(size: 15, weight: .semibold))
+                        Text(selectedAccountName)
+                            .font(NumiFont.bodyStrong)
+                            .lineLimit(1)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .padding(.horizontal, NumiSpacing.s4)
+                    .frame(height: 42)
+                    .background(NumiColor.surfaceCardSubtle)
+                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("action.insightsAccountFilter")
 
                 // Period navigation
                 HStack(spacing: NumiSpacing.s3) {
@@ -330,6 +363,48 @@ public struct InsightsView: View {
             }
             .presentationDetents([.medium])
         }
+        .sheet(isPresented: $showsAccountFilterPicker) {
+            NavigationStack {
+                List {
+                    Button {
+                        draftAccountID = nil
+                    } label: {
+                        accountFilterOption(
+                            title: NumiLocalized.string("insight.account.all"),
+                            isSelected: draftAccountID == nil
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    ForEach(accounts) { account in
+                        Button {
+                            draftAccountID = account.id
+                        } label: {
+                            accountFilterOption(
+                                title: account.localizedDisplayName,
+                                isSelected: draftAccountID == account.id
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .navigationTitle(NumiLocalized.string("insight.account.filter.title"))
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(NumiLocalized.string("common.cancel")) {
+                            showsAccountFilterPicker = false
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(NumiLocalized.string("common.done")) {
+                            onApplyAccountFilter(draftAccountID)
+                            showsAccountFilterPicker = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
+        }
         .task { await membership.start() }
         .membershipPaywall(context: $membershipPaywallContext)
     }
@@ -425,6 +500,40 @@ public struct InsightsView: View {
         case .blocked(let context):
             membershipPaywallContext = context
         }
+    }
+
+    private var selectedAccountName: String {
+        guard let selectedAccountID else {
+            return NumiLocalized.string("insight.account.all")
+        }
+        return accounts.first { $0.id == selectedAccountID }?.localizedDisplayName
+            ?? NumiLocalized.string("insight.account.all")
+    }
+
+    private func startAccountFilterSelection() {
+        switch membership.decision(for: .openAdvancedInsights) {
+        case .granted:
+            draftAccountID = selectedAccountID
+            showsAccountFilterPicker = true
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
+    @ViewBuilder
+    private func accountFilterOption(title: String, isSelected: Bool) -> some View {
+        HStack {
+            Text(title)
+                .font(NumiFont.bodyStrong)
+                .foregroundStyle(NumiColor.textPrimary)
+            Spacer()
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(NumiColor.accentDeep)
+            }
+        }
+        .contentShape(Rectangle())
     }
 
     private var orderedModules: [InsightsModule] {

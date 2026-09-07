@@ -166,6 +166,21 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testInsightsAccountFilterCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (all: "全部账户", title: "筛选账户"),
+            "en": (all: "All Accounts", title: "Filter Accounts"),
+            "zh-Hant": (all: "全部帳戶", title: "篩選帳戶"),
+            "ja": (all: "すべての口座", title: "口座を絞り込む")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("insight.account.all", locale: locale), expected.all)
+            XCTAssertEqual(NumiLocalized.lookup("insight.account.filter.title", locale: locale), expected.title)
+        }
+    }
+
     func testCSVForeignCurrencyImportWarningCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (
