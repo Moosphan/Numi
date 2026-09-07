@@ -252,6 +252,7 @@ struct RootShellView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             lockTimer?.invalidate()
             lockTimer = nil
+            store.refreshFromExternalChanges()
 
             if !requiresSubscriptionConfirmation {
                 do {

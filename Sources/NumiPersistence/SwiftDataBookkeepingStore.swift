@@ -293,6 +293,14 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         fetchTransactionEntities(includeDeleted: true).map(\.domainModel)
     }
 
+    /// Invalidates view-derived data after another process, such as an App Intent,
+    /// writes to the same persistent store.
+    public func refreshFromExternalChanges() {
+        context.processPendingChanges()
+        changeRevision += 1
+        objectWillChange.send()
+    }
+
     public var budgetSettings: [BudgetSetting] {
         fetchBudgetSettingEntities().map(\.domainModel)
     }

@@ -147,6 +147,39 @@ final class TransactionServiceTests: XCTestCase {
         XCTAssertEqual(reopenedStore.visibleTransactions.last?.note, "快捷指令午餐")
     }
 
+    func testSharedStoreRefreshPublishesShortcutTransactionWrittenElsewhere() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TransactionServiceExternalRefreshTests", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let storeURL = directory.appendingPathComponent("Numi.store")
+        let appStore = try SwiftDataBookkeepingStore(storeURL: storeURL)
+        try appStore.seedDefaultsIfNeeded()
+        let initialRevision = appStore.changeRevision
+        let initialCount = appStore.visibleTransactions.count
+        let ledger = try XCTUnwrap(appStore.ledgers.first)
+        let account = try XCTUnwrap(appStore.accounts.first)
+
+        let service = TransactionService(storeURL: storeURL)
+        _ = try service.createTransaction(from: ParsedTransaction(
+            type: .expense,
+            amount: 36,
+            categoryName: "餐饮",
+            accountName: account.name,
+            occurredAt: Date(timeIntervalSince1970: 1_725_000_000),
+            note: "快捷指令晚餐"
+        ))
+
+        appStore.refreshFromExternalChanges()
+
+        XCTAssertEqual(appStore.changeRevision, initialRevision + 1)
+        XCTAssertEqual(appStore.visibleTransactions.count, initialCount + 1)
+        XCTAssertEqual(appStore.visibleTransactions.last?.ledgerID, ledger.id)
+        XCTAssertEqual(appStore.visibleTransactions.last?.note, "快捷指令晚餐")
+    }
+
     func testTransactionServiceUsesRuntimeLocalizedNamesForShortcutParsing() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("TransactionServiceLocalizationTests", isDirectory: true)
