@@ -3592,6 +3592,51 @@
         "ja": { "stringUnit": { "state": "translated", "value": "前の期間：%@" } }
       }
     },
+    "insight.customize.modules": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自定义洞悉模块" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Customize Insight Modules" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自訂洞悉模組" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "洞察モジュールをカスタマイズ" } }
+      }
+    },
+    "insight.customize.modules.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自定义洞悉" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Customize Insights" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自訂洞悉" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "洞察をカスタマイズ" } }
+      }
+    },
+    "insight.customize.modules.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "使用箭头调整顺序；关闭暂时不需要的分类分布模块。基础收支汇总始终显示。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Use the arrows to reorder or hide category-distribution modules you do not need. Core totals always remain visible." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "使用箭頭調整順序；關閉暫時不需要的分類分布模組。基礎收支彙總會始終顯示。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "矢印で並べ替え、不要なカテゴリ別の内訳を非表示にできます。基本の集計は常に表示されます。" } }
+      }
+    },
+    "insight.customize.modules.move.up": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "上移模块" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Move module up" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "上移模組" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "モジュールを上へ移動" } }
+      }
+    },
+    "insight.customize.modules.move.down": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "下移模块" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Move module down" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "下移模組" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "モジュールを下へ移動" } }
+      }
+    },
     "budget.title": {
       "extractionState": "manual",
       "localizations": {

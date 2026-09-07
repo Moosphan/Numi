@@ -150,6 +150,22 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testInsightsModuleCustomizationCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (action: "自定义洞悉模块", title: "自定义洞悉"),
+            "en": (action: "Customize Insight Modules", title: "Customize Insights"),
+            "zh-Hant": (action: "自訂洞悉模組", title: "自訂洞悉"),
+            "ja": (action: "洞察モジュールをカスタマイズ", title: "洞察をカスタマイズ")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("insight.customize.modules", locale: locale), expected.action)
+            XCTAssertEqual(NumiLocalized.lookup("insight.customize.modules.title", locale: locale), expected.title)
+            XCTAssertNotEqual(NumiLocalized.lookup("insight.customize.modules.hint", locale: locale), "insight.customize.modules.hint")
+        }
+    }
+
     func testCSVForeignCurrencyImportWarningCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (

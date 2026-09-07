@@ -66,7 +66,14 @@ public struct InsightsView: View {
     @State private var customRangeStart = Date()
     @State private var customRangeEnd = Date()
     @State private var showsCustomRangeEditor = false
+    @State private var showsModuleCustomizer = false
+    @State private var draftModuleOrder = InsightsModule.allCases
+    @State private var draftShowsExpenseDistribution = true
+    @State private var draftShowsIncomeDistribution = true
     @State private var membershipPaywallContext: MembershipPaywallContext?
+    @AppStorage("insights.module.order") private var moduleOrderRaw = ""
+    @AppStorage("insights.module.expenseDistribution.visible") private var showsExpenseDistribution = true
+    @AppStorage("insights.module.incomeDistribution.visible") private var showsIncomeDistribution = true
 
     public init(
         summary: TransactionSummary,
@@ -113,26 +120,42 @@ public struct InsightsView: View {
                 .padding(.horizontal, 2)
                 .padding(.vertical, 2)
 
-                Button {
-                    startCustomRangeSelection()
-                } label: {
-                    HStack(spacing: NumiSpacing.s3) {
-                        Image(systemName: "calendar.badge.clock")
-                            .font(.system(size: 15, weight: .semibold))
-                        Text(customRange == nil ? "insight.custom.range" : "insight.custom.range.active")
-                            .font(NumiFont.bodyStrong)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .semibold))
+                HStack(spacing: NumiSpacing.s2) {
+                    Button {
+                        startCustomRangeSelection()
+                    } label: {
+                        HStack(spacing: NumiSpacing.s3) {
+                            Image(systemName: "calendar.badge.clock")
+                                .font(.system(size: 15, weight: .semibold))
+                            Text(customRange == nil ? "insight.custom.range" : "insight.custom.range.active")
+                                .font(NumiFont.bodyStrong)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                        .foregroundStyle(NumiColor.accentDeep)
+                        .padding(.horizontal, NumiSpacing.s4)
+                        .frame(height: 42)
+                        .background(NumiColor.surfaceCardSubtle)
+                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
                     }
-                    .foregroundStyle(NumiColor.accentDeep)
-                    .padding(.horizontal, NumiSpacing.s4)
-                    .frame(height: 42)
-                    .background(NumiColor.surfaceCardSubtle)
-                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("action.insightsCustomRange")
+
+                    Button {
+                        startModuleCustomization()
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(NumiColor.accentDeep)
+                            .frame(width: 42, height: 42)
+                            .background(NumiColor.surfaceCardSubtle)
+                            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(NumiLocalized.string("insight.customize.modules"))
+                    .accessibilityIdentifier("action.insightsCustomizeModules")
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("action.insightsCustomRange")
 
                 // Period navigation
                 HStack(spacing: NumiSpacing.s3) {
@@ -196,24 +219,27 @@ public struct InsightsView: View {
                         .accessibilityIdentifier("insights.currencySummaryUnavailable")
                 }
 
-                // Expense distribution
-                if !expenseDistribution.isEmpty {
-                    distributionSection(
-                        title: NumiLocalized.string( "insight.expense.distribution"),
-                        rows: expenseDistribution,
-                        accentColor: NumiColor.expenseText,
-                        type: "expense"
-                    )
-                }
-
-                // Income distribution
-                if !incomeDistribution.isEmpty {
-                    distributionSection(
-                        title: NumiLocalized.string( "insight.income.distribution"),
-                        rows: incomeDistribution,
-                        accentColor: NumiColor.incomeText,
-                        type: "income"
-                    )
+                ForEach(orderedModules) { module in
+                    switch module {
+                    case .expenseDistribution:
+                        if showsExpenseDistribution, !expenseDistribution.isEmpty {
+                            distributionSection(
+                                title: NumiLocalized.string( "insight.expense.distribution"),
+                                rows: expenseDistribution,
+                                accentColor: NumiColor.expenseText,
+                                type: "expense"
+                            )
+                        }
+                    case .incomeDistribution:
+                        if showsIncomeDistribution, !incomeDistribution.isEmpty {
+                            distributionSection(
+                                title: NumiLocalized.string( "insight.income.distribution"),
+                                rows: incomeDistribution,
+                                accentColor: NumiColor.incomeText,
+                                type: "income"
+                            )
+                        }
+                    }
                 }
             }
             .padding(NumiSpacing.s5)
@@ -239,6 +265,65 @@ public struct InsightsView: View {
                         Button(NumiLocalized.string("common.done")) {
                             onApplyCustomRange(InsightsCustomRange(start: customRangeStart, end: customRangeEnd))
                             showsCustomRangeEditor = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showsModuleCustomizer) {
+            NavigationStack {
+                List {
+                    Section {
+                        Text(NumiLocalized.string("insight.customize.modules.hint"))
+                            .font(NumiFont.bodySmall)
+                            .foregroundStyle(NumiColor.textSecondary)
+                    }
+
+                    Section {
+                        ForEach(draftModuleOrder) { module in
+                            HStack(spacing: NumiSpacing.s2) {
+                                Toggle(moduleDisplayName(for: module), isOn: moduleVisibilityBinding(for: module))
+                                    .accessibilityIdentifier("insights.module.\(module.rawValue).visible")
+                                VStack(spacing: 0) {
+                                    Button {
+                                        moveDraftModule(module, by: -1)
+                                    } label: {
+                                        Image(systemName: "chevron.up")
+                                            .font(.system(size: 11, weight: .bold))
+                                            .frame(width: 28, height: 22)
+                                    }
+                                    .disabled(draftModuleOrder.first == module)
+                                    .accessibilityLabel(NumiLocalized.string("insight.customize.modules.move.up"))
+
+                                    Button {
+                                        moveDraftModule(module, by: 1)
+                                    } label: {
+                                        Image(systemName: "chevron.down")
+                                            .font(.system(size: 11, weight: .bold))
+                                            .frame(width: 28, height: 22)
+                                    }
+                                    .disabled(draftModuleOrder.last == module)
+                                    .accessibilityLabel(NumiLocalized.string("insight.customize.modules.move.down"))
+                                }
+                                .foregroundStyle(NumiColor.accentDeep)
+                            }
+                        }
+                    }
+                }
+                .navigationTitle(NumiLocalized.string("insight.customize.modules.title"))
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(NumiLocalized.string("common.cancel")) {
+                            showsModuleCustomizer = false
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(NumiLocalized.string("common.done")) {
+                            moduleOrderRaw = InsightsModuleOrderPolicy.serialized(draftModuleOrder)
+                            showsExpenseDistribution = draftShowsExpenseDistribution
+                            showsIncomeDistribution = draftShowsIncomeDistribution
+                            showsModuleCustomizer = false
                         }
                     }
                 }
@@ -340,6 +425,55 @@ public struct InsightsView: View {
         case .blocked(let context):
             membershipPaywallContext = context
         }
+    }
+
+    private var orderedModules: [InsightsModule] {
+        InsightsModuleOrderPolicy.modules(from: moduleOrderRaw)
+    }
+
+    private func startModuleCustomization() {
+        switch membership.decision(for: .openAdvancedInsights) {
+        case .granted:
+            draftModuleOrder = orderedModules
+            draftShowsExpenseDistribution = showsExpenseDistribution
+            draftShowsIncomeDistribution = showsIncomeDistribution
+            showsModuleCustomizer = true
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
+    private func moduleDisplayName(for module: InsightsModule) -> String {
+        switch module {
+        case .expenseDistribution:
+            NumiLocalized.string("insight.expense.distribution")
+        case .incomeDistribution:
+            NumiLocalized.string("insight.income.distribution")
+        }
+    }
+
+    private func moduleVisibilityBinding(for module: InsightsModule) -> Binding<Bool> {
+        Binding(
+            get: {
+                switch module {
+                case .expenseDistribution: draftShowsExpenseDistribution
+                case .incomeDistribution: draftShowsIncomeDistribution
+                }
+            },
+            set: { isVisible in
+                switch module {
+                case .expenseDistribution: draftShowsExpenseDistribution = isVisible
+                case .incomeDistribution: draftShowsIncomeDistribution = isVisible
+                }
+            }
+        )
+    }
+
+    private func moveDraftModule(_ module: InsightsModule, by offset: Int) {
+        guard let index = draftModuleOrder.firstIndex(of: module) else { return }
+        let destination = index + offset
+        guard draftModuleOrder.indices.contains(destination) else { return }
+        draftModuleOrder.swapAt(index, destination)
     }
 
     // MARK: - Distribution Section
