@@ -1204,6 +1204,37 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         return transaction.domainModel
     }
 
+    @discardableResult
+    public func updateTransactionCategories(ids: Set<UUID>, categoryID: UUID) throws -> Int {
+        guard !ids.isEmpty else { return 0 }
+        guard let category = fetchCategoryEntity(id: categoryID),
+              let targetKind = CategoryKind(rawValue: category.kindRawValue) else {
+            throw SwiftDataBookkeepingStoreError.categoryNotFound
+        }
+
+        let transactions = ids.compactMap(fetchTransactionEntity)
+        guard transactions.count == ids.count else {
+            throw SwiftDataBookkeepingStoreError.transactionNotFound
+        }
+
+        for transaction in transactions {
+            guard !transaction.isSoftDeleted,
+                  let type = TransactionType(rawValue: transaction.typeRawValue),
+                  let expectedKind = Self.categoryKind(for: type),
+                  expectedKind == targetKind else {
+                throw SwiftDataBookkeepingStoreError.invalidCategory
+            }
+        }
+
+        for transaction in transactions {
+            transaction.categoryID = categoryID
+        }
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
+        return transactions.count
+    }
+
     public func softDeleteTransaction(id: UUID) throws {
         guard let transaction = fetchTransactionEntity(id: id), !transaction.isSoftDeleted else { return }
         try updateBalances(reversing: transaction.domainModel, applying: nil)
@@ -1417,6 +1448,14 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         return try? context.fetch(descriptor).first
     }
 
+    private static func categoryKind(for type: TransactionType) -> CategoryKind? {
+        switch type {
+        case .expense: .expense
+        case .income: .income
+        case .transfer: nil
+        }
+    }
+
     private func fetchAccountEntities() -> [AccountEntity] {
         let descriptor = FetchDescriptor<AccountEntity>(sortBy: [SortDescriptor(\.name)])
         return (try? context.fetch(descriptor)) ?? []
@@ -1473,6 +1512,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
 public enum SwiftDataBookkeepingStoreError: Error, Equatable {
     case accountNotFound
     case categoryNotFound
+    case invalidCategory
     case transactionNotFound
     case ledgerNotFound
     case transferTargetRequired

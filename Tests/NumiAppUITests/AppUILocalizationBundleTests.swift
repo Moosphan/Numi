@@ -77,6 +77,22 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testBatchEditCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (title: "批量编辑", action: "修改分类", hint: "仅修改同一收支类型的分类"),
+            "en": (title: "Batch Edit", action: "Change Category", hint: "Only categories for matching transaction types can be changed."),
+            "zh-Hant": (title: "批次編輯", action: "修改分類", hint: "僅修改相同收支類型的分類"),
+            "ja": (title: "一括編集", action: "カテゴリを変更", hint: "同じ取引タイプのカテゴリのみ変更できます。")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("batch.edit", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("batch.edit.apply", locale: locale), expected.action)
+            XCTAssertEqual(NumiLocalized.lookup("batch.edit.hint", locale: locale), expected.hint)
+        }
+    }
+
     func testMembershipV1BenefitsOnlyDescribeReleasedOfferings() {
         let expectedValues = [
             "zh-Hans": (subscriptions: "更多订阅与循环记账", installments: "更多分期与还款计划", backup: "加密备份"),

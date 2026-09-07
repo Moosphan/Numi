@@ -763,6 +763,67 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testBatchUpdatingTransactionCategoriesPersistsEveryCompatibleRecord() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let accountID = try XCTUnwrap(store.accounts.first?.id)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let originalCategoryID = try XCTUnwrap(store.categories.first { $0.kind == .expense }?.id)
+        let replacementCategoryID = try XCTUnwrap(store.categories.dropFirst().first { $0.kind == .expense }?.id)
+
+        let first = try store.createTransaction(
+            type: .expense,
+            amount: Money(decimalString: "12", currencyCode: "CNY"),
+            categoryID: originalCategoryID,
+            accountID: accountID,
+            ledgerID: ledgerID,
+            note: "first"
+        )
+        let second = try store.createTransaction(
+            type: .expense,
+            amount: Money(decimalString: "18", currencyCode: "CNY"),
+            categoryID: originalCategoryID,
+            accountID: accountID,
+            ledgerID: ledgerID,
+            note: "second"
+        )
+
+        let changed = try store.updateTransactionCategories(
+            ids: [first.id, second.id],
+            categoryID: replacementCategoryID
+        )
+
+        XCTAssertEqual(changed, 2)
+        XCTAssertEqual(store.visibleTransactions.first { $0.id == first.id }?.categoryID, replacementCategoryID)
+        XCTAssertEqual(store.visibleTransactions.first { $0.id == second.id }?.categoryID, replacementCategoryID)
+    }
+
+    @MainActor
+    func testBatchUpdatingTransactionCategoriesRejectsIncompatibleCategoryWithoutMutating() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let accountID = try XCTUnwrap(store.accounts.first?.id)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let expenseCategoryID = try XCTUnwrap(store.categories.first { $0.kind == .expense }?.id)
+        let incomeCategoryID = try XCTUnwrap(store.categories.first { $0.kind == .income }?.id)
+        let transaction = try store.createTransaction(
+            type: .expense,
+            amount: Money(decimalString: "12", currencyCode: "CNY"),
+            categoryID: expenseCategoryID,
+            accountID: accountID,
+            ledgerID: ledgerID,
+            note: "expense"
+        )
+
+        XCTAssertThrowsError(
+            try store.updateTransactionCategories(ids: [transaction.id], categoryID: incomeCategoryID)
+        ) { error in
+            XCTAssertEqual(error as? SwiftDataBookkeepingStoreError, .invalidCategory)
+        }
+        XCTAssertEqual(store.visibleTransactions.first { $0.id == transaction.id }?.categoryID, expenseCategoryID)
+    }
+
+    @MainActor
     func testCreatesTransferAndUpdatesBothAccountBalancesWithoutAffectingSummary() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

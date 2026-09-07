@@ -475,6 +475,13 @@ struct RootShellView: View {
                 },
                 onSelectLedger: { ledger in
                     currentLedgerIDString = ledger.id.uuidString
+                },
+                onBatchCategory: { transactionIDs, categoryID in
+                    do {
+                        _ = try store.updateTransactionCategories(ids: transactionIDs, categoryID: categoryID)
+                    } catch {
+                        initializationError = error.localizedDescription
+                    }
                 }
             )
             .numiBottomAccessoryNavigationDepth()

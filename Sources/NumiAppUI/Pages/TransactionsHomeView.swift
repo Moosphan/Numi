@@ -78,10 +78,16 @@ public struct TransactionsHomeView: View {
     private let onEdit: (NumiCore.Transaction) -> Void
     private let onShare: (NumiCore.Transaction) -> Void
     private let onSelectLedger: (Ledger) -> Void
+    private let onBatchCategory: (Set<UUID>, UUID) -> Void
+    @ObservedObject private var membership = MembershipController.shared
     @State private var pendingDelete: NumiCore.Transaction?
     @State private var showsUndo = false
     @State private var showsPeriodPicker = false
     @State private var showsLedgerPicker = false
+    @State private var isBatchEditing = false
+    @State private var selectedBatchTransactionIDs = Set<UUID>()
+    @State private var showsBatchCategoryPicker = false
+    @State private var membershipPaywallContext: MembershipPaywallContext?
 
     public init(
         summary: TransactionSummary,
@@ -103,7 +109,8 @@ public struct TransactionsHomeView: View {
         onShare: @escaping (NumiCore.Transaction) -> Void = { _ in },
         onDelete: @escaping (NumiCore.Transaction) -> Void = { _ in },
         onUndoDelete: @escaping () -> Void = {},
-        onSelectLedger: @escaping (Ledger) -> Void = { _ in }
+        onSelectLedger: @escaping (Ledger) -> Void = { _ in },
+        onBatchCategory: @escaping (Set<UUID>, UUID) -> Void = { _, _ in }
     ) {
         self.summary = summary
         self.periodTitle = periodTitle
@@ -125,6 +132,7 @@ public struct TransactionsHomeView: View {
         self.onDelete = onDelete
         self.onUndoDelete = onUndoDelete
         self.onSelectLedger = onSelectLedger
+        self.onBatchCategory = onBatchCategory
     }
 
     public var body: some View {
@@ -160,6 +168,13 @@ public struct TransactionsHomeView: View {
                     .padding(.bottom, 152)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
+
+            if isBatchEditing {
+                batchSelectionBar
+                    .padding(.horizontal, NumiSpacing.s5)
+                    .padding(.bottom, 112)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
         .sheet(isPresented: $showsPeriodPicker) {
             homePeriodPickerSheet
@@ -171,6 +186,21 @@ public struct TransactionsHomeView: View {
                 .presentationDetents([.medium])
                 .presentationCornerRadius(28)
         }
+        .confirmationDialog(
+            NumiLocalized.string("batch.edit.choose.category"),
+            isPresented: $showsBatchCategoryPicker,
+            titleVisibility: .visible
+        ) {
+            ForEach(batchCategories) { category in
+                Button(category.localizedDisplayName) {
+                    onBatchCategory(selectedBatchTransactionIDs, category.id)
+                    finishBatchEditing()
+                }
+            }
+            Button("common.cancel", role: .cancel) {}
+        }
+        .task { await membership.start() }
+        .membershipPaywall(context: $membershipPaywallContext)
     }
 
     private var deleteConfirmationBinding: Binding<Bool> {
@@ -240,7 +270,7 @@ public struct TransactionsHomeView: View {
                     }
                     .padding(.horizontal, NumiSpacing.s5)
                     .padding(.top, NumiSpacing.s3)
-                    .padding(.bottom, 120)
+                    .padding(.bottom, isBatchEditing ? 220 : 120)
                 }
             }
         } else {
@@ -257,7 +287,7 @@ public struct TransactionsHomeView: View {
 
                     recordsList
                 }
-                .padding(.bottom, 120)
+                .padding(.bottom, isBatchEditing ? 220 : 120)
             }
         }
     }
@@ -269,37 +299,7 @@ public struct TransactionsHomeView: View {
                     ForEach(Array(section.rows.enumerated()), id: \.element.id) { index, row in
                         let isLast = index == section.rows.count - 1
 
-                        PressableRow(onSelect: { onSelect(row.transaction) }) {
-                            NumiRecordRow(
-                                transaction: row.transaction,
-                                categoryName: resolvedCategoryName(for: row),
-                                iconName: resolvedIconName(for: row),
-                                subtitle: resolvedSubtitle(for: row),
-                                style: .grouped
-                            )
-                        }
-                        .contextMenu {
-                            Button {
-                                onEdit(row.transaction)
-                            } label: {
-                                Label("common.edit", systemImage: "square.and.pencil")
-                            }
-                            .accessibilityIdentifier("action.context.editRecord")
-
-                            Button {
-                                pendingDelete = row.transaction
-                            } label: {
-                                Label("common.delete", systemImage: "trash")
-                            }
-                            .accessibilityIdentifier("action.context.deleteRecord")
-
-                            Button {
-                                onShare(row.transaction)
-                            } label: {
-                                Label("common.share", systemImage: "square.and.arrow.up")
-                            }
-                            .accessibilityIdentifier("action.context.shareRecord")
-                        }
+                        transactionRow(row)
 
                         if !isLast {
                             NumiInsetDivider()
@@ -377,20 +377,50 @@ public struct TransactionsHomeView: View {
     }
 
     private var searchToolbarButton: some View {
-        Button {
-            onSearch()
-        } label: {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: NumiChromeMetrics.toolbarSymbolSize, weight: .semibold))
-                .foregroundStyle(NumiColor.textSecondary)
-                .frame(
-                    width: NumiChromeMetrics.toolbarButtonHitSize,
-                    height: NumiChromeMetrics.toolbarButtonHitSize
-                )
-                .contentShape(Rectangle())
+        HStack(spacing: 2) {
+            if isBatchEditing {
+                Button {
+                    finishBatchEditing()
+                } label: {
+                    Text("common.done")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(NumiColor.accentDeep)
+                        .frame(minHeight: NumiChromeMetrics.toolbarButtonHitSize)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("action.finishBatchEdit")
+            } else {
+                Button {
+                    onSearch()
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: NumiChromeMetrics.toolbarSymbolSize, weight: .semibold))
+                        .foregroundStyle(NumiColor.textSecondary)
+                        .frame(
+                            width: NumiChromeMetrics.toolbarButtonHitSize,
+                            height: NumiChromeMetrics.toolbarButtonHitSize
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("action.openTransactionSearch")
+
+                Button {
+                    openBatchEditing()
+                } label: {
+                    Image(systemName: "checklist")
+                        .font(.system(size: NumiChromeMetrics.toolbarSymbolSize, weight: .semibold))
+                        .foregroundStyle(NumiColor.textSecondary)
+                        .frame(
+                            width: NumiChromeMetrics.toolbarButtonHitSize,
+                            height: NumiChromeMetrics.toolbarButtonHitSize
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("action.openBatchEdit")
+            }
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("action.openTransactionSearch")
     }
 
     private var homeEmptyState: some View {
@@ -614,6 +644,159 @@ public struct TransactionsHomeView: View {
             return "quarter"
         case .year:
             return "year"
+        }
+    }
+
+    @ViewBuilder
+    private func transactionRow(_ row: TransactionHomeRow) -> some View {
+        if isBatchEditing {
+            batchSelectionRow(row)
+        } else {
+            PressableRow(onSelect: { onSelect(row.transaction) }) {
+                recordRowContent(row)
+            }
+            .contextMenu {
+                Button {
+                    onEdit(row.transaction)
+                } label: {
+                    Label("common.edit", systemImage: "square.and.pencil")
+                }
+                .accessibilityIdentifier("action.context.editRecord")
+
+                Button {
+                    pendingDelete = row.transaction
+                } label: {
+                    Label("common.delete", systemImage: "trash")
+                }
+                .accessibilityIdentifier("action.context.deleteRecord")
+
+                Button {
+                    onShare(row.transaction)
+                } label: {
+                    Label("common.share", systemImage: "square.and.arrow.up")
+                }
+                .accessibilityIdentifier("action.context.shareRecord")
+            }
+        }
+    }
+
+    private func batchSelectionRow(_ row: TransactionHomeRow) -> some View {
+        let isSelected = selectedBatchTransactionIDs.contains(row.id)
+        let isSelectable = isSelected || BatchTransactionSelectionPolicy.canAdd(
+            row.transaction,
+            to: selectedBatchTransactions
+        )
+
+        return Button {
+            toggleBatchSelection(row.transaction)
+        } label: {
+            HStack(spacing: NumiSpacing.s3) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(isSelected ? NumiColor.accentDeep : NumiColor.textTertiary)
+                recordRowContent(row)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!isSelectable)
+        .opacity(isSelectable ? 1 : 0.42)
+        .accessibilityIdentifier("batch.edit.record.\(row.id.uuidString)")
+        .accessibilityValue(isSelected ? "selected" : "unselected")
+    }
+
+    private func recordRowContent(_ row: TransactionHomeRow) -> some View {
+        NumiRecordRow(
+            transaction: row.transaction,
+            categoryName: resolvedCategoryName(for: row),
+            iconName: resolvedIconName(for: row),
+            subtitle: resolvedSubtitle(for: row),
+            style: .grouped
+        )
+    }
+
+    private var selectedBatchTransactions: [NumiCore.Transaction] {
+        sections
+            .flatMap { $0.rows.map(\.transaction) }
+            .filter { selectedBatchTransactionIDs.contains($0.id) }
+    }
+
+    private var batchCategories: [NumiCore.Category] {
+        guard let transaction = selectedBatchTransactions.first,
+              let kind = categoryKind(for: transaction.type) else {
+            return []
+        }
+        return categories.filter { $0.kind == kind && !$0.isHidden }
+    }
+
+    private var batchSelectionBar: some View {
+        HStack(spacing: NumiSpacing.s3) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(NumiLocalized.string("batch.edit.selected", selectedBatchTransactionIDs.count))
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.textPrimary)
+                Text("batch.edit.hint")
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(NumiColor.textTertiary)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 0)
+
+            Button {
+                showsBatchCategoryPicker = true
+            } label: {
+                Text("batch.edit.apply")
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, NumiSpacing.s4)
+                    .frame(minHeight: 44)
+                    .background(NumiColor.accentDeep)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .disabled(selectedBatchTransactionIDs.isEmpty || batchCategories.isEmpty)
+            .opacity(selectedBatchTransactionIDs.isEmpty || batchCategories.isEmpty ? 0.45 : 1)
+            .accessibilityIdentifier("action.applyBatchCategory")
+        }
+        .padding(NumiSpacing.s3)
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+        .shadow(color: .black.opacity(0.1), radius: 16, x: 0, y: 8)
+    }
+
+    private func openBatchEditing() {
+        switch membership.decision(for: .openBatchEdit) {
+        case .granted:
+            withAnimation {
+                isBatchEditing = true
+            }
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
+    private func finishBatchEditing() {
+        withAnimation {
+            selectedBatchTransactionIDs.removeAll()
+            isBatchEditing = false
+        }
+    }
+
+    private func toggleBatchSelection(_ transaction: NumiCore.Transaction) {
+        if selectedBatchTransactionIDs.contains(transaction.id) {
+            selectedBatchTransactionIDs.remove(transaction.id)
+        } else if BatchTransactionSelectionPolicy.canAdd(transaction, to: selectedBatchTransactions) {
+            selectedBatchTransactionIDs.insert(transaction.id)
+        }
+    }
+
+    private func categoryKind(for type: TransactionType) -> CategoryKind? {
+        switch type {
+        case .expense: .expense
+        case .income: .income
+        case .transfer: nil
         }
     }
 

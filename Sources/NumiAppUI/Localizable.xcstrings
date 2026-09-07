@@ -1,6 +1,51 @@
 {
   "sourceLanguage": "zh-Hans",
   "strings": {
+    "batch.edit": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "批量编辑" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Batch Edit" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "批次編輯" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "一括編集" } }
+      }
+    },
+    "batch.edit.apply": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "修改分类" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Change Category" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "修改分類" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "カテゴリを変更" } }
+      }
+    },
+    "batch.edit.choose.category": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "选择分类" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Choose Category" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "選擇分類" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "カテゴリを選択" } }
+      }
+    },
+    "batch.edit.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "仅修改同一收支类型的分类" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Only categories for matching transaction types can be changed." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "僅修改相同收支類型的分類" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "同じ取引タイプのカテゴリのみ変更できます。" } }
+      }
+    },
+    "batch.edit.selected": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已选 %lld 条" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%lld selected" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已選 %lld 筆" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld件を選択" } }
+      }
+    },
     "tab.plans": {
       "extractionState": "manual",
       "localizations": {
