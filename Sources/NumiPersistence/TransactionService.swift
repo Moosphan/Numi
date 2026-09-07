@@ -6,30 +6,48 @@ import NumiCore
 public final class TransactionService: @unchecked Sendable {
     public static let shared = TransactionService()
 
-    private let appGroupID = "group.com.numi.shared"
+    private static let appGroupID = "group.com.numi.shared"
     private let container: ModelContainer?
     private let context: ModelContext?
 
     public init() {
         guard let containerURL = FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: appGroupID) else {
+            .containerURL(forSecurityApplicationGroupIdentifier: Self.appGroupID) else {
             self.container = nil
             self.context = nil
             return
         }
 
+        let store = Self.makeStore(at: containerURL.appendingPathComponent("Numi.store"))
+        self.container = store.container
+        self.context = store.context
+    }
+
+    /// Creates a service for the same store URL used by the main app.
+    /// This initializer keeps the cross-process write path testable without an App Group entitlement.
+    public init(storeURL: URL) {
+        let store = Self.makeStore(at: storeURL)
+        self.container = store.container
+        self.context = store.context
+    }
+
+    private static func makeStore(at url: URL) -> (container: ModelContainer?, context: ModelContext?) {
         do {
-            let url = containerURL.appendingPathComponent("Numi.store")
             let config = ModelConfiguration(url: url)
             let container = try ModelContainer(
-                for: LedgerEntity.self, TransactionEntity.self, CategoryEntity.self, AccountEntity.self,
+                for: LedgerEntity.self,
+                CategoryEntity.self,
+                AccountEntity.self,
+                TransactionEntity.self,
+                BudgetSettingEntity.self,
+                SubscriptionEntity.self,
+                InstallmentPlanEntity.self,
+                InstallmentPeriodEntity.self,
                 configurations: config
             )
-            self.container = container
-            self.context = ModelContext(container)
+            return (container, ModelContext(container))
         } catch {
-            self.container = nil
-            self.context = nil
+            return (nil, nil)
         }
     }
 

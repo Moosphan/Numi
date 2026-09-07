@@ -115,6 +115,73 @@ final class TransactionServiceTests: XCTestCase {
         XCTAssertEqual(TransactionServiceError.initializationFailed.errorDescription, "Unable to initialize local data")
     }
 
+    func testTransactionServiceWritesToTheSharedAppStore() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TransactionServiceSharedStoreTests", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let storeURL = directory.appendingPathComponent("Numi.store")
+        let appStore = try SwiftDataBookkeepingStore(storeURL: storeURL)
+        try appStore.seedDefaultsIfNeeded()
+        let initialCount = appStore.visibleTransactions.count
+
+        let service = TransactionService(storeURL: storeURL)
+        XCTAssertTrue(service.isAvailable)
+
+        let ledger = try XCTUnwrap(appStore.ledgers.first)
+        let account = try XCTUnwrap(appStore.accounts.first)
+        _ = try service.createTransaction(from: ParsedTransaction(
+            type: .expense,
+            amount: 28,
+            categoryName: "餐饮",
+            accountName: account.name,
+            occurredAt: Date(timeIntervalSince1970: 1_725_000_000),
+            note: "快捷指令午餐"
+        ))
+
+        let reopenedStore = try SwiftDataBookkeepingStore(storeURL: storeURL)
+        XCTAssertEqual(reopenedStore.visibleTransactions.count, initialCount + 1)
+        XCTAssertEqual(reopenedStore.visibleTransactions.last?.ledgerID, ledger.id)
+        XCTAssertEqual(reopenedStore.visibleTransactions.last?.note, "快捷指令午餐")
+    }
+
+    func testSharedStoreMigrationCopiesLegacySQLiteFilesOnlyWhenNeeded() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SharedStoreMigrationTests", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let legacyStoreURL = directory.appendingPathComponent("legacy.store")
+        let sharedStoreURL = directory.appendingPathComponent("shared/Numi.store")
+        let legacyWALURL = directory.appendingPathComponent("legacy.store-wal")
+        let sharedWALURL = directory.appendingPathComponent("shared/Numi.store-wal")
+        try Data("database".utf8).write(to: legacyStoreURL)
+        try Data("wal".utf8).write(to: legacyWALURL)
+
+        XCTAssertTrue(
+            try SharedBookkeepingStoreLocation.migrateLegacyStoreIfNeeded(
+                legacyStoreURL: legacyStoreURL,
+                sharedStoreURL: sharedStoreURL,
+                fileManager: .default
+            )
+        )
+        XCTAssertEqual(try Data(contentsOf: sharedStoreURL), Data("database".utf8))
+        XCTAssertEqual(try Data(contentsOf: sharedWALURL), Data("wal".utf8))
+
+        try Data("new database".utf8).write(to: sharedStoreURL)
+        XCTAssertFalse(
+            try SharedBookkeepingStoreLocation.migrateLegacyStoreIfNeeded(
+                legacyStoreURL: legacyStoreURL,
+                sharedStoreURL: sharedStoreURL,
+                fileManager: .default
+            )
+        )
+        XCTAssertEqual(try Data(contentsOf: sharedStoreURL), Data("new database".utf8))
+    }
+
     // MARK: - Transaction Creation via Store
 
     func testCreateExpenseTransaction() throws {

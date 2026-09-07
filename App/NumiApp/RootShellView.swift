@@ -1668,22 +1668,25 @@ struct RootShellView: View {
             return try SwiftDataBookkeepingStore(storeURL: directory.appendingPathComponent("Numi.store"))
         }
         let cloudSync = UserDefaults.standard.bool(forKey: "app.sync.icloudEnabled")
-        #if DEBUG
-        if !cloudSync {
-            let fileManager = FileManager.default
-            let directory = try appStoreDirectoryURL(fileManager: fileManager)
-            let storeURL = directory.appendingPathComponent("Numi.store")
-
-            do {
-                return try SwiftDataBookkeepingStore(storeURL: storeURL)
-            } catch {
-                try? fileManager.removeItem(at: directory)
-                try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-                return try SwiftDataBookkeepingStore(storeURL: storeURL)
-            }
+        if cloudSync {
+            return try SwiftDataBookkeepingStore(enableCloudSync: true)
         }
-        #endif
-        return try SwiftDataBookkeepingStore(enableCloudSync: cloudSync)
+
+        let fileManager = FileManager.default
+        let legacyStoreURL = try appStoreDirectoryURL(fileManager: fileManager)
+            .appendingPathComponent(SharedBookkeepingStoreLocation.storeFileName)
+
+        if let sharedStoreURL = SharedBookkeepingStoreLocation.storeURL(fileManager: fileManager) {
+            _ = try SharedBookkeepingStoreLocation.migrateLegacyStoreIfNeeded(
+                legacyStoreURL: legacyStoreURL,
+                sharedStoreURL: sharedStoreURL,
+                fileManager: fileManager
+            )
+            return try SwiftDataBookkeepingStore(storeURL: sharedStoreURL)
+        }
+
+        // Keep the main app usable in environments without App Group entitlement.
+        return try SwiftDataBookkeepingStore(storeURL: legacyStoreURL)
     }
 
     static func appStoreDirectoryURL(fileManager: FileManager) throws -> URL {
