@@ -135,14 +135,63 @@ Run: `swift test --filter 'TransactionSummaryTests|AccountAssetSummaryTests|Exch
 
 Expected: all conversion, missing-rate, and asset-disclosure tests pass.
 
-### Task 3: Update product evidence and complete verification
+### Task 3: Make home and insight aggregate states currency-safe
+
+**Files:**
+- Modify: `App/NumiApp/RootShellView.swift`
+- Modify: `Sources/NumiAppUI/Pages/TransactionsHomeView.swift`
+- Modify: `Sources/NumiAppUI/Pages/InsightsView.swift`
+- Modify: `Sources/NumiAppUI/Localizable.xcstrings`
+- Test: `Tests/NumiAppUITests/HomeCurrencyIntegrationTests.swift`
+
+**Interfaces:**
+- Produces `CurrencySummaryResult` with a same-currency summary and `hasUnavailableHistoricalRate` state.
+- Produces per-day home totals through `TransactionSummary.monthly`, never by adding raw minor units from distinct currencies.
+
+- [x] **Step 1: Write failing home and insight integration tests**
+
+```swift
+XCTAssertTrue(rootShellSource.contains("let dailyResult = currencySummary(for: rows.map(\\.transaction))"))
+XCTAssertTrue(rootShellSource.contains("hasUnavailableHistoricalRate: data.hasUnavailableHistoricalRate"))
+XCTAssertTrue(homeSource.contains("private let hasUnavailableHistoricalRate: Bool"))
+```
+
+- [x] **Step 2: Verify RED**
+
+Run: `swift test --filter HomeCurrencyIntegrationTests/testHomeAndInsightsDiscloseUnavailableHistoricalRates`
+
+Expected: failure because home totals add raw minor units and failed conversions fall back silently.
+
+- [x] **Step 3: Pass explicit availability state into both screens**
+
+```swift
+let dailyResult = currencySummary(for: rows.map(\.transaction))
+TransactionHomeSection(
+    id: id,
+    title: title,
+    rows: rows,
+    dailyExpense: dailyResult.summary.expense,
+    dailyIncome: dailyResult.summary.income,
+    hasUnavailableHistoricalRate: dailyResult.hasUnavailableHistoricalRate
+)
+```
+
+Display `currency.summary.unavailable` in all four supported languages when an aggregate cannot be calculated from historical rates.
+
+- [x] **Step 4: Verify and relaunch**
+
+Run: `swift test`, then the Debug simulator build, `xcrun simctl install booted <Numi.app>`, and `xcrun simctl launch booted com.local.Numi`.
+
+Expected: all tests pass and the current simulator runs the changed build.
+
+### Task 4: Update product evidence and complete verification
 
 **Files:**
 - Modify: `docs/backlog/current-priority-backlog.md`
 
-- [x] **Step 1: Document the five-scene preview boundary and currency-safe detail total**
+- [x] **Step 1: Document the five-scene preview boundary and currency-safe aggregate totals**
 
-Record that the currency Banner is a labelled preview until release verification upgrades it to a commercial offering; record the mixed-currency detail-summary evidence.
+Record that the currency Banner is a labelled preview until release verification upgrades it to a commercial offering; record the category-detail and home/insight aggregate evidence.
 
 - [x] **Step 2: Run full verification**
 

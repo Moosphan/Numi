@@ -46,19 +46,29 @@ public struct TransactionHomeSection: Identifiable {
     public let rows: [TransactionHomeRow]
     public let dailyExpense: Money?
     public let dailyIncome: Money?
+    public let hasUnavailableHistoricalRate: Bool
 
-    public init(id: String, title: String, rows: [TransactionHomeRow], dailyExpense: Money? = nil, dailyIncome: Money? = nil) {
+    public init(
+        id: String,
+        title: String,
+        rows: [TransactionHomeRow],
+        dailyExpense: Money? = nil,
+        dailyIncome: Money? = nil,
+        hasUnavailableHistoricalRate: Bool = false
+    ) {
         self.id = id
         self.title = title
         self.rows = rows
         self.dailyExpense = dailyExpense
         self.dailyIncome = dailyIncome
+        self.hasUnavailableHistoricalRate = hasUnavailableHistoricalRate
     }
 }
 
 public struct TransactionsHomeView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     private let summary: TransactionSummary
+    private let hasUnavailableHistoricalRate: Bool
     private let periodTitle: String
     private let selectedPeriod: HomePeriod
     private let isNextPeriodEnabled: Bool
@@ -96,6 +106,7 @@ public struct TransactionsHomeView: View {
 
     public init(
         summary: TransactionSummary,
+        hasUnavailableHistoricalRate: Bool = false,
         periodTitle: String,
         selectedPeriod: HomePeriod,
         isNextPeriodEnabled: Bool,
@@ -119,6 +130,7 @@ public struct TransactionsHomeView: View {
         onUndoBatchCategory: @escaping () -> Bool = { false }
     ) {
         self.summary = summary
+        self.hasUnavailableHistoricalRate = hasUnavailableHistoricalRate
         self.periodTitle = periodTitle
         self.selectedPeriod = selectedPeriod
         self.isNextPeriodEnabled = isNextPeriodEnabled
@@ -300,6 +312,7 @@ public struct TransactionsHomeView: View {
                     VStack(spacing: NumiSpacing.s5) {
                         ledgerSwitcherChip
                         summaryGrid
+                        if hasUnavailableHistoricalRate { currencySummaryNotice }
                         homeEmptyState
                             .frame(minHeight: max(proxy.size.height - 220, 360))
                     }
@@ -319,6 +332,12 @@ public struct TransactionsHomeView: View {
                     summaryGrid
                         .padding(.horizontal, NumiSpacing.s5)
                         .padding(.bottom, NumiSpacing.s4)
+
+                    if hasUnavailableHistoricalRate {
+                        currencySummaryNotice
+                            .padding(.horizontal, NumiSpacing.s5)
+                            .padding(.bottom, NumiSpacing.s4)
+                    }
 
                     recordsList
                 }
@@ -352,7 +371,11 @@ public struct TransactionsHomeView: View {
                     Spacer()
 
                     HStack(spacing: NumiSpacing.s1) {
-                        if let expense = section.dailyExpense, expense.minorUnits > 0 {
+                        if section.hasUnavailableHistoricalRate {
+                            Text(NumiLocalized.string("currency.summary.unavailable"))
+                                .font(NumiFont.caption)
+                                .foregroundStyle(NumiColor.textTertiary)
+                        } else if let expense = section.dailyExpense, expense.minorUnits > 0 {
                             Text(privacyAmountDisplayPolicy.display(expense, prefix: "-"))
                                 .font(NumiFont.caption)
                                 .foregroundStyle(NumiColor.expenseText)
@@ -383,6 +406,16 @@ public struct TransactionsHomeView: View {
                 .accessibilityIdentifier("home.sectionDate.\(section.id)")
             }
         }
+    }
+
+    private var currencySummaryNotice: some View {
+        Label(NumiLocalized.string("currency.summary.unavailable"), systemImage: "exclamationmark.triangle.fill")
+            .font(NumiFont.footnote)
+            .foregroundStyle(NumiColor.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(NumiSpacing.s3)
+            .background(NumiColor.surfaceCardSubtle, in: RoundedRectangle(cornerRadius: NumiRadius.lg))
+            .accessibilityIdentifier("home.currencySummaryUnavailable")
     }
 
     private var undoBar: some View {

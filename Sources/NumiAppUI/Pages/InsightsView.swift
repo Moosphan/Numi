@@ -49,6 +49,7 @@ public struct InsightsView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     @ObservedObject private var membership = MembershipController.shared
     private let summary: TransactionSummary
+    private let hasUnavailableHistoricalRate: Bool
     private let expenseDistribution: [InsightsDistributionRow]
     private let incomeDistribution: [InsightsDistributionRow]
     private let categories: [NumiCore.Category]
@@ -68,6 +69,7 @@ public struct InsightsView: View {
 
     public init(
         summary: TransactionSummary,
+        hasUnavailableHistoricalRate: Bool = false,
         distribution: [InsightsDistributionRow],
         incomeDistribution: [InsightsDistributionRow] = [],
         categories: [NumiCore.Category] = [],
@@ -80,6 +82,7 @@ public struct InsightsView: View {
         onSelectCategory: @escaping (InsightsDistributionRow, String) -> Void = { _, _ in }
     ) {
         self.summary = summary
+        self.hasUnavailableHistoricalRate = hasUnavailableHistoricalRate
         self.expenseDistribution = distribution
         self.incomeDistribution = incomeDistribution
         self.categories = categories
@@ -174,6 +177,16 @@ public struct InsightsView: View {
                     NumiSummaryTile(title: NumiLocalized.string( "insight.income"), value: summary.income.formatted(), variant: .income, accessibilityKey: "insights.income", amount: summary.income)
                     NumiSummaryTile(title: NumiLocalized.string( "insight.balance"), value: summary.balance.formatted(), variant: summary.balance.minorUnits < 0 ? .negative : .neutral, accessibilityKey: "insights.balance", amount: summary.balance)
                     NumiSummaryTile(title: NumiLocalized.string( "insight.record.count"), value: "\(summary.recordCount)", variant: .neutral, accessibilityKey: "insights.recordCount")
+                }
+
+                if hasUnavailableHistoricalRate {
+                    Label(NumiLocalized.string("currency.summary.unavailable"), systemImage: "exclamationmark.triangle.fill")
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(NumiSpacing.s3)
+                        .background(NumiColor.surfaceCardSubtle, in: RoundedRectangle(cornerRadius: NumiRadius.lg))
+                        .accessibilityIdentifier("insights.currencySummaryUnavailable")
                 }
 
                 // Expense distribution

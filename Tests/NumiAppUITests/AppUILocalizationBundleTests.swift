@@ -111,6 +111,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testIncompleteCurrencySummaryCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "部分汇总未包含：缺少历史汇率",
+            "en": "Some totals are excluded because historical rates are unavailable",
+            "zh-Hant": "部分彙總未包含：缺少歷史匯率",
+            "ja": "過去の為替レートがないため、一部の集計を除外しています"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("currency.summary.unavailable", locale: Locale(identifier: language)),
+                expected,
+                "Missing incomplete-summary state for \(language)"
+            )
+        }
+    }
+
     func testBatchEditCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (title: "批量编辑", action: "修改分类", hint: "仅修改同一收支类型的分类"),

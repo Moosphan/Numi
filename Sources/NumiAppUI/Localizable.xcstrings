@@ -9206,6 +9206,15 @@
         }
       }
     },
+    "currency.summary.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "部分汇总未包含：缺少历史汇率" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Some totals are excluded because historical rates are unavailable" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "部分彙總未包含：缺少歷史匯率" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "過去の為替レートがないため、一部の集計を除外しています" } }
+      }
+    },
     "theme.title": {
       "extractionState": "manual",
       "localizations": {

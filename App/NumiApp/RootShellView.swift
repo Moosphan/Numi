@@ -7,6 +7,11 @@ import NumiAppUI
 import NumiAppUI
 
 struct RootShellView: View {
+    private struct CurrencySummaryResult {
+        let summary: TransactionSummary
+        let hasUnavailableHistoricalRate: Bool
+    }
+
     @AppStorage("app.theme.id") private var themeID = NumiTheme.default.id
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
@@ -424,6 +429,7 @@ struct RootShellView: View {
         return NavigationStack {
             TransactionsHomeView(
                 summary: data.summary,
+                hasUnavailableHistoricalRate: data.hasUnavailableHistoricalRate,
                 periodTitle: homePeriodTitle,
                 selectedPeriod: selectedHomePeriod,
                 isNextPeriodEnabled: canMoveHomePeriodForward,
@@ -507,14 +513,15 @@ struct RootShellView: View {
     }
 
     private var insightsRoot: some View {
-        let summary = insightsSummary()
+        let summaryResult = insightsSummary()
         let distribution = insightsDistribution()
         let income = insightsIncomeDistribution()
         let periodTitle = insightsPeriodTitle
 
         return NavigationStack {
             InsightsView(
-                summary: summary,
+                summary: summaryResult.summary,
+                hasUnavailableHistoricalRate: summaryResult.hasUnavailableHistoricalRate,
                 distribution: distribution,
                 incomeDistribution: income,
                 categories: store.categories,
@@ -870,22 +877,9 @@ struct RootShellView: View {
         }
     }
 
-    private func summary() -> TransactionSummary {
-        (try? TransactionSummary.monthly(
-            transactions: store.visibleTransactions,
-            currencyCode: activeCurrencyCode,
-            exchangeRateHistory: rateService.history
-        ))
-            ?? TransactionSummary(
-                expense: .zero(currencyCode: activeCurrencyCode),
-                income: .zero(currencyCode: activeCurrencyCode),
-                balance: .zero(currencyCode: activeCurrencyCode),
-                recordCount: 0
-            )
-    }
-
-    private func summaryAndSections() -> (summary: TransactionSummary, sections: [TransactionHomeSection]) {
+    private func summaryAndSections() -> (summary: TransactionSummary, hasUnavailableHistoricalRate: Bool, sections: [TransactionHomeSection]) {
         let transactions = filteredHomeTransactions
+        let summaryResult = currencySummary(for: transactions)
         let rows = transactions.map { transaction in
             let category = store.categories.first { $0.id == transaction.categoryID }
             return TransactionHomeRow(
@@ -905,31 +899,26 @@ struct RootShellView: View {
                 guard let date = homeSectionDayKeyFormatter.date(from: key) else { return nil }
                 let sortedRows = rows.sorted { $0.transaction.occurredAt > $1.transaction.occurredAt }
 
-                // 计算当日支出和收入
-                var expenseMinor: Int64 = 0
-                var incomeMinor: Int64 = 0
-                for row in rows {
-                    switch row.transaction.type {
-                    case .expense: expenseMinor += row.transaction.amount.minorUnits
-                    case .income: incomeMinor += row.transaction.amount.minorUnits
-                    case .transfer: break
-                    }
-                }
-                let currencyCode = rows.first?.transaction.amount.currencyCode ?? "CNY"
-                let dailyExpense = expenseMinor > 0 ? Money(minorUnits: expenseMinor, currencyCode: currencyCode) : nil
-                let dailyIncome = incomeMinor > 0 ? Money(minorUnits: incomeMinor, currencyCode: currencyCode) : nil
+                let dailyResult = currencySummary(for: rows.map(\.transaction))
+                let dailyExpense = dailyResult.summary.expense.minorUnits > 0 ? dailyResult.summary.expense : nil
+                let dailyIncome = dailyResult.summary.income.minorUnits > 0 ? dailyResult.summary.income : nil
 
                 return TransactionHomeSection(
                     id: homeSectionAccessibilityIdentifier(for: date, fallback: key),
                     title: homeSectionTitle(for: date),
                     rows: sortedRows,
                     dailyExpense: dailyExpense,
-                    dailyIncome: dailyIncome
+                    dailyIncome: dailyIncome,
+                    hasUnavailableHistoricalRate: dailyResult.hasUnavailableHistoricalRate
                 )
             }
             .sorted { $0.rows.first?.transaction.occurredAt ?? .distantPast > $1.rows.first?.transaction.occurredAt ?? .distantPast }
 
-        return (summary(for: transactions), sections: sections)
+        return (
+            summary: summaryResult.summary,
+            hasUnavailableHistoricalRate: summaryResult.hasUnavailableHistoricalRate,
+            sections: sections
+        )
     }
 
     private func searchRows() -> [TransactionSearchRow] {
@@ -1032,14 +1021,8 @@ struct RootShellView: View {
             .sorted { $0.occurredAt > $1.occurredAt }
     }
 
-    private func insightsSummary() -> TransactionSummary {
-        let txs = insightsFilteredTransactions
-        return (try? TransactionSummary.monthly(
-            transactions: txs,
-            currencyCode: activeCurrencyCode,
-            exchangeRateHistory: rateService.history
-        ))
-            ?? TransactionSummary(expense: .zero(currencyCode: activeCurrencyCode), income: .zero(currencyCode: activeCurrencyCode), balance: .zero(currencyCode: activeCurrencyCode), recordCount: 0)
+    private func insightsSummary() -> CurrencySummaryResult {
+        currencySummary(for: insightsFilteredTransactions)
     }
 
     private func insightsDistribution() -> [InsightsDistributionRow] {
@@ -1346,18 +1329,27 @@ struct RootShellView: View {
         homeAnchorDate = dateInterval(for: selectedHomePeriod, anchorDate: occurredAt).start
     }
 
-    private func summary(for transactions: [NumiCore.Transaction]) -> TransactionSummary {
-        (try? TransactionSummary.monthly(
-            transactions: transactions,
-            currencyCode: activeCurrencyCode,
-            exchangeRateHistory: rateService.history
-        ))
-            ?? TransactionSummary(
-                expense: .zero(currencyCode: activeCurrencyCode),
-                income: .zero(currencyCode: activeCurrencyCode),
-                balance: .zero(currencyCode: activeCurrencyCode),
-                recordCount: 0
+    private func currencySummary(for transactions: [NumiCore.Transaction]) -> CurrencySummaryResult {
+        do {
+            return CurrencySummaryResult(
+                summary: try TransactionSummary.monthly(
+                    transactions: transactions,
+                    currencyCode: activeCurrencyCode,
+                    exchangeRateHistory: rateService.history
+                ),
+                hasUnavailableHistoricalRate: false
             )
+        } catch {
+            return CurrencySummaryResult(
+                summary: TransactionSummary(
+                    expense: .zero(currencyCode: activeCurrencyCode),
+                    income: .zero(currencyCode: activeCurrencyCode),
+                    balance: .zero(currencyCode: activeCurrencyCode),
+                    recordCount: transactions.count
+                ),
+                hasUnavailableHistoricalRate: true
+            )
+        }
     }
 
     private func homeSectionTitle(for date: Date) -> String {
