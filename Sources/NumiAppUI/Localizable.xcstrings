@@ -7945,27 +7945,63 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "同步成功"
+            "value": "检测到 iCloud 同步活动已完成"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sync successful"
+            "value": "iCloud sync activity completed"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "同步成功"
+            "value": "偵測到 iCloud 同步活動已完成"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "同期成功"
+            "value": "iCloud同期アクティビティの完了を検出しました"
           }
         }
+      }
+    },
+    "sync.status.scheduled": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已请求 iCloud 同步；完成状态暂不可用" } },
+        "en": { "stringUnit": { "state": "translated", "value": "iCloud sync requested; completion status is unavailable" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已請求 iCloud 同步；完成狀態暫不可用" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "iCloud同期を要求しました。完了状態は利用できません" } }
+      }
+    },
+    "sync.requested.at": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "请求于 %@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Requested %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "請求於 %@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "リクエスト日時：%@" } }
+      }
+    },
+    "sync.requested": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已请求" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Requested" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已請求" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "リクエスト済み" } }
+      }
+    },
+    "sync.last.completed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "上次完成：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Last completed: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "上次完成：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "前回の完了：%@" } }
       }
     },
     "sync.status.failed": {

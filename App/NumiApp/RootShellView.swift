@@ -103,10 +103,13 @@ struct RootShellView: View {
                     let cloudStore = try SwiftDataBookkeepingStore(enableCloudSync: true)
                     _ = cloudStore.categories
                     _ = cloudStore.accounts
-                    try? await Task.sleep(nanoseconds: 2_000_000_000)
-                    return true
+                    // SwiftData/CloudKit performs import and export asynchronously.
+                    // Initialising the same container only proves that the request was
+                    // scheduled. The app may later observe CloudKit activity, but that
+                    // global event stream is not a receipt for this specific request.
+                    return .scheduled
                 } catch {
-                    return false
+                    return .failed
                 }
             }
         } catch {

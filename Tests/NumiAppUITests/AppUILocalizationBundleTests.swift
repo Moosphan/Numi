@@ -911,6 +911,24 @@ final class AppUILocalizationBundleTests: XCTestCase {
         XCTAssertEqual(status.displayMessage, "Network unavailable")
     }
 
+    func testScheduledICloudSyncCopyMakesCompletionUncertaintyExplicitInEveryLanguage() {
+        let expectedValues = [
+            "zh-Hans": (scheduled: "已请求 iCloud 同步；完成状态暂不可用", completed: "检测到 iCloud 同步活动已完成", requested: "已请求", requestedAt: "请求于 %@", lastCompleted: "上次完成：%@"),
+            "en": (scheduled: "iCloud sync requested; completion status is unavailable", completed: "iCloud sync activity completed", requested: "Requested", requestedAt: "Requested %@", lastCompleted: "Last completed: %@"),
+            "zh-Hant": (scheduled: "已請求 iCloud 同步；完成狀態暫不可用", completed: "偵測到 iCloud 同步活動已完成", requested: "已請求", requestedAt: "請求於 %@", lastCompleted: "上次完成：%@"),
+            "ja": (scheduled: "iCloud同期を要求しました。完了状態は利用できません", completed: "iCloud同期アクティビティの完了を検出しました", requested: "リクエスト済み", requestedAt: "リクエスト日時：%@", lastCompleted: "前回の完了：%@")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("sync.status.scheduled", locale: locale), expected.scheduled)
+            XCTAssertEqual(NumiLocalized.lookup("sync.status.success", locale: locale), expected.completed)
+            XCTAssertEqual(NumiLocalized.lookup("sync.requested", locale: locale), expected.requested)
+            XCTAssertEqual(NumiLocalized.lookup("sync.requested.at", locale: locale), expected.requestedAt)
+            XCTAssertEqual(NumiLocalized.lookup("sync.last.completed", locale: locale), expected.lastCompleted)
+        }
+    }
+
     func testRuntimeDisplayPrefersCurrentLocalizedCategoryAndAccountNamesOverStaleFallbackStrings() {
         let category = Category(
             kind: .expense,

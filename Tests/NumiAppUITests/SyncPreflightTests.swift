@@ -1,4 +1,5 @@
 import XCTest
+import NumiCore
 @testable import NumiAppUI
 
 final class SyncPreflightTests: XCTestCase {
@@ -7,6 +8,30 @@ final class SyncPreflightTests: XCTestCase {
         XCTAssertTrue(SyncExecutionPolicy.canStart(status: .idle))
         XCTAssertTrue(SyncExecutionPolicy.canStart(status: .success(Date())))
         XCTAssertTrue(SyncExecutionPolicy.canStart(status: .failure(.syncFailed)))
+    }
+
+    func testScheduledCloudSyncIsNotReportedAsCompleted() {
+        let scheduled = SyncStatus.scheduled(Date(timeIntervalSince1970: 1_700_000_000))
+
+        XCTAssertEqual(scheduled.displayMessage, NumiLocalized.string("sync.status.scheduled"))
+        XCTAssertFalse(SyncExecutionPolicy.canStart(status: scheduled))
+    }
+
+    func testObservedCloudKitEventMapsOnlyFinishedSuccessfulWorkToSuccess() {
+        let completedAt = Date(timeIntervalSince1970: 1_700_000_001)
+
+        XCTAssertEqual(
+            CloudSyncEventStatusMapper.status(for: .started),
+            .syncing
+        )
+        XCTAssertEqual(
+            CloudSyncEventStatusMapper.status(for: .succeeded(completedAt)),
+            .success(completedAt)
+        )
+        XCTAssertEqual(
+            CloudSyncEventStatusMapper.status(for: .failed),
+            .failure(.syncFailed)
+        )
     }
 
     func testPreflightReportsNetworkBeforeCloudAndCellularFailures() {

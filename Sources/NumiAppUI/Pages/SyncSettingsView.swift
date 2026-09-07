@@ -2,6 +2,7 @@ import SwiftUI
 import Network
 import Combine
 import CloudKit
+import CoreData
 import NumiCore
 
 // MARK: - Sync Status
@@ -9,6 +10,9 @@ import NumiCore
 public enum SyncStatus: Equatable {
     case idle
     case syncing
+    /// CloudKit has accepted a sync request, but its import/export completion has
+    /// not yet been observed. This must never be presented as a successful sync.
+    case scheduled(Date)
     case success(Date)
     case failure(SyncFailureReason)
 
@@ -18,6 +22,8 @@ public enum SyncStatus: Equatable {
             return NumiLocalized.string("sync.status.waiting")
         case .syncing:
             return NumiLocalized.string("sync.status.syncing")
+        case .scheduled:
+            return NumiLocalized.string("sync.status.scheduled")
         case .success:
             return NumiLocalized.string("sync.status.success")
         case .failure(let reason):
@@ -62,8 +68,38 @@ public enum SyncPreflight {
 
 public enum SyncExecutionPolicy {
     public static func canStart(status: SyncStatus) -> Bool {
-        if case .syncing = status { return false }
-        return true
+        switch status {
+        case .syncing, .scheduled:
+            return false
+        default:
+            return true
+        }
+    }
+}
+
+public enum SyncRequestResult: Equatable, Sendable {
+    case scheduled
+    case failed
+}
+
+/// A normalized view of the lifecycle signals delivered by Core Data's
+/// `NSPersistentCloudKitContainer` event stream.
+public enum CloudSyncEventPhase: Equatable {
+    case started
+    case succeeded(Date)
+    case failed
+}
+
+public enum CloudSyncEventStatusMapper {
+    public static func status(for phase: CloudSyncEventPhase) -> SyncStatus {
+        switch phase {
+        case .started:
+            .syncing
+        case .succeeded(let completedAt):
+            .success(completedAt)
+        case .failed:
+            .failure(.syncFailed)
+        }
     }
 }
 
@@ -156,7 +192,7 @@ public class iCloudSyncService: ObservableObject {
     }
 
     /// 外部注入的同步闭包，由 RootShellView 提供
-    public var onPerformSync: (() async -> Bool)?
+    public var onPerformSync: (() async -> SyncRequestResult)?
 
     public func performSync() async {
         guard isSyncEnabled else { return }
@@ -176,14 +212,12 @@ public class iCloudSyncService: ObservableObject {
         syncProgress = 0
 
         if let onPerformSync {
-            let success = await onPerformSync()
-            if success {
+            switch await onPerformSync() {
+            case .scheduled:
                 let now = Date()
-                lastSyncDate = now
-                defaults.set(now, forKey: "app.sync.lastSyncDate")
-                syncStatus = .success(now)
-                syncProgress = 1.0
-            } else {
+                syncStatus = .scheduled(now)
+                syncProgress = 0
+            case .failed:
                 syncProgress = 0
                 syncStatus = .failure(.syncFailed)
             }
@@ -231,24 +265,40 @@ public class iCloudSyncService: ObservableObject {
 
     /// 监听 CloudKit 同步事件
     private func observeSyncEvents() {
-        // NSPersistentCloudKitContainer 发送同步事件通知
+        // Core Data emits lifecycle events for real CloudKit work. A manual
+        // request stays distinct from the global activity stream, which cannot
+        // serve as a receipt for one particular request.
         eventObservation = NotificationCenter.default
-            .publisher(for: NSNotification.Name("NSPersistentCloudKitContainer.eventChangedNotification"))
+            .publisher(for: NSPersistentCloudKitContainer.eventChangedNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] notification in
                 guard let self else { return }
-                // 从通知中提取同步进度
-                if let event = notification.userInfo?["event"] as? NSObject {
-                    let typeName = String(describing: type(of: event))
-                    if typeName.contains("Setup") {
-                        self.syncProgress = 0.1
-                    } else if typeName.contains("Import") {
-                        self.syncProgress = 0.5
-                    } else if typeName.contains("Export") {
-                        self.syncProgress = 0.8
-                    }
+                guard let event = notification.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey]
+                    as? NSPersistentCloudKitContainer.Event
+                else { return }
+
+                let phase: CloudSyncEventPhase
+                if let completedAt = event.endDate {
+                    phase = event.succeeded ? .succeeded(completedAt) : .failed
+                } else {
+                    phase = .started
                 }
+                self.applyObservedCloudSyncEvent(phase)
             }
+    }
+
+    private func applyObservedCloudSyncEvent(_ phase: CloudSyncEventPhase) {
+        let status = CloudSyncEventStatusMapper.status(for: phase)
+        syncStatus = status
+
+        switch status {
+        case .success(let completedAt):
+            lastSyncDate = completedAt
+            defaults.set(completedAt, forKey: "app.sync.lastSyncDate")
+            syncProgress = 1
+        case .idle, .syncing, .scheduled, .failure:
+            syncProgress = 0
+        }
     }
 
     deinit {
@@ -463,7 +513,7 @@ public struct SyncSettingsView: View {
                 .frame(width: 36, height: 36)
                 .background(NumiColor.iconBackground)
                 .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
-                .foregroundStyle(NumiColor.accentPrimary)
+                .foregroundStyle(statusColor)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(NumiLocalized.string("sync.status"))
@@ -472,21 +522,34 @@ public struct SyncSettingsView: View {
                 Text(statusText)
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
+
+                if case .scheduled(let requestedAt) = syncService.syncStatus {
+                    Text(NumiLocalized.string(
+                        "sync.requested.at",
+                        requestedAt.numiFormatted(.dateTime.month().day().hour().minute())
+                    ))
+                    .font(NumiFont.caption)
+                    .foregroundStyle(NumiColor.textTertiary)
+                } else if let lastDate = syncService.lastSyncDate {
+                    Text(NumiLocalized.string(
+                        "sync.last.completed",
+                        lastDate.numiFormatted(.dateTime.month().day().hour().minute())
+                    ))
+                    .font(NumiFont.caption)
+                    .foregroundStyle(NumiColor.textTertiary)
+                }
             }
 
             Spacer()
-
-            if let lastDate = syncService.lastSyncDate {
-                Text(lastDate.numiFormatted(.dateTime.month().day().hour().minute()))
-                    .font(NumiFont.caption)
-                    .foregroundStyle(NumiColor.textTertiary)
-            }
         }
         .padding(.horizontal, NumiSpacing.s4)
         .padding(.vertical, 14)
         .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
         .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(NumiLocalized.string("sync.status"))
+        .accessibilityValue(statusAccessibilityValue)
     }
 
     // MARK: - Manual Sync Button
@@ -514,8 +577,15 @@ public struct SyncSettingsView: View {
                     Text(NumiLocalized.string("sync.manual"))
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(NumiColor.textPrimary)
-                    if let lastDate = syncService.lastSyncDate {
-                        Text(NumiLocalized.string("sync.last.time", lastDate.numiFormatted(.dateTime.month().day().hour().minute())))
+                    if case .scheduled(let requestedAt) = syncService.syncStatus {
+                        Text(NumiLocalized.string(
+                            "sync.requested.at",
+                            requestedAt.numiFormatted(.dateTime.month().day().hour().minute())
+                        ))
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.textTertiary)
+                    } else if let lastDate = syncService.lastSyncDate {
+                        Text(NumiLocalized.string("sync.last.completed", lastDate.numiFormatted(.dateTime.month().day().hour().minute())))
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.textTertiary)
                     }
@@ -526,6 +596,10 @@ public struct SyncSettingsView: View {
                 if isSyncing {
                     ProgressView()
                         .scaleEffect(0.8)
+                } else if isSyncRequestScheduled {
+                    Label(NumiLocalized.string("sync.requested"), systemImage: "clock")
+                        .font(NumiFont.bodySmall)
+                        .foregroundStyle(NumiColor.textSecondary)
                 } else {
                     Text(NumiLocalized.string("sync.button"))
                         .font(NumiFont.bodySmall)
@@ -539,11 +613,25 @@ public struct SyncSettingsView: View {
             .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
         }
         .buttonStyle(.plain)
-        .disabled(isSyncing)
+        .disabled(isSyncRequestInFlight)
     }
 
     private var isSyncing: Bool {
         if case .syncing = syncService.syncStatus { return true }
+        return false
+    }
+
+    private var isSyncRequestInFlight: Bool {
+        switch syncService.syncStatus {
+        case .syncing, .scheduled:
+            true
+        default:
+            false
+        }
+    }
+
+    private var isSyncRequestScheduled: Bool {
+        if case .scheduled = syncService.syncStatus { return true }
         return false
     }
 
@@ -571,12 +659,45 @@ public struct SyncSettingsView: View {
         switch syncService.syncStatus {
         case .idle: return "arrow.clockwise.circle"
         case .syncing: return "arrow.triangle.2.circlepath"
+        case .scheduled: return "clock.arrow.circlepath"
         case .success: return "checkmark.circle"
         case .failure: return "exclamationmark.circle"
         }
     }
 
+    private var statusColor: Color {
+        switch syncService.syncStatus {
+        case .success:
+            NumiColor.positiveText
+        case .failure:
+            NumiColor.negativeText
+        case .scheduled:
+            NumiColor.textSecondary
+        case .idle, .syncing:
+            NumiColor.accentPrimary
+        }
+    }
+
     private var statusText: String {
         syncService.syncStatus.displayMessage
+    }
+
+    private var statusAccessibilityValue: String {
+        switch syncService.syncStatus {
+        case .scheduled(let requestedAt):
+            let requestTime = NumiLocalized.string(
+                "sync.requested.at",
+                requestedAt.numiFormatted(.dateTime.month().day().hour().minute())
+            )
+            return "\(statusText). \(requestTime)"
+        case .idle, .syncing, .failure:
+            return statusText
+        case .success(let completedAt):
+            let completionTime = NumiLocalized.string(
+                "sync.last.completed",
+                completedAt.numiFormatted(.dateTime.month().day().hour().minute())
+            )
+            return "\(statusText). \(completionTime)"
+        }
     }
 }
