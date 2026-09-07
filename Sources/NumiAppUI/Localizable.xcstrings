@@ -1008,6 +1008,15 @@
         }
       }
     },
+    "record.converted.amount": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "记账时折算" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Converted at Record Time" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "記帳時折算" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "記録時の換算額" } }
+      }
+    },
     "record.again": {
       "extractionState": "manual",
       "localizations": {

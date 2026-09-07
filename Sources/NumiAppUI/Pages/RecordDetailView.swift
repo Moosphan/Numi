@@ -89,6 +89,12 @@ public struct RecordDetailView: View {
         VStack(spacing: 0) {
             detailRow(title: NumiLocalized.string( transaction.type == .transfer ? "recordDetail.accountFlow" : "record.account"), value: accountText)
             detailRow(title: NumiLocalized.string( "record.date"), value: dateText)
+            if let convertedAmountAtRecord = transaction.convertedAmountAtRecord {
+                detailRow(
+                    title: NumiLocalized.string("record.converted.amount"),
+                    value: privacyAmountDisplayPolicy.display(convertedAmountAtRecord)
+                )
+            }
             detailRow(title: NumiLocalized.string( "record.note"), value: transaction.note.isEmpty ? NumiLocalized.string( "common.none") : transaction.note)
         }
         .background(NumiColor.surfaceCard)

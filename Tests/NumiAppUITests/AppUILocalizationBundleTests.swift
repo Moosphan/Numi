@@ -254,6 +254,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testRecordedConversionCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "记账时折算",
+            "en": "Converted at Record Time",
+            "zh-Hant": "記帳時折算",
+            "ja": "記録時の換算額"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("record.converted.amount", locale: Locale(identifier: language)),
+                expected,
+                "Missing recorded-conversion copy for \(language)"
+            )
+        }
+    }
+
     func testRuntimeLocalizedSwiftUIKeysDoNotUseDirectLiterals() throws {
         let sourceRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
