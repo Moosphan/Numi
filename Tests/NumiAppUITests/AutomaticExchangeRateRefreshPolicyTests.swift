@@ -20,4 +20,13 @@ final class AutomaticExchangeRateRefreshPolicyTests: XCTestCase {
             accessDecision: .blocked(context: .autoExchangeRate)
         ))
     }
+
+    func testNetworkRateFetchRequiresGrantedExchangeRateAccess() {
+        XCTAssertTrue(ExchangeRateNetworkAccessPolicy.mayFetchRates(
+            accessDecision: .granted
+        ))
+        XCTAssertFalse(ExchangeRateNetworkAccessPolicy.mayFetchRates(
+            accessDecision: .blocked(context: .autoExchangeRate)
+        ))
+    }
 }

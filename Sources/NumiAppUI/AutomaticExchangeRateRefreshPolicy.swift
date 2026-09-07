@@ -11,3 +11,12 @@ public enum AutomaticExchangeRateRefreshPolicy {
         return accessDecision == .granted
     }
 }
+
+/// Controls all requests to an external exchange-rate provider, whether the
+/// request is lifecycle-driven or initiated from the currency screen.
+public enum ExchangeRateNetworkAccessPolicy {
+    public static func mayFetchRates(accessDecision: MembershipFeatureAccessDecision) -> Bool {
+        if case .granted = accessDecision { return true }
+        return false
+    }
+}

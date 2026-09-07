@@ -84,8 +84,12 @@ public struct CurrencyManagementView: View {
                 ForEach(CurrencyDefinition.all) { item in
                     Button {
                         defaultCurrencyCode = item.code
-                        Task {
-                            await rateService.fetchRates(base: item.code)
+                        if ExchangeRateNetworkAccessPolicy.mayFetchRates(
+                            accessDecision: membership.decision(for: .openAutoExchangeRate)
+                        ) {
+                            Task {
+                                await rateService.fetchRates(base: item.code)
+                            }
                         }
                     } label: {
                         HStack {
@@ -167,17 +171,7 @@ public struct CurrencyManagementView: View {
 
             // Manual refresh
             Button {
-                isRefreshing = true
-                Task {
-                    let result = await rateService.fetchRates(base: defaultCurrencyCode)
-                    isRefreshing = false
-                    switch result {
-                    case .success:
-                        showToast(NumiLocalized.string( "currency.update.success"))
-                    case .failure(let error):
-                        showToast(NumiLocalized.string("currency.update.fail", error.displayMessage), isError: true)
-                    }
-                }
+                refreshRatesOnUserRequest()
             } label: {
                 HStack(spacing: NumiSpacing.s3) {
                     ZStack {
@@ -248,6 +242,25 @@ public struct CurrencyManagementView: View {
         }
     }
 
+    private func refreshRatesOnUserRequest() {
+        switch membership.decision(for: .openAutoExchangeRate) {
+        case .granted:
+            isRefreshing = true
+            Task {
+                let result = await rateService.fetchRates(base: defaultCurrencyCode)
+                isRefreshing = false
+                switch result {
+                case .success:
+                    showToast(NumiLocalized.string("currency.update.success"))
+                case .failure(let error):
+                    showToast(NumiLocalized.string("currency.update.fail", error.displayMessage), isError: true)
+                }
+            }
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
     private var searchBar: some View {
         HStack(spacing: NumiSpacing.s2) {
             Image(systemName: "magnifyingglass")
@@ -290,8 +303,12 @@ public struct CurrencyManagementView: View {
 
                     Button {
                         defaultCurrencyCode = currency.code
-                        Task {
-                            await rateService.fetchRates(base: currency.code)
+                        if ExchangeRateNetworkAccessPolicy.mayFetchRates(
+                            accessDecision: membership.decision(for: .openAutoExchangeRate)
+                        ) {
+                            Task {
+                                await rateService.fetchRates(base: currency.code)
+                            }
                         }
                     } label: {
                         HStack(spacing: NumiSpacing.s3) {
