@@ -94,6 +94,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testMissingHistoricalRateCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "缺少历史汇率，无法汇总",
+            "en": "Historical rate unavailable",
+            "zh-Hant": "缺少歷史匯率，無法彙總",
+            "ja": "過去の為替レートがないため集計できません"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("insight.exchange.rate.unavailable", locale: Locale(identifier: language)),
+                expected,
+                "Missing historical-rate state for \(language)"
+            )
+        }
+    }
+
     func testBatchEditCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (title: "批量编辑", action: "修改分类", hint: "仅修改同一收支类型的分类"),

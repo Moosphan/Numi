@@ -3107,6 +3107,15 @@
         }
       }
     },
+    "insight.exchange.rate.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "缺少历史汇率，无法汇总" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Historical rate unavailable" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "缺少歷史匯率，無法彙總" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "過去の為替レートがないため集計できません" } }
+      }
+    },
     "insight.income": {
       "extractionState": "manual",
       "localizations": {

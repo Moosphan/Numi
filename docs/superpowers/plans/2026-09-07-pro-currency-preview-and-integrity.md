@@ -100,24 +100,21 @@ Expected: both tests pass while the commercial catalogue remains four items.
 - Produces a total in the selected ledger currency using `ExchangeRateHistory` at every transaction’s occurred date.
 - Produces an explicit unavailable-total state when any required historical rate is absent.
 
-- [ ] **Step 1: Write a failing mixed-currency category-total test**
+- [x] **Step 1: Write a failing mixed-currency category-detail integration test**
 
 ```swift
-let summary = try TransactionSummary.monthly(
-    transactions: [cnyExpense, usdExpense],
-    currencyCode: "CNY",
-    exchangeRateHistory: history
-)
-XCTAssertEqual(summary.expense, try Money(decimalString: "200", currencyCode: "CNY"))
+XCTAssertTrue(rootShellSource.contains("totalAmount: selectedCategoryRow.amount"))
+XCTAssertTrue(rootShellSource.contains("currencyCode: activeCurrencyCode"))
+XCTAssertTrue(detailSource.contains("private let totalAmount: Money"))
 ```
 
-- [ ] **Step 2: Verify RED at the detail integration boundary**
+- [x] **Step 2: Verify RED at the detail integration boundary**
 
-Run: `swift test --filter TransactionSummaryTests/testMonthlySummaryConvertsForeignTransactionsUsingHistoricalRates`
+Run: `swift test --filter InsightsCurrencyIntegrationTests/testCategoryDetailReceivesPreconvertedDistributionAmount`
 
-Expected: existing core calculation passes, while the new detail-view integration test proves the view is not receiving the target currency and history.
+Expected: failure because the detail view recalculates raw `Money` values and the shell does not pass the converted distribution total.
 
-- [ ] **Step 3: Inject the selected ledger currency and history into category detail**
+- [x] **Step 3: Inject the selected ledger currency and history into category detail**
 
 ```swift
 CategoryTransactionsDetailView(
@@ -130,9 +127,9 @@ CategoryTransactionsDetailView(
 )
 ```
 
-Compute the headline via `TransactionSummary.monthly`; for the selected expense or income dimension show that matching summary amount. If a rate is unavailable, show an existing localized unavailable state rather than the first transaction’s currency total.
+Use `selectedCategoryRow.amount` for the headline, as it was produced by `CategoryDistribution` with the target currency and history. Recompute per-day totals through `TransactionSummary.monthly`; when a rate is unavailable, show a four-language unavailable state rather than a misleading amount.
 
-- [ ] **Step 4: Verify focused and full currency tests**
+- [x] **Step 4: Verify focused and full currency tests**
 
 Run: `swift test --filter 'TransactionSummaryTests|AccountAssetSummaryTests|ExchangeRateServiceTests'`
 
@@ -143,11 +140,11 @@ Expected: all conversion, missing-rate, and asset-disclosure tests pass.
 **Files:**
 - Modify: `docs/backlog/current-priority-backlog.md`
 
-- [ ] **Step 1: Document the five-scene preview boundary and currency-safe detail total**
+- [x] **Step 1: Document the five-scene preview boundary and currency-safe detail total**
 
 Record that the currency Banner is a labelled preview until release verification upgrades it to a commercial offering; record the mixed-currency detail-summary evidence.
 
-- [ ] **Step 2: Run full verification**
+- [x] **Step 2: Run full verification**
 
 Run: `ruby -rjson -e 'JSON.parse(File.read("Sources/NumiAppUI/Localizable.xcstrings")); puts "xcstrings JSON valid"'`, `swift test`, `xcodebuild -project Numi.xcodeproj -scheme Numi -sdk iphonesimulator -configuration Debug -derivedDataPath /tmp/NumiDerivedDataProCurrency CODE_SIGNING_ALLOWED=NO build`, and `git diff --check`.
 

@@ -325,6 +325,10 @@ public struct CategoryTransactionsDetailView: View {
     private let transactions: [NumiCore.Transaction]
     private let categories: [NumiCore.Category]
     private let accentColor: Color
+    private let totalAmount: Money
+    private let currencyCode: String
+    private let exchangeRateHistory: ExchangeRateHistory
+    private let transactionType: TransactionType
     private let periodTitle: String
     private let fallbackCategoryName: String?
     private let fallbackIconName: String?
@@ -334,6 +338,10 @@ public struct CategoryTransactionsDetailView: View {
         transactions: [NumiCore.Transaction],
         categories: [NumiCore.Category],
         accentColor: Color,
+        totalAmount: Money,
+        currencyCode: String,
+        exchangeRateHistory: ExchangeRateHistory,
+        transactionType: TransactionType,
         periodTitle: String = "",
         fallbackCategoryName: String? = nil,
         fallbackIconName: String? = nil
@@ -342,6 +350,10 @@ public struct CategoryTransactionsDetailView: View {
         self.transactions = transactions
         self.categories = categories
         self.accentColor = accentColor
+        self.totalAmount = totalAmount
+        self.currencyCode = currencyCode
+        self.exchangeRateHistory = exchangeRateHistory
+        self.transactionType = transactionType
         self.periodTitle = periodTitle
         self.fallbackCategoryName = fallbackCategoryName
         self.fallbackIconName = fallbackIconName
@@ -349,13 +361,6 @@ public struct CategoryTransactionsDetailView: View {
 
     private var sortedTransactions: [NumiCore.Transaction] {
         transactions.sorted { $0.occurredAt > $1.occurredAt }
-    }
-
-    private var totalAmount: Money {
-        guard let first = sortedTransactions.first else { return .zero(currencyCode: "CNY") }
-        return sortedTransactions.dropFirst().reduce(first.amount) { partial, tx in
-            (try? partial.adding(tx.amount)) ?? partial
-        }
     }
 
     /// 按日期分组
@@ -417,7 +422,7 @@ public struct CategoryTransactionsDetailView: View {
 
                 // Transactions grouped by date
                 ForEach(groupedTransactions, id: \.date) { group in
-                    let dayTotals = dailyTotals(for: group.transactions)
+                    let dayTotal = dailyTotal(for: group.transactions)
 
                     VStack(alignment: .leading, spacing: 0) {
                         // Date header with daily totals
@@ -428,29 +433,19 @@ public struct CategoryTransactionsDetailView: View {
 
                             Spacer()
 
-                            HStack(spacing: NumiSpacing.s1) {
-                                if dayTotals.expenseMinor > 0 {
-                                    let m = Money(minorUnits: dayTotals.expenseMinor, currencyCode: "CNY")
-                                    Text(privacyAmountDisplayPolicy.display(m, prefix: "-"))
-                                        .font(NumiFont.caption)
-                                        .foregroundStyle(NumiColor.expenseText)
-                                        .monospacedDigit()
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(NumiColor.expenseBackground)
-                                        .clipShape(Capsule())
-                                }
-                                if dayTotals.incomeMinor > 0 {
-                                    let m = Money(minorUnits: dayTotals.incomeMinor, currencyCode: "CNY")
-                                    Text(privacyAmountDisplayPolicy.display(m, prefix: "+"))
-                                        .font(NumiFont.caption)
-                                        .foregroundStyle(NumiColor.incomeText)
-                                        .monospacedDigit()
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(NumiColor.incomeBackground)
-                                        .clipShape(Capsule())
-                                }
+                            if let dayTotal {
+                                Text(privacyAmountDisplayPolicy.display(dayTotal, prefix: totalPrefix))
+                                    .font(NumiFont.caption)
+                                    .foregroundStyle(accentColor)
+                                    .monospacedDigit()
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(transactionType == .income ? NumiColor.incomeBackground : NumiColor.expenseBackground)
+                                    .clipShape(Capsule())
+                            } else {
+                                Text(NumiLocalized.string("insight.exchange.rate.unavailable"))
+                                    .font(NumiFont.caption)
+                                    .foregroundStyle(NumiColor.textTertiary)
                             }
                         }
                         .padding(.horizontal, NumiSpacing.s4)
@@ -535,17 +530,21 @@ public struct CategoryTransactionsDetailView: View {
 
     // MARK: - Helpers
 
-    private func dailyTotals(for transactions: [NumiCore.Transaction]) -> (expenseMinor: Int64, incomeMinor: Int64) {
-        var expenseMinor: Int64 = 0
-        var incomeMinor: Int64 = 0
-        for tx in transactions {
-            switch tx.type {
-            case .expense: expenseMinor += tx.amount.minorUnits
-            case .income: incomeMinor += tx.amount.minorUnits
-            case .transfer: break
-            }
+    private var totalPrefix: String {
+        transactionType == .income ? "+" : "-"
+    }
+
+    private func dailyTotal(for transactions: [NumiCore.Transaction]) -> Money? {
+        guard transactionType != .transfer,
+              let summary = try? TransactionSummary.monthly(
+                  transactions: transactions,
+                  currencyCode: currencyCode,
+                  exchangeRateHistory: exchangeRateHistory
+              )
+        else {
+            return nil
         }
-        return (expenseMinor, incomeMinor)
+        return transactionType == .income ? summary.income : summary.expense
     }
 
     private func sectionDateTitle(_ date: Date) -> String {

@@ -547,6 +547,10 @@ struct RootShellView: View {
                         transactions: categoryTransactions(for: selectedCategoryRow.categoryID),
                         categories: store.categories,
                         accentColor: accentColor,
+                        totalAmount: selectedCategoryRow.amount,
+                        currencyCode: activeCurrencyCode,
+                        exchangeRateHistory: rateService.history,
+                        transactionType: selectedCategoryType == "expense" ? .expense : .income,
                         periodTitle: insightsPeriodTitle,
                         fallbackCategoryName: selectedCategoryRow.fallbackCategoryName,
                         fallbackIconName: selectedCategoryRow.fallbackIconName
