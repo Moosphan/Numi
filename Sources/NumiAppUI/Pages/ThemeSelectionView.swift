@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct ThemeSelectionView: View {
+    @Environment(\.colorScheme) private var systemColorScheme
     @AppStorage("app.theme.id") private var themeID = NumiTheme.default.id
     @AppStorage("app.colorSchemeMode") private var colorSchemeMode: ColorSchemeMode = .system
     @ObservedObject private var themeController = NumiThemeController.shared
@@ -83,18 +84,29 @@ public struct ThemeSelectionView: View {
             VStack(spacing: 0) {
                 ForEach(Array(NumiTheme.allCases.enumerated()), id: \.element.id) { index, theme in
                     let isSelected = themeID == theme.id
-                    let isLocked = theme.id == NumiTheme.brandWarm.id
+                    let isLocked = theme.id != NumiTheme.default.id
                         && !isSelected
                         && membership.decision(for: .openPremiumThemes) != .granted
+                    let isRetainedAfterDowngrade = isSelected
+                        && theme.id != NumiTheme.default.id
+                        && !membership.status.tier.isPro
                     Button {
                         selectTheme(theme)
                     } label: {
                         HStack(spacing: NumiSpacing.s3) {
                             themeSwatch(theme)
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(theme.displayName)
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundStyle(NumiColor.textPrimary)
+                                HStack(spacing: NumiSpacing.s2) {
+                                    Text(theme.displayName)
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundStyle(NumiColor.textPrimary)
+                                    if theme.id != NumiTheme.default.id {
+                                        themeBadge("Pro")
+                                    }
+                                    if isRetainedAfterDowngrade {
+                                        themeBadge(NumiLocalized.string("theme.retained"))
+                                    }
+                                }
                                 Text(description(for: theme))
                                     .font(NumiFont.footnote)
                                     .foregroundStyle(NumiColor.textTertiary)
@@ -108,7 +120,7 @@ public struct ThemeSelectionView: View {
                                 Image(systemName: "lock.fill")
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundStyle(NumiColor.textTertiary)
-                                    .accessibilityIdentifier("theme.locked.warm")
+                                    .accessibilityIdentifier("theme.locked.\(theme.id)")
                             }
                         }
                         .padding(.horizontal, NumiSpacing.s4)
@@ -119,7 +131,13 @@ public struct ThemeSelectionView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("theme.\(theme.id)")
-                    .accessibilityValue(isSelected ? "selected" : "unselected")
+                    .accessibilityValue(themeAccessibilityValue(
+                        isSelected: isSelected,
+                        isLocked: isLocked,
+                        isRetainedAfterDowngrade: isRetainedAfterDowngrade
+                    ))
+                    .accessibilityHint(isLocked ? NumiLocalized.string("theme.requires.pro.hint") : "")
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
 
                     if index < NumiTheme.allCases.count - 1 {
                         Divider().padding(.leading, 54 + NumiSpacing.s3)
@@ -140,13 +158,14 @@ public struct ThemeSelectionView: View {
     // MARK: - Helpers
 
     private func themeSwatch(_ theme: NumiTheme) -> some View {
-        HStack(spacing: 6) {
+        let palette = theme.palette(for: colorSchemeMode.resolve(systemScheme: systemColorScheme))
+        return HStack(spacing: 6) {
             Circle()
-                .fill(color(theme.light.primary))
+                .fill(color(palette.primary))
             Circle()
-                .fill(color(theme.light.accent))
+                .fill(color(palette.accent))
             Circle()
-                .fill(color(theme.light.background))
+                .fill(color(palette.background))
         }
         .frame(width: 54, height: 24)
     }
@@ -155,6 +174,10 @@ public struct ThemeSelectionView: View {
         switch theme.id {
         case NumiTheme.brandWarm.id:
             return NumiLocalized.string( "theme.warm.desc")
+        case NumiTheme.ocean.id:
+            return NumiLocalized.string("theme.ocean.desc")
+        case NumiTheme.iris.id:
+            return NumiLocalized.string("theme.iris.desc")
         default:
             return NumiLocalized.string( "theme.default.desc")
         }
@@ -180,6 +203,26 @@ public struct ThemeSelectionView: View {
     private func apply(_ theme: NumiTheme) {
         themeController.apply(theme: theme)
         themeID = theme.id
+    }
+
+    private func themeBadge(_ text: String) -> some View {
+        Text(text)
+            .font(NumiFont.caption.weight(.semibold))
+            .foregroundStyle(NumiColor.accentDeep)
+            .padding(.horizontal, NumiSpacing.s2)
+            .padding(.vertical, 2)
+            .background(NumiColor.controlFill, in: Capsule())
+    }
+
+    private func themeAccessibilityValue(
+        isSelected: Bool,
+        isLocked: Bool,
+        isRetainedAfterDowngrade: Bool
+    ) -> String {
+        if isRetainedAfterDowngrade { return NumiLocalized.string("theme.retained") }
+        if isSelected { return NumiLocalized.string("theme.selected") }
+        if isLocked { return NumiLocalized.string("theme.requires.pro") }
+        return ""
     }
 
     private func color(_ hex: String) -> Color {

@@ -13,6 +13,18 @@ final class ThemeSelectionAccessPolicyTests: XCTestCase {
         )
     }
 
+    func testEveryNonDefaultThemeRequestsPremiumAccess() {
+        for theme in [NumiTheme.brandWarm, NumiTheme.ocean, NumiTheme.iris] {
+            XCTAssertEqual(
+                ThemeSelectionAccessPolicy.featureRequest(
+                    currentThemeID: NumiTheme.default.id,
+                    candidateThemeID: theme.id
+                ),
+                .openPremiumThemes
+            )
+        }
+    }
+
     func testKeepingWarmThemeAfterDowngradeDoesNotNeedAnotherRequest() {
         XCTAssertNil(
             ThemeSelectionAccessPolicy.featureRequest(

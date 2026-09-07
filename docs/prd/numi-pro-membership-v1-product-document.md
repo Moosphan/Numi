@@ -103,7 +103,7 @@ Numi 是一款 iOS 本地优先的记账 App。用户数据默认保存在设备
 | Face ID/密码锁、后台模糊、隐藏金额 | `SettingsView`、`PrivacyAmountDisplayPolicy`；P0B-04 Done | 已验证 | F | 财务隐私是底线，不做付费墙。 |
 | App 内 AI 文本解析（Claude/Qwen/DeepSeek） | `TransactionLLMService`、设置中的 provider/key；首次向每个所选服务商解析前会说明发送的内容并请求确认，解析结果会进入可编辑草稿而非直接写入；`openAIRecord` 已枚举但未接 UI Gate | 有基础代码，依赖用户 Key/外部服务 | P1 | 发布前明确“自带 Key”还是“平台额度”，并补限额和超额策略；不得承诺无限 AI。若自带 Key，可考虑免费基础解析，Pro 仅售自动化/批量能力。 |
 | Siri / App Shortcuts 记账 | `RecordTransactionIntent`；P1-05 Partial | 未完成真实端到端验证 | F：基础快捷记账；P1：增强自动化 | 系统辅助功能不宜整体锁定；只把未来高价值的多步骤自动化设为 Pro。 |
-| 主题、系统深浅色、运行时四语言 | `ThemeSelectionView`、`NumiAppLanguage`；四语言回归 | 基础可用 | F：系统/默认主题与四语言；P1：新增高级主题包 | 无障碍与语言不能收费。只有额外视觉包才可作为低优先级 Pro 装饰。 |
+| 主题、系统深浅色、运行时四语言 | `ThemeSelectionView`、`NumiAppLanguage`；默认主题及海湾蓝/鸢尾紫高级主题均已接 Gate 和四语言回归 | 已验证 | F：系统外观、默认主题与四语言；P0：暖杏、海湾蓝、鸢尾紫主题包 | 无障碍与语言不能收费。高级主题只改变视觉 token，不限制任何数据或记账能力；到期后已选主题会保留并明确标识，续订后才可切换。 |
 | App Icon、组件库、设计 Token | `NumiColor`、`NumiFont`、`NumiSpacing` 等 | 工程资产 | N / P2 | 当前不是用户可选权益；若未来新增图标包，单独作为 P2。 |
 | 标签、商家、附件、组合支付/拆分 | P2-03/04 Not Started | 未实现 | P2 | 禁止出现在 V1 付费墙。附件如涉及云存储，还需先定义成本与隐私边界。 |
 | OCR/截图记账、本地规则识别 | P2-05 Not Started | 未实现 | P2 | 先完成隐私、错误纠正和成本设计，再决定 Pro 额度。 |

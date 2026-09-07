@@ -144,6 +144,22 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testPremiumThemeCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (ocean: "海湾蓝", iris: "鸢尾紫", oceanDetail: "冷静的海湾蓝与清透底色，适合专注查看资产和趋势。"),
+            "en": (ocean: "Ocean Blue", iris: "Iris Violet", oceanDetail: "Calm ocean blue and a clear canvas for focused reviews of balances and trends."),
+            "zh-Hant": (ocean: "海灣藍", iris: "鳶尾紫", oceanDetail: "冷靜的海灣藍與清透底色，適合專注查看資產與趨勢。"),
+            "ja": (ocean: "オーシャンブルー", iris: "アイリスバイオレット", oceanDetail: "落ち着いた海の青と澄んだ背景。残高や推移を集中して確認できます。")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("theme.ocean", locale: locale), expected.ocean)
+            XCTAssertEqual(NumiLocalized.lookup("theme.iris", locale: locale), expected.iris)
+            XCTAssertEqual(NumiLocalized.lookup("theme.ocean.desc", locale: locale), expected.oceanDetail)
+        }
+    }
+
     func testMissingHistoricalRateCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": "缺少历史汇率，无法汇总",

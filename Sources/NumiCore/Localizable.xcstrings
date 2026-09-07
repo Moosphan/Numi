@@ -836,6 +836,24 @@
         }
       }
     },
+    "theme.ocean": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "海湾蓝" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Ocean Blue" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "海灣藍" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "オーシャンブルー" } }
+      }
+    },
+    "theme.iris": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "鸢尾紫" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Iris Violet" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "鳶尾紫" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "アイリスバイオレット" } }
+      }
+    },
     "error.backup.fail": {
       "extractionState": "manual",
       "localizations": {

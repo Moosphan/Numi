@@ -6,7 +6,7 @@ public enum ThemeSelectionAccessPolicy {
         candidateThemeID: String
     ) -> MembershipFeatureRequest? {
         guard candidateThemeID != currentThemeID,
-              candidateThemeID == NumiTheme.brandWarm.id else {
+              candidateThemeID != NumiTheme.default.id else {
             return nil
         }
         return .openPremiumThemes

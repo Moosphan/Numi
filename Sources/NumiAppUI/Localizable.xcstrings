@@ -9991,6 +9991,60 @@
         }
       }
     },
+    "theme.ocean.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "冷静的海湾蓝与清透底色，适合专注查看资产和趋势。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Calm ocean blue and a clear canvas for focused reviews of balances and trends." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "冷靜的海灣藍與清透底色，適合專注查看資產與趨勢。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "落ち着いた海の青と澄んだ背景。残高や推移を集中して確認できます。" } }
+      }
+    },
+    "theme.iris.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "柔和鸢尾紫与清晰的文字对比，让长时间记账更舒适。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Soft iris violet with clear text contrast for comfortable, longer bookkeeping sessions." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "柔和鳶尾紫與清晰文字對比，讓長時間記帳更舒適。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "柔らかなアイリスの紫と明瞭な文字コントラストで、長時間の記帳も快適です。" } }
+      }
+    },
+    "theme.retained": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已保留" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Retained" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已保留" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "保持中" } }
+      }
+    },
+    "theme.selected": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已选中" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Selected" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已選取" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "選択中" } }
+      }
+    },
+    "theme.requires.pro": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "需要 Pro" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Requires Pro" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "需要 Pro" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Pro が必要" } }
+      }
+    },
+    "theme.requires.pro.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "需要 Pro，轻点了解权益" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Requires Pro. Double-tap to learn about benefits." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "需要 Pro，輕點了解權益" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Pro が必要です。ダブルタップして特典を確認します。" } }
+      }
+    },
     "theme.switch.desc": {
       "extractionState": "manual",
       "localizations": {

@@ -140,12 +140,62 @@ public struct NumiTheme: AppTheme {
         )
     }
 
+    /// A calm, high-contrast blue palette for focused financial review.
+    public static var ocean: NumiTheme {
+        NumiTheme(
+            id: "ocean",
+            displayName: NumiLocalized.string("theme.ocean"),
+            light: ThemePalette(
+                primary: "#76BFE8",
+                background: "#F5FAFC",
+                accent: "#1F607A",
+                positive: "#367057",
+                warning: "#D88A62",
+                textPrimary: "#18323D"
+            ),
+            dark: ThemePalette(
+                primary: "#4D9DCA",
+                background: "#152129",
+                accent: "#17617B",
+                positive: "#72BFA4",
+                warning: "#E29A70",
+                textPrimary: "#E4F0F4"
+            )
+        )
+    }
+
+    /// A soft purple palette that keeps warnings and body text distinct.
+    public static var iris: NumiTheme {
+        NumiTheme(
+            id: "iris",
+            displayName: NumiLocalized.string("theme.iris"),
+            light: ThemePalette(
+                primary: "#A89AE8",
+                background: "#FAF8FD",
+                accent: "#5F518F",
+                positive: "#367057",
+                warning: "#D48472",
+                textPrimary: "#302B40"
+            ),
+            dark: ThemePalette(
+                primary: "#887AC6",
+                background: "#201D2B",
+                accent: "#5E4A99",
+                positive: "#79B695",
+                warning: "#E09883",
+                textPrimary: "#EEEAF7"
+            )
+        )
+    }
+
     // MARK: - Registry
 
     public static var allCases: [NumiTheme] {
         [
             .default,
-            .brandWarm
+            .brandWarm,
+            .ocean,
+            .iris
         ]
     }
 
