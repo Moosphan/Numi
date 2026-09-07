@@ -215,7 +215,7 @@ public struct CSVImportReviewSheet: View {
 
                 VStack(alignment: .leading, spacing: NumiSpacing.s2) {
                     ForEach(Array(preview.errors.enumerated()), id: \.offset) { _, error in
-                        Text("#\(error.lineNumber) · \(error.message)")
+                        Text("#\(error.lineNumber) · \(localizedMessage(for: error))")
                             .font(NumiFont.footnote)
                             .foregroundStyle(NumiColor.negativeText)
                     }
@@ -255,5 +255,14 @@ public struct CSVImportReviewSheet: View {
     private func deleteTemplate(_ template: CSVImportMappingTemplate) {
         templateStore.delete(id: template.id)
         templates = templateStore.templates
+    }
+
+    private func localizedMessage(for error: CSVImportError) -> String {
+        switch error.code {
+        case .accountCurrencyMismatch:
+            NumiLocalized.string("io.import.csv.error.account.currency.mismatch")
+        case nil:
+            error.message
+        }
     }
 }

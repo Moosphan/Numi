@@ -128,6 +128,25 @@ final class ImportExportTests: XCTestCase {
         XCTAssertTrue(result.errors.isEmpty)
     }
 
+    func testCSVPreviewRejectsTransactionCurrencyThatDoesNotMatchItsAccount() throws {
+        let cash = Account(name: "现金", type: .cash, balance: .zero(currencyCode: "CNY"))
+        let document = try CSVImportDocument(csv: "type,amount,currency,account\nexpense,12.30,USD,现金")
+
+        let result = NumiCSVImporter.preview(
+            document: document,
+            mapping: CSVImportMapping(headers: document.headers),
+            context: CSVImportContext(
+                ledger: Ledger(name: "默认账本", currencyCode: "CNY"),
+                categories: [],
+                accounts: [cash]
+            )
+        )
+
+        XCTAssertTrue(result.transactions.isEmpty)
+        XCTAssertEqual(result.errors.map(\.lineNumber), [2])
+        XCTAssertEqual(result.errors.first?.code, .accountCurrencyMismatch)
+    }
+
     func testCSVImporterKeepsValidRowsWhenOtherRowsAreInvalid() throws {
         let ledger = Ledger(name: "默认账本", currencyCode: "CNY")
         let document = try CSVImportDocument(csv: "type,amount,category\nexpense,12.30,不存在\nincome,bad,\nexpense,8.00,")

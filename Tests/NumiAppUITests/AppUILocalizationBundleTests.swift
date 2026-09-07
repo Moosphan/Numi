@@ -155,6 +155,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testCSVAccountCurrencyMismatchCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "交易币种与所选账户币种不一致",
+            "en": "The transaction currency does not match the selected account",
+            "zh-Hant": "交易幣別與所選帳戶幣別不一致",
+            "ja": "取引通貨が選択した口座の通貨と一致しません"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("io.import.csv.error.account.currency.mismatch", locale: Locale(identifier: language)),
+                expected,
+                "Missing account-currency mismatch copy for \(language)"
+            )
+        }
+    }
+
     func testBatchEditCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (title: "批量编辑", action: "修改分类", hint: "仅修改同一收支类型的分类"),

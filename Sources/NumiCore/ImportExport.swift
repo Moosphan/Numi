@@ -50,13 +50,19 @@ public enum NumiCSVExporter {
     }
 }
 
+public enum CSVImportErrorCode: Equatable, Sendable {
+    case accountCurrencyMismatch
+}
+
 public struct CSVImportError: Equatable, Sendable {
     public let lineNumber: Int
     public let message: String
+    public let code: CSVImportErrorCode?
 
-    public init(lineNumber: Int, message: String) {
+    public init(lineNumber: Int, message: String, code: CSVImportErrorCode? = nil) {
         self.lineNumber = lineNumber
         self.message = message
+        self.code = code
     }
 }
 
@@ -302,6 +308,12 @@ public enum NumiCSVImporter {
                 if type == .transfer {
                     try validateTransferAccounts(sourceAccountID: accountID, targetAccountID: targetAccountID)
                 }
+                try validateAccountCurrencies(
+                    amount: money,
+                    accountID: accountID,
+                    targetAccountID: targetAccountID,
+                    accounts: context.accounts
+                )
                 let reimbursementID = try resolvedOptionalUUID(
                     from: value(for: .reimbursementID, in: values, mapping: mapping),
                     fieldName: "reimbursementID"
@@ -324,7 +336,12 @@ public enum NumiCSVImporter {
                     refundOfTransactionID: refundOfTransactionID
                 ))
             } catch {
-                errors.append(CSVImportError(lineNumber: row.lineNumber, message: "\(error)"))
+                let importFailure = error as? ImportFailure
+                errors.append(CSVImportError(
+                    lineNumber: row.lineNumber,
+                    message: "\(error)",
+                    code: importFailure?.code
+                ))
             }
         }
 
@@ -409,10 +426,31 @@ public enum NumiCSVImporter {
         }
     }
 
+    private static func validateAccountCurrencies(
+        amount: Money,
+        accountID: UUID?,
+        targetAccountID: UUID?,
+        accounts: [Account]
+    ) throws {
+        let selectedAccountIDs = [accountID, targetAccountID].compactMap { $0 }
+        for selectedAccountID in selectedAccountIDs {
+            guard let account = accounts.first(where: { $0.id == selectedAccountID }) else { continue }
+            guard account.balance.currencyCode.caseInsensitiveCompare(amount.currencyCode) == .orderedSame else {
+                throw ImportFailure(
+                    "Account currency does not match transaction currency",
+                    code: .accountCurrencyMismatch
+                )
+            }
+        }
+    }
+
     private struct ImportFailure: Error, CustomStringConvertible {
         let description: String
-        init(_ description: String) {
+        let code: CSVImportErrorCode?
+
+        init(_ description: String, code: CSVImportErrorCode? = nil) {
             self.description = description
+            self.code = code
         }
     }
 }
