@@ -15299,10 +15299,19 @@
     "membership.benefit.currency.detail": {
       "extractionState": "manual",
       "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用统一主货币看懂跨境收支。" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Understand international spending in one home currency." } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "用統一主貨幣看懂跨境收支。" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "基準通貨ひとつで海外での収支も把握。" } }
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "跨币种记录与汇总将在完成发布验证后开放。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Cross-currency recording and totals will open after release validation." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "跨幣種記錄與彙總將在完成發佈驗證後開放。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "複数通貨の記録と集計は、リリース検証の完了後に提供予定です。" } }
+      }
+    },
+    "membership.benefit.preview.badge": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "功能预览" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Preview" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "功能預覽" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プレビュー" } }
       }
     },
     "membership.benefit.security.title": {

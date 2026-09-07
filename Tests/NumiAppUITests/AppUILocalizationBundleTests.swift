@@ -77,6 +77,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testCurrencyPreviewBadgeCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "功能预览",
+            "en": "Preview",
+            "zh-Hant": "功能預覽",
+            "ja": "プレビュー"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("membership.benefit.preview.badge", locale: Locale(identifier: language)),
+                expected,
+                "Missing currency-preview badge for \(language)"
+            )
+        }
+    }
+
     func testBatchEditCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (title: "批量编辑", action: "修改分类", hint: "仅修改同一收支类型的分类"),

@@ -309,18 +309,7 @@ public struct MembershipBenefitsView: View {
     }
 
     private var benefits: [MembershipBenefit] {
-        MembershipCommercialOffering.allCases.map { offering in
-            switch offering {
-            case .unlimitedOrganization:
-                .init(icon: "infinity", titleKey: "membership.benefit.unlimited.title", detailKey: "membership.benefit.unlimited.detail", palette: .sunset)
-            case .subscriptions:
-                .init(icon: "calendar.badge.clock", titleKey: "membership.benefit.subscriptions.title", detailKey: "membership.benefit.subscriptions.detail", palette: .violet)
-            case .installments:
-                .init(icon: "checklist.checked", titleKey: "membership.benefit.installments.title", detailKey: "membership.benefit.installments.detail", palette: .rose)
-            case .encryptedBackup:
-                .init(icon: "lock.shield", titleKey: "membership.benefit.security.title", detailKey: "membership.benefit.security.detail", palette: .mint)
-            }
-        }
+        MembershipBenefit.paywallBenefits
     }
 
     private var comparisonRows: [MembershipComparisonRow] {
@@ -337,15 +326,65 @@ public struct MembershipBenefitsView: View {
     }
 }
 
-private struct MembershipBenefit: Equatable {
+enum MembershipBenefitAvailability: Equatable {
+    case included
+    case preview
+}
+
+struct MembershipBenefit: Equatable, Identifiable {
+    let id: String
     let icon: String
     let titleKey: String
     let detailKey: String
     let palette: MembershipHeroPalette
+    let availability: MembershipBenefitAvailability
+
+    static let paywallBenefits: [MembershipBenefit] = [
+        .init(
+            id: MembershipCommercialOffering.unlimitedOrganization.rawValue,
+            icon: "infinity",
+            titleKey: "membership.benefit.unlimited.title",
+            detailKey: "membership.benefit.unlimited.detail",
+            palette: .sunset,
+            availability: .included
+        ),
+        .init(
+            id: MembershipCommercialOffering.subscriptions.rawValue,
+            icon: "calendar.badge.clock",
+            titleKey: "membership.benefit.subscriptions.title",
+            detailKey: "membership.benefit.subscriptions.detail",
+            palette: .violet,
+            availability: .included
+        ),
+        .init(
+            id: "currencyPreview",
+            icon: "globe.americas.fill",
+            titleKey: "membership.benefit.currency.title",
+            detailKey: "membership.benefit.currency.detail",
+            palette: .sky,
+            availability: .preview
+        ),
+        .init(
+            id: MembershipCommercialOffering.installments.rawValue,
+            icon: "checklist.checked",
+            titleKey: "membership.benefit.installments.title",
+            detailKey: "membership.benefit.installments.detail",
+            palette: .rose,
+            availability: .included
+        ),
+        .init(
+            id: MembershipCommercialOffering.encryptedBackup.rawValue,
+            icon: "lock.shield",
+            titleKey: "membership.benefit.security.title",
+            detailKey: "membership.benefit.security.detail",
+            palette: .mint,
+            availability: .included
+        )
+    ]
 }
 
-private enum MembershipHeroPalette: Equatable {
-    case violet, sunset, mint, rose
+enum MembershipHeroPalette: Equatable {
+    case violet, sunset, mint, rose, sky
 
     var illustration: String {
         switch self {
@@ -353,6 +392,7 @@ private enum MembershipHeroPalette: Equatable {
         case .sunset: "pro-membership-ledgers"
         case .mint: "pro-membership-security"
         case .rose: "pro-membership-budget"
+        case .sky: "pro-membership-currency"
         }
     }
 
@@ -362,6 +402,7 @@ private enum MembershipHeroPalette: Equatable {
         case .sunset: [Color(red: 1.00, green: 0.96, blue: 0.89), Color(red: 0.98, green: 0.88, blue: 0.79)]
         case .mint: [Color(red: 0.94, green: 0.98, blue: 0.93), Color(red: 0.82, green: 0.93, blue: 0.87)]
         case .rose: [Color(red: 1.00, green: 0.95, blue: 0.95), Color(red: 0.96, green: 0.85, blue: 0.89)]
+        case .sky: [Color(red: 0.93, green: 0.98, blue: 1.00), Color(red: 0.80, green: 0.91, blue: 0.99)]
         }
     }
 
@@ -372,6 +413,7 @@ private enum MembershipHeroPalette: Equatable {
         case .sunset: Color(red: 0.43, green: 0.28, blue: 0.20)
         case .mint: Color(red: 0.18, green: 0.35, blue: 0.28)
         case .rose: Color(red: 0.43, green: 0.25, blue: 0.33)
+        case .sky: Color(red: 0.16, green: 0.32, blue: 0.49)
         }
     }
 }
@@ -414,7 +456,7 @@ private struct MembershipBenefitPagerCard: View {
                     .background(.white.opacity(0.65))
                     .clipShape(Circle())
                 Spacer()
-                Text(isPro ? NumiLocalized.string("membership.pro.active") : "Pro")
+                Text(badgeTitle)
                     .font(NumiFont.footnote.weight(.semibold))
                     .foregroundStyle(benefit.palette.ink)
                     .padding(.horizontal, NumiSpacing.s2)
@@ -444,6 +486,15 @@ private struct MembershipBenefitPagerCard: View {
         .padding(.horizontal, NumiSpacing.s4)
         .padding(.top, NumiSpacing.s4)
         .padding(.bottom, 30)
+    }
+
+    private var badgeTitle: String {
+        switch benefit.availability {
+        case .included:
+            isPro ? NumiLocalized.string("membership.pro.active") : "Pro"
+        case .preview:
+            NumiLocalized.string("membership.benefit.preview.badge")
+        }
     }
 }
 
