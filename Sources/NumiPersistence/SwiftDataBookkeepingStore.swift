@@ -1206,7 +1206,15 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
 
     @discardableResult
     public func updateTransactionCategories(ids: Set<UUID>, categoryID: UUID) throws -> Int {
-        guard !ids.isEmpty else { return 0 }
+        try changeTransactionCategories(ids: ids, categoryID: categoryID).count
+    }
+
+    @discardableResult
+    public func changeTransactionCategories(
+        ids: Set<UUID>,
+        categoryID: UUID
+    ) throws -> [BatchTransactionCategoryChange] {
+        guard !ids.isEmpty else { return [] }
         guard let category = fetchCategoryEntity(id: categoryID),
               let targetKind = CategoryKind(rawValue: category.kindRawValue) else {
             throw SwiftDataBookkeepingStoreError.categoryNotFound
@@ -1226,13 +1234,55 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
             }
         }
 
+        let changes = transactions.map {
+            BatchTransactionCategoryChange(transactionID: $0.id, previousCategoryID: $0.categoryID)
+        }
         for transaction in transactions {
             transaction.categoryID = categoryID
         }
         try save()
         changeRevision += 1
         objectWillChange.send()
-        return transactions.count
+        return changes
+    }
+
+    public func restoreTransactionCategories(_ changes: [BatchTransactionCategoryChange]) throws {
+        guard !changes.isEmpty else { return }
+        let transactionIDs = Set(changes.map(\.transactionID))
+        guard transactionIDs.count == changes.count else {
+            throw SwiftDataBookkeepingStoreError.transactionNotFound
+        }
+
+        let transactions = transactionIDs.compactMap(fetchTransactionEntity)
+        guard transactions.count == changes.count else {
+            throw SwiftDataBookkeepingStoreError.transactionNotFound
+        }
+
+        let previousCategories = Dictionary(uniqueKeysWithValues: changes.map {
+            ($0.transactionID, $0.previousCategoryID)
+        })
+        for transaction in transactions {
+            guard !transaction.isSoftDeleted,
+                  let type = TransactionType(rawValue: transaction.typeRawValue),
+                  let expectedKind = Self.categoryKind(for: type),
+                  let previousCategoryID = previousCategories[transaction.id] else {
+                throw SwiftDataBookkeepingStoreError.invalidCategory
+            }
+
+            if let previousCategoryID {
+                guard let category = fetchCategoryEntity(id: previousCategoryID),
+                      CategoryKind(rawValue: category.kindRawValue) == expectedKind else {
+                    throw SwiftDataBookkeepingStoreError.invalidCategory
+                }
+            }
+        }
+
+        for transaction in transactions {
+            transaction.categoryID = previousCategories[transaction.id]!
+        }
+        try save()
+        changeRevision += 1
+        objectWillChange.send()
     }
 
     public func softDeleteTransaction(id: UUID) throws {

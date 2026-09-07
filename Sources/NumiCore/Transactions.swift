@@ -103,6 +103,16 @@ public struct Transaction: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
+public struct BatchTransactionCategoryChange: Equatable, Sendable {
+    public let transactionID: UUID
+    public let previousCategoryID: UUID?
+
+    public init(transactionID: UUID, previousCategoryID: UUID?) {
+        self.transactionID = transactionID
+        self.previousCategoryID = previousCategoryID
+    }
+}
+
 public struct TransactionSummary: Equatable {
     public let expense: Money
     public let income: Money

@@ -78,7 +78,8 @@ public struct TransactionsHomeView: View {
     private let onEdit: (NumiCore.Transaction) -> Void
     private let onShare: (NumiCore.Transaction) -> Void
     private let onSelectLedger: (Ledger) -> Void
-    private let onBatchCategory: (Set<UUID>, UUID) -> Void
+    private let onBatchCategory: (Set<UUID>, UUID) -> Bool
+    private let onUndoBatchCategory: () -> Bool
     @ObservedObject private var membership = MembershipController.shared
     @State private var pendingDelete: NumiCore.Transaction?
     @State private var showsUndo = false
@@ -87,6 +88,10 @@ public struct TransactionsHomeView: View {
     @State private var isBatchEditing = false
     @State private var selectedBatchTransactionIDs = Set<UUID>()
     @State private var showsBatchCategoryPicker = false
+    @State private var pendingBatchCategory: NumiCore.Category?
+    @State private var showsBatchCategoryConfirmation = false
+    @State private var showsBatchUndo = false
+    @State private var batchUndoGeneration = 0
     @State private var membershipPaywallContext: MembershipPaywallContext?
 
     public init(
@@ -110,7 +115,8 @@ public struct TransactionsHomeView: View {
         onDelete: @escaping (NumiCore.Transaction) -> Void = { _ in },
         onUndoDelete: @escaping () -> Void = {},
         onSelectLedger: @escaping (Ledger) -> Void = { _ in },
-        onBatchCategory: @escaping (Set<UUID>, UUID) -> Void = { _, _ in }
+        onBatchCategory: @escaping (Set<UUID>, UUID) -> Bool = { _, _ in false },
+        onUndoBatchCategory: @escaping () -> Bool = { false }
     ) {
         self.summary = summary
         self.periodTitle = periodTitle
@@ -133,6 +139,7 @@ public struct TransactionsHomeView: View {
         self.onUndoDelete = onUndoDelete
         self.onSelectLedger = onSelectLedger
         self.onBatchCategory = onBatchCategory
+        self.onUndoBatchCategory = onUndoBatchCategory
     }
 
     public var body: some View {
@@ -169,6 +176,13 @@ public struct TransactionsHomeView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
+            if showsBatchUndo {
+                batchUndoBar
+                    .padding(.horizontal, NumiSpacing.s5)
+                    .padding(.bottom, showsUndo ? 216 : 112)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
             if isBatchEditing {
                 batchSelectionBar
                     .padding(.horizontal, NumiSpacing.s5)
@@ -193,11 +207,32 @@ public struct TransactionsHomeView: View {
         ) {
             ForEach(batchCategories) { category in
                 Button(category.localizedDisplayName) {
-                    onBatchCategory(selectedBatchTransactionIDs, category.id)
-                    finishBatchEditing()
+                    pendingBatchCategory = category
+                    showsBatchCategoryConfirmation = true
                 }
             }
             Button("common.cancel", role: .cancel) {}
+        }
+        .confirmationDialog(
+            NumiLocalized.string("batch.edit.preview.title"),
+            isPresented: $showsBatchCategoryConfirmation,
+            titleVisibility: .visible,
+            presenting: pendingBatchCategory
+        ) { category in
+            Button("batch.edit.preview.apply") {
+                applyBatchCategory(category)
+            }
+            Button("common.cancel", role: .cancel) {
+                pendingBatchCategory = nil
+            }
+        } message: { category in
+            Text(
+                NumiLocalized.string(
+                    "batch.edit.preview.message",
+                    selectedBatchTransactionIDs.count,
+                    category.localizedDisplayName
+                )
+            )
         }
         .task { await membership.start() }
         .membershipPaywall(context: $membershipPaywallContext)
@@ -368,6 +403,36 @@ public struct TransactionsHomeView: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("action.undoDeleteRecord")
+        }
+        .padding(.horizontal, NumiSpacing.s4)
+        .padding(.vertical, NumiSpacing.s3)
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+        .shadow(color: .black.opacity(0.08), radius: 14, x: 0, y: 8)
+    }
+
+    private var batchUndoBar: some View {
+        HStack(spacing: NumiSpacing.s3) {
+            Text("batch.edit.updated")
+                .font(NumiFont.bodySmall)
+                .foregroundStyle(NumiColor.textPrimary)
+            Spacer()
+            Button {
+                if onUndoBatchCategory() {
+                    batchUndoGeneration += 1
+                    withAnimation {
+                        showsBatchUndo = false
+                    }
+                }
+            } label: {
+                Text("batch.edit.undo")
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .frame(minWidth: 72, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("action.undoBatchCategory")
         }
         .padding(.horizontal, NumiSpacing.s4)
         .padding(.vertical, NumiSpacing.s3)
@@ -781,6 +846,27 @@ public struct TransactionsHomeView: View {
         withAnimation {
             selectedBatchTransactionIDs.removeAll()
             isBatchEditing = false
+        }
+    }
+
+    private func applyBatchCategory(_ category: NumiCore.Category) {
+        defer { pendingBatchCategory = nil }
+        guard onBatchCategory(selectedBatchTransactionIDs, category.id) else { return }
+        finishBatchEditing()
+        showBatchUndo()
+    }
+
+    private func showBatchUndo() {
+        batchUndoGeneration += 1
+        let generation = batchUndoGeneration
+        withAnimation {
+            showsBatchUndo = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            guard generation == batchUndoGeneration else { return }
+            withAnimation {
+                showsBatchUndo = false
+            }
         }
     }
 

@@ -49,6 +49,7 @@ struct RootShellView: View {
     @StateObject private var store: SwiftDataBookkeepingStore
     @State private var initializationError: String?
     @State private var lastDeletedTransactionID: UUID?
+    @State private var lastBatchCategoryChanges: [BatchTransactionCategoryChange] = []
     @State private var selectedTransactionID: UUID?
     @State private var editingTransactionID: UUID?
     @State private var isTransactionSearchPresented = false
@@ -478,9 +479,25 @@ struct RootShellView: View {
                 },
                 onBatchCategory: { transactionIDs, categoryID in
                     do {
-                        _ = try store.updateTransactionCategories(ids: transactionIDs, categoryID: categoryID)
+                        lastBatchCategoryChanges = try store.changeTransactionCategories(
+                            ids: transactionIDs,
+                            categoryID: categoryID
+                        )
+                        return true
                     } catch {
                         initializationError = error.localizedDescription
+                        return false
+                    }
+                },
+                onUndoBatchCategory: {
+                    guard !lastBatchCategoryChanges.isEmpty else { return false }
+                    do {
+                        try store.restoreTransactionCategories(lastBatchCategoryChanges)
+                        lastBatchCategoryChanges = []
+                        return true
+                    } catch {
+                        initializationError = error.localizedDescription
+                        return false
                     }
                 }
             )

@@ -37,6 +37,33 @@
         "ja": { "stringUnit": { "state": "translated", "value": "同じ取引タイプのカテゴリのみ変更できます。" } }
       }
     },
+    "batch.edit.preview.apply": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "确认修改" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Confirm Change" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "確認修改" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "変更を確定" } }
+      }
+    },
+    "batch.edit.preview.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "将把 %lld 条记录改为“%@”。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Change %lld records to “%@”?" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "將把 %lld 筆記錄改為「%@」。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld件の記録を「%@」に変更します。" } }
+      }
+    },
+    "batch.edit.preview.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "确认修改分类" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Confirm Category Change" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "確認修改分類" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "カテゴリ変更を確認" } }
+      }
+    },
     "batch.edit.selected": {
       "extractionState": "manual",
       "localizations": {
@@ -44,6 +71,24 @@
         "en": { "stringUnit": { "state": "translated", "value": "%lld selected" } },
         "zh-Hant": { "stringUnit": { "state": "translated", "value": "已選 %lld 筆" } },
         "ja": { "stringUnit": { "state": "translated", "value": "%lld件を選択" } }
+      }
+    },
+    "batch.edit.undo": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "撤销" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Undo" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "復原" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "取り消す" } }
+      }
+    },
+    "batch.edit.updated": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "分类已修改" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Category updated" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "分類已修改" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "カテゴリを変更しました" } }
       }
     },
     "tab.plans": {

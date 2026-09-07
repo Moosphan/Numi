@@ -824,6 +824,74 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testBatchChangingTransactionCategoriesReturnsUndoSnapshot() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let accountID = try XCTUnwrap(store.accounts.first?.id)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let originalCategoryID = try XCTUnwrap(store.categories.first { $0.kind == .expense }?.id)
+        let replacementCategoryID = try XCTUnwrap(store.categories.dropFirst().first { $0.kind == .expense }?.id)
+        let first = try store.createTransaction(
+            type: .expense,
+            amount: Money(decimalString: "12", currencyCode: "CNY"),
+            categoryID: originalCategoryID,
+            accountID: accountID,
+            ledgerID: ledgerID,
+            note: "first"
+        )
+        let second = try store.createTransaction(
+            type: .expense,
+            amount: Money(decimalString: "18", currencyCode: "CNY"),
+            categoryID: originalCategoryID,
+            accountID: accountID,
+            ledgerID: ledgerID,
+            note: "second"
+        )
+
+        let changes = try store.changeTransactionCategories(
+            ids: [first.id, second.id],
+            categoryID: replacementCategoryID
+        )
+
+        XCTAssertEqual(Set(changes.map(\.transactionID)), [first.id, second.id])
+        XCTAssertTrue(changes.allSatisfy { $0.previousCategoryID == originalCategoryID })
+        XCTAssertEqual(store.visibleTransactions.first { $0.id == first.id }?.categoryID, replacementCategoryID)
+
+        try store.restoreTransactionCategories(changes)
+
+        XCTAssertEqual(store.visibleTransactions.first { $0.id == first.id }?.categoryID, originalCategoryID)
+        XCTAssertEqual(store.visibleTransactions.first { $0.id == second.id }?.categoryID, originalCategoryID)
+    }
+
+    @MainActor
+    func testBatchRestoringTransactionCategoriesRejectsMissingCategoryWithoutMutating() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let accountID = try XCTUnwrap(store.accounts.first?.id)
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let originalCategoryID = try XCTUnwrap(store.categories.first { $0.kind == .expense }?.id)
+        let replacementCategoryID = try XCTUnwrap(store.categories.dropFirst().first { $0.kind == .expense }?.id)
+        let transaction = try store.createTransaction(
+            type: .expense,
+            amount: Money(decimalString: "12", currencyCode: "CNY"),
+            categoryID: originalCategoryID,
+            accountID: accountID,
+            ledgerID: ledgerID,
+            note: "expense"
+        )
+        let changes = try store.changeTransactionCategories(ids: [transaction.id], categoryID: replacementCategoryID)
+        let invalidChanges = [
+            BatchTransactionCategoryChange(transactionID: transaction.id, previousCategoryID: UUID())
+        ]
+
+        XCTAssertThrowsError(try store.restoreTransactionCategories(invalidChanges)) { error in
+            XCTAssertEqual(error as? SwiftDataBookkeepingStoreError, .invalidCategory)
+        }
+        XCTAssertEqual(store.visibleTransactions.first { $0.id == transaction.id }?.categoryID, replacementCategoryID)
+        XCTAssertEqual(changes.count, 1)
+    }
+
+    @MainActor
     func testCreatesTransferAndUpdatesBothAccountBalancesWithoutAffectingSummary() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()
