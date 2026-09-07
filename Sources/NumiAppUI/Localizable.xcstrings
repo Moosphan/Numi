@@ -7322,6 +7322,87 @@
         }
       }
     },
+    "siri.shortcuts.example": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用 Numi 记录午餐 28 元" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Record lunch for 28 with Numi" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "用 Numi 記錄午餐 28 元" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Numiでランチを28元で記録" } }
+      }
+    },
+    "siri.shortcuts.example.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "试试这样说" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Try saying" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "試著這樣說" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "このように話しかけてみましょう" } }
+      }
+    },
+    "siri.shortcuts.status.ready": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 服务已配置" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI service configured" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 服務已設定" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIサービスを設定済み" } }
+      }
+    },
+    "siri.shortcuts.status.setup": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "先配置 AI 服务" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Set up an AI service first" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "請先設定 AI 服務" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "先にAIサービスを設定" } }
+      }
+    },
+    "siri.shortcuts.step.open": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "在“快捷指令”中搜索“Numi”，添加“记录交易”操作。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "In Shortcuts, search for Numi and add the Record Transaction action." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "在「捷徑」中搜尋「Numi」，加入「記錄交易」操作。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "ショートカットで「Numi」を検索し、「取引を記録」アクションを追加します。" } }
+      }
+    },
+    "siri.shortcuts.step.record": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "运行快捷指令，输入或说出一笔账；Numi 会先解析再保存。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Run the shortcut and type or speak a transaction. Numi parses it before saving." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "執行捷徑，輸入或說出一筆帳；Numi 會先解析再儲存。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "ショートカットを実行して取引を入力または話します。Numiが解析してから保存します。" } }
+      }
+    },
+    "siri.shortcuts.step.setup": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "先在“AI 服务配置”中保存并测试可用的 API Key。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "First save and test a working API key in AI Service Configuration." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "先在「AI 服務設定」中儲存並測試可用的 API Key。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "まず「AIサービス設定」で利用可能なAPIキーを保存してテストします。" } }
+      }
+    },
+    "siri.shortcuts.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用语音或快捷指令快速记录一笔账" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Record a transaction quickly with voice or Shortcuts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "使用語音或捷徑快速記錄一筆帳" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "音声またはショートカットで取引をすばやく記録" } }
+      }
+    },
+    "siri.shortcuts.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Siri 与快捷指令记账" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Siri & Shortcuts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Siri 與捷徑記帳" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Siriとショートカット" } }
+      }
+    },
     "sync.title": {
       "extractionState": "manual",
       "localizations": {

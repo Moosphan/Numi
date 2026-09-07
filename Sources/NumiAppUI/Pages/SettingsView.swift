@@ -353,6 +353,23 @@ public struct SettingsView: View {
                                 editingDeepseekKey = deepseekAPIKey
                             }
                     }
+
+                    Divider()
+                        .padding(.leading, NumiSpacing.s4 + 36 + NumiSpacing.s3)
+
+                    NavigationLink {
+                        SiriShortcutsGuideView(isAIConfigured: hasAPIKey)
+                    } label: {
+                        settingsRow(
+                            NumiLocalized.string("siri.shortcuts.title"),
+                            icon: "mic.and.signal.meter",
+                            trailingText: NumiLocalized.string(
+                                hasAPIKey ? "siri.shortcuts.status.ready" : "siri.shortcuts.status.setup"
+                            )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings.siriShortcuts")
                 }
             }
             .padding(.horizontal, NumiSpacing.s5)

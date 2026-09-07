@@ -77,6 +77,22 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testSiriShortcutGuideCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (title: "Siri 与快捷指令记账", summary: "用语音或快捷指令快速记录一笔账", example: "用 Numi 记录午餐 28 元"),
+            "en": (title: "Siri & Shortcuts", summary: "Record a transaction quickly with voice or Shortcuts", example: "Record lunch for 28 with Numi"),
+            "zh-Hant": (title: "Siri 與捷徑記帳", summary: "使用語音或捷徑快速記錄一筆帳", example: "用 Numi 記錄午餐 28 元"),
+            "ja": (title: "Siriとショートカット", summary: "音声またはショートカットで取引をすばやく記録", example: "Numiでランチを28元で記録" )
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("siri.shortcuts.title", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("siri.shortcuts.summary", locale: locale), expected.summary)
+            XCTAssertEqual(NumiLocalized.lookup("siri.shortcuts.example", locale: locale), expected.example)
+        }
+    }
+
     func testCurrencyPreviewBadgeCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": "功能预览",
