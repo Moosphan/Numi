@@ -320,6 +320,7 @@ public struct MembershipBenefitsView: View {
             .init(id: "subscriptions", titleKey: "membership.comparison.subscriptions", free: .text("membership.comparison.three")),
             .init(id: "installments", titleKey: "membership.comparison.installments", free: .text("membership.comparison.two")),
             .init(id: "encryptedBackup", titleKey: "membership.comparison.encryptedBackup", free: .unavailable),
+            .init(id: "premiumThemes", titleKey: "membership.comparison.themes", free: .unavailable),
             .init(id: "dataExport", titleKey: "membership.comparison.dataExport", free: .check),
             .init(id: "privacy", titleKey: "membership.comparison.privacy", free: .check)
         ]
