@@ -3664,6 +3664,69 @@
         "ja": { "stringUnit": { "state": "translated", "value": "詳細な洞察" } }
       }
     },
+    "insight.report.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "洞悉摘要" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Insights Summary" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "洞悉摘要" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "洞察の概要" } }
+      }
+    },
+    "insight.report.share": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "分享洞悉摘要" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Share Insights Summary" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "分享洞悉摘要" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "洞察の概要を共有" } }
+      }
+    },
+    "insight.report.account": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "账户：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Account: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "帳戶：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "口座：%@" } }
+      }
+    },
+    "insight.report.expense": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "支出：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Expenses: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "支出：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "支出：%@" } }
+      }
+    },
+    "insight.report.income": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "收入：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Income: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "收入：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "収入：%@" } }
+      }
+    },
+    "insight.report.balance": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "结余：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Balance: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "結餘：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "収支：%@" } }
+      }
+    },
+    "insight.report.change": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "支出变化：%@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Expense change: %@" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "支出變化：%@" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "支出の変化：%@" } }
+      }
+    },
     "insight.custom.range.clear": {
       "extractionState": "manual",
       "localizations": {

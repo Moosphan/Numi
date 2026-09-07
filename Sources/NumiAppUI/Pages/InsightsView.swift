@@ -305,6 +305,14 @@ public struct InsightsView: View {
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("action.insightsCustomizeModules")
+
+                        ShareLink(item: insightsReportText) {
+                            advancedOptionRow(
+                                title: NumiLocalized.string("insight.report.share"),
+                                systemImage: "square.and.arrow.up"
+                            )
+                        }
+                        .accessibilityIdentifier("action.insightsShareReport")
                     }
                 }
                 .navigationTitle(NumiLocalized.string("insight.advanced.options"))
@@ -658,6 +666,15 @@ public struct InsightsView: View {
         }
         return accounts.first { $0.id == selectedAccountID }?.localizedDisplayName
             ?? NumiLocalized.string("insight.account.all")
+    }
+
+    private var insightsReportText: String {
+        InsightsReportFormatter.text(
+            periodTitle: periodTitle,
+            accountName: selectedAccountID == nil ? nil : selectedAccountName,
+            summary: summary,
+            previousSummary: previousPeriodSummary
+        )
     }
 
     private var activeAccountFilterChip: some View {
