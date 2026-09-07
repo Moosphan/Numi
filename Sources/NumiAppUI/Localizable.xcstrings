@@ -9501,6 +9501,241 @@
         }
       }
     },
+    "currency.manual.rate": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动设置汇率"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set a Manual Rate"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手動設定匯率"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手動レートを設定"
+          }
+        }
+      }
+    },
+    "currency.manual.rate.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "离线时可自行设置当前汇率，保存后将关闭自动更新"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set the current rate yourself when offline; saving turns off automatic updates"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "離線時可自行設定目前匯率，儲存後將關閉自動更新"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オフライン時に現在のレートを設定でき、保存すると自動更新がオフになります"
+          }
+        }
+      }
+    },
+    "currency.manual.rate.save": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存汇率"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Rate"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "儲存匯率"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "レートを保存"
+          }
+        }
+      }
+    },
+    "currency.manual.rate.target": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标货币"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target Currency"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目標貨幣"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "換算先の通貨"
+          }
+        }
+      }
+    },
+    "currency.manual.rate.input": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "1 %@ 等于" } },
+        "en": { "stringUnit": { "state": "translated", "value": "1 %@ equals" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "1 %@ 等於" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "1 %@ =" } }
+      }
+    },
+    "currency.manual.rate.input.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "请输入大于 0 的数字" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Enter a number greater than zero" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "請輸入大於 0 的數字" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "0より大きい数値を入力してください" } }
+      }
+    },
+    "currency.manual.rate.saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动汇率已保存"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual rate saved"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手動匯率已儲存"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手動レートを保存しました"
+          }
+        }
+      }
+    },
+    "currency.manual.rate.active": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "手动汇率已启用" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Manual rate is active" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "手動匯率已啟用" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "手動レートを使用中" } }
+      }
+    },
+    "currency.manual.rate.active.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自动更新已关闭；移除后可重新开启" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Automatic updates are off until you remove it" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自動更新已關閉；移除後可重新開啟" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "削除するまで自動更新はオフです" } }
+      }
+    },
+    "currency.manual.rate.disable.auto.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "关闭自动更新？" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Turn off automatic updates?" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "關閉自動更新？" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "自動更新をオフにしますか？" } }
+      }
+    },
+    "currency.manual.rate.disable.auto.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "保存手动汇率会关闭所有币种的自动更新。移除手动汇率后可再次开启。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Saving a manual rate turns off automatic updates for all currencies. You can turn them back on after removing the manual rate." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "儲存手動匯率會關閉所有貨幣的自動更新。移除手動匯率後可再次開啟。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "手動レートを保存すると、すべての通貨の自動更新がオフになります。手動レートを削除すれば、再びオンにできます。" } }
+      }
+    },
+    "currency.manual.rate.disable.auto.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "保存并关闭自动更新" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Save and Turn Off" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "儲存並關閉自動更新" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "保存して自動更新をオフ" } }
+      }
+    },
+    "currency.manual.rate.remove": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "移除手动汇率" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Remove Manual Rate" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "移除手動匯率" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "手動レートを削除" } }
+      }
+    },
+    "currency.manual.rate.removed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "手动汇率已移除" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Manual rate removed" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "手動匯率已移除" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "手動レートを削除しました" } }
+      }
+    },
+    "currency.source.manual": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "汇率数据来源：手动设置" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Rate data source: Set manually" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "匯率資料來源：手動設定" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "為替レートデータソース：手動設定" } }
+      }
+    },
     "currency.source": {
       "extractionState": "manual",
       "localizations": {

@@ -34,4 +34,26 @@ final class ExchangeRateServiceTests: XCTestCase {
 
         XCTAssertEqual(converted, Money(minorUnits: 2_150, currencyCode: "JPY"))
     }
+
+    @MainActor
+    func testManualRateUpdatesTheCurrentRateAndPersistsIt() throws {
+        let suiteName = "ExchangeRateServiceTests.manualRate.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        let service = ExchangeRateService(defaults: defaults)
+
+        XCTAssertTrue(service.setManualRate(base: "CNY", quote: "USD", rate: 0.14, effectiveDate: date))
+        XCTAssertEqual(service.rate(from: "CNY", to: "USD"), 0.14)
+        XCTAssertEqual(service.history.snapshot(baseCode: "CNY", on: date)?.rates["USD"], 0.14)
+        XCTAssertTrue(service.usesManualRate)
+
+        let restoredService = ExchangeRateService(defaults: defaults)
+        XCTAssertEqual(restoredService.rate(from: "CNY", to: "USD"), 0.14)
+        XCTAssertTrue(restoredService.usesManualRate)
+
+        restoredService.clearManualRate()
+        XCTAssertFalse(restoredService.usesManualRate)
+        XCTAssertNil(restoredService.rateData)
+    }
 }

@@ -110,6 +110,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testManualExchangeRateCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (action: "手动设置汇率", description: "离线时可自行设置当前汇率，保存后将关闭自动更新", save: "保存汇率", source: "汇率数据来源：手动设置"),
+            "en": (action: "Set a Manual Rate", description: "Set the current rate yourself when offline; saving turns off automatic updates", save: "Save Rate", source: "Rate data source: Set manually"),
+            "zh-Hant": (action: "手動設定匯率", description: "離線時可自行設定目前匯率，儲存後將關閉自動更新", save: "儲存匯率", source: "匯率資料來源：手動設定"),
+            "ja": (action: "手動レートを設定", description: "オフライン時に現在のレートを設定でき、保存すると自動更新がオフになります", save: "レートを保存", source: "為替レートデータソース：手動設定")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("currency.manual.rate", locale: locale), expected.action)
+            XCTAssertEqual(NumiLocalized.lookup("currency.manual.rate.desc", locale: locale), expected.description)
+            XCTAssertEqual(NumiLocalized.lookup("currency.manual.rate.save", locale: locale), expected.save)
+            XCTAssertEqual(NumiLocalized.lookup("currency.source.manual", locale: locale), expected.source)
+        }
+    }
+
     func testMissingHistoricalRateCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": "缺少历史汇率，无法汇总",

@@ -11,6 +11,7 @@ public struct CurrencyManagementView: View {
     @State private var toastMessage: String?
     @State private var toastIsError = false
     @State private var showToast = false
+    @State private var showsManualRateEditor = false
     @State private var membershipPaywallContext: MembershipPaywallContext?
     @FocusState private var isSearchFocused: Bool
 
@@ -53,6 +54,27 @@ public struct CurrencyManagementView: View {
             }
         }
         .membershipPaywall(context: $membershipPaywallContext)
+        .sheet(isPresented: $showsManualRateEditor) {
+            ManualExchangeRateEditor(
+                baseCode: defaultCurrencyCode,
+                rateForQuote: { rateService.rate(from: defaultCurrencyCode, to: $0) },
+                requiresAutoUpdateDisableConfirmation: isAutoUpdateEnabled,
+                onSave: { quoteCode, rate in
+                    let didSave = rateService.setManualRate(
+                        base: defaultCurrencyCode,
+                        quote: quoteCode,
+                        rate: rate
+                    )
+                    if didSave {
+                        isAutoUpdateEnabled = false
+                        showToast(NumiLocalized.string("currency.manual.rate.saved"))
+                    }
+                    return didSave
+                }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationCornerRadius(28)
+        }
         .overlay(alignment: .bottom) {
             if showToast, let message = toastMessage {
                 Text(message)
@@ -215,6 +237,78 @@ public struct CurrencyManagementView: View {
             }
             .buttonStyle(.plain)
             .disabled(isRefreshing)
+
+            Divider()
+                .padding(.leading, 36 + NumiSpacing.s3)
+
+            Button {
+                showsManualRateEditor = true
+            } label: {
+                HStack(spacing: NumiSpacing.s3) {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 17, weight: .semibold))
+                        .frame(width: 36, height: 36)
+                        .background(NumiColor.iconBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                        .foregroundStyle(NumiColor.accentPrimary)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(NumiLocalized.string("currency.manual.rate"))
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(NumiColor.textPrimary)
+                        Text(NumiLocalized.string("currency.manual.rate.desc"))
+                            .font(NumiFont.footnote)
+                            .foregroundStyle(NumiColor.textTertiary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(NumiColor.textTertiary)
+                }
+                .padding(.horizontal, NumiSpacing.s4)
+                .padding(.vertical, 14)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("currency.manualRate")
+
+            if rateService.usesManualRate {
+                Divider()
+                    .padding(.leading, 36 + NumiSpacing.s3)
+
+                HStack(spacing: NumiSpacing.s3) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 17, weight: .semibold))
+                        .frame(width: 36, height: 36)
+                        .background(NumiColor.iconBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                        .foregroundStyle(NumiColor.accentPrimary)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(NumiLocalized.string("currency.manual.rate.active"))
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(NumiColor.textPrimary)
+                        Text(NumiLocalized.string("currency.manual.rate.active.desc"))
+                            .font(NumiFont.footnote)
+                            .foregroundStyle(NumiColor.textTertiary)
+                    }
+
+                    Spacer(minLength: NumiSpacing.s2)
+
+                    Button(NumiLocalized.string("currency.manual.rate.remove")) {
+                        rateService.clearManualRate()
+                        showToast(NumiLocalized.string("currency.manual.rate.removed"))
+                    }
+                    .font(NumiFont.bodySmall)
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .accessibilityHint(NumiLocalized.string("currency.manual.rate.active.desc"))
+                }
+                .padding(.horizontal, NumiSpacing.s4)
+                .padding(.vertical, 14)
+                .accessibilityElement(children: .contain)
+            }
         }
         .background(NumiColor.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
@@ -371,7 +465,7 @@ public struct CurrencyManagementView: View {
                 .font(.system(size: 14))
                 .foregroundStyle(NumiColor.textTertiary)
 
-            Text(NumiLocalized.string("currency.source"))
+            Text(NumiLocalized.string(rateService.usesManualRate ? "currency.source.manual" : "currency.source"))
                 .font(NumiFont.caption)
                 .foregroundStyle(NumiColor.textTertiary)
         }
@@ -437,5 +531,148 @@ public struct CurrencyManagementView: View {
                 showToast = false
             }
         }
+    }
+}
+
+private struct ManualExchangeRateEditor: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let baseCode: String
+    let rateForQuote: (String) -> Double?
+    let requiresAutoUpdateDisableConfirmation: Bool
+    let onSave: (String, Double) -> Bool
+
+    @State private var quoteCode: String
+    @State private var rateText = ""
+    @State private var showsAutoUpdateDisableConfirmation = false
+    @FocusState private var isRateInputFocused: Bool
+
+    init(
+        baseCode: String,
+        rateForQuote: @escaping (String) -> Double?,
+        requiresAutoUpdateDisableConfirmation: Bool,
+        onSave: @escaping (String, Double) -> Bool
+    ) {
+        self.baseCode = baseCode.uppercased()
+        self.rateForQuote = rateForQuote
+        self.requiresAutoUpdateDisableConfirmation = requiresAutoUpdateDisableConfirmation
+        self.onSave = onSave
+        let fallbackQuote = CurrencyDefinition.all.first { $0.code != baseCode.uppercased() }?.code ?? "USD"
+        _quoteCode = State(initialValue: fallbackQuote)
+    }
+
+    private var availableQuotes: [CurrencyDefinition] {
+        CurrencyDefinition.all.filter { $0.code != baseCode }
+    }
+
+    private var parsedRate: Double? {
+        let normalized = rateText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let rate = Double(normalized), rate.isFinite, rate > 0 else { return nil }
+        return rate
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker(NumiLocalized.string("currency.manual.rate.target"), selection: $quoteCode) {
+                        ForEach(availableQuotes) { currency in
+                            Text("\(currency.name) (\(currency.code))")
+                                .tag(currency.code)
+                        }
+                    }
+                }
+
+                Section {
+                    HStack(spacing: NumiSpacing.s2) {
+                        Text(NumiLocalized.string("currency.manual.rate.input", baseCode))
+                            .foregroundStyle(NumiColor.textSecondary)
+                        TextField("0.0000", text: $rateText)
+                            #if os(iOS)
+                            .keyboardType(.decimalPad)
+                            #endif
+                            .multilineTextAlignment(.trailing)
+                            .monospacedDigit()
+                            .layoutPriority(1)
+                            .focused($isRateInputFocused)
+                            .accessibilityLabel(NumiLocalized.string("currency.manual.rate.input", baseCode))
+                            .accessibilityValue(rateText)
+                            .accessibilityHint(NumiLocalized.string("currency.manual.rate.input.hint"))
+                            .accessibilityIdentifier("input.currencyManualRate")
+                        Text(quoteCode)
+                            .foregroundStyle(NumiColor.textSecondary)
+                    }
+                    Text(NumiLocalized.string("currency.manual.rate.desc"))
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.textTertiary)
+                }
+            }
+            .navigationTitle(NumiLocalized.string("currency.manual.rate"))
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(NumiLocalized.string("common.cancel")) {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(NumiLocalized.string("currency.manual.rate.save")) {
+                        guard parsedRate != nil else { return }
+                        if requiresAutoUpdateDisableConfirmation {
+                            showsAutoUpdateDisableConfirmation = true
+                        } else {
+                            saveRate()
+                        }
+                    }
+                    .disabled(parsedRate == nil)
+                }
+            }
+            #if os(iOS)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(NumiLocalized.string("common.done")) {
+                        isRateInputFocused = false
+                    }
+                }
+            }
+            #endif
+            .alert(
+                NumiLocalized.string("currency.manual.rate.disable.auto.title"),
+                isPresented: $showsAutoUpdateDisableConfirmation
+            ) {
+                Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
+                Button(NumiLocalized.string("currency.manual.rate.disable.auto.confirm")) {
+                    saveRate()
+                }
+            } message: {
+                Text(NumiLocalized.string("currency.manual.rate.disable.auto.message"))
+            }
+            .onAppear {
+                fillRateText(for: quoteCode)
+            }
+            .onChange(of: quoteCode) { _, newValue in
+                fillRateText(for: newValue)
+            }
+        }
+    }
+
+    private func fillRateText(for quoteCode: String) {
+        guard let rate = rateForQuote(quoteCode) else {
+            rateText = ""
+            return
+        }
+        rateText = rate.formatted(
+            .number
+                .locale(Locale(identifier: "en_US_POSIX"))
+                .precision(.fractionLength(0...8))
+        )
+    }
+
+    private func saveRate() {
+        guard let parsedRate, onSave(quoteCode, parsedRate) else { return }
+        dismiss()
     }
 }

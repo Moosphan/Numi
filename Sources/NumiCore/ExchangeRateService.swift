@@ -113,14 +113,17 @@ public final class ExchangeRateService: ObservableObject {
 
     private let cacheKey = "app.currency.exchangeRates"
     private let historyCacheKey = "app.currency.exchangeRateHistory"
+    private let manualRateCacheKey = "app.currency.exchangeRates.isManual"
     private let defaults: UserDefaults
 
     @Published public private(set) var rateData: ExchangeRateData?
     @Published public private(set) var history: ExchangeRateHistory
+    @Published public private(set) var usesManualRate: Bool
 
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         self.history = ExchangeRateHistory()
+        self.usesManualRate = false
         loadCached()
     }
 
@@ -171,6 +174,7 @@ public final class ExchangeRateService: ObservableObject {
             )
             self.rateData = rateData
             history.append(snapshot)
+            usesManualRate = false
             saveCache(rateData)
             return .success
         } catch {
@@ -193,8 +197,62 @@ public final class ExchangeRateService: ObservableObject {
         return amount * rate
     }
 
+    /// Saves a locally entered current exchange rate without requesting an
+    /// external provider. This remains available when automatic updates are off.
+    @MainActor
+    @discardableResult
+    public func setManualRate(
+        base: String,
+        quote: String,
+        rate: Double,
+        effectiveDate: Date = Date()
+    ) -> Bool {
+        let normalizedBase = base.uppercased()
+        let normalizedQuote = quote.uppercased()
+        guard !normalizedBase.isEmpty,
+              !normalizedQuote.isEmpty,
+              rate.isFinite,
+              rate > 0
+        else {
+            return false
+        }
+
+        var rates = history.snapshot(baseCode: normalizedBase, on: effectiveDate)?.rates
+            ?? (rateData?.baseCode == normalizedBase ? rateData?.rates : nil)
+            ?? [:]
+        rates[normalizedBase] = 1
+        rates[normalizedQuote] = normalizedBase == normalizedQuote ? 1 : rate
+
+        let snapshot = ExchangeRateSnapshot(
+            baseCode: normalizedBase,
+            rates: rates,
+            effectiveDate: effectiveDate
+        )
+        history.append(snapshot)
+        let data = ExchangeRateData(
+            baseCode: normalizedBase,
+            rates: rates,
+            lastUpdated: effectiveDate
+        )
+        rateData = data
+        usesManualRate = true
+        saveCache(data)
+        return true
+    }
+
+    /// Removes the active manual rate from the current-rate display. Historical
+    /// snapshots remain intact so records already saved with that rate stay stable.
+    @MainActor
+    public func clearManualRate() {
+        usesManualRate = false
+        rateData = nil
+        defaults.removeObject(forKey: cacheKey)
+        defaults.set(false, forKey: manualRateCacheKey)
+    }
+
     public func replaceHistory(_ history: ExchangeRateHistory) {
         self.history = history
+        usesManualRate = false
         if let latest = history.snapshots.last {
             rateData = ExchangeRateData(baseCode: latest.baseCode, rates: latest.rates, lastUpdated: latest.effectiveDate)
         }
@@ -206,6 +264,7 @@ public final class ExchangeRateService: ObservableObject {
     // MARK: - Persistence
 
     private func loadCached() {
+        usesManualRate = defaults.bool(forKey: manualRateCacheKey)
         if let historyData = defaults.data(forKey: historyCacheKey),
            let decodedHistory = try? JSONDecoder().decode(ExchangeRateHistory.self, from: historyData) {
             history = decodedHistory
@@ -224,6 +283,7 @@ public final class ExchangeRateService: ObservableObject {
         if let historyData = try? JSONEncoder().encode(history) {
             defaults.set(historyData, forKey: historyCacheKey)
         }
+        defaults.set(usesManualRate, forKey: manualRateCacheKey)
     }
 
     private static func effectiveDate(from value: String?) -> Date? {
