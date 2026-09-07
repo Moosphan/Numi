@@ -24,6 +24,7 @@ public enum NumiColor {
     public static var toolbarIcon: Color { derivedToolbarIcon }
     public static var controlFill: Color { derivedControlFill }
     public static var controlFillStrong: Color { derivedControlFillStrong }
+    public static var onControlFillStrong: Color { contrastingText(for: derivedControlFillStrong) }
     public static var iconBackground: Color { derivedIconBackground }
     public static var separator: Color { textPrimary.opacity(0.08) }
 
@@ -117,6 +118,25 @@ public enum NumiColor {
             return mix(base: hexColor(palette.background), overlay: hexColor(palette.primary), amount: 0.18)
         }
         return mix(base: hexColor(palette.background), overlay: hexColor(palette.primary), amount: 0.12)
+    }
+
+    private static func contrastingText(for background: Color) -> Color {
+        #if canImport(UIKit)
+        let uiColor = UIColor(background)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        guard uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return .black }
+        let luminance = 0.2126 * linearized(red) + 0.7152 * linearized(green) + 0.0722 * linearized(blue)
+        let blackContrast = (luminance + 0.05) / 0.05
+        let whiteContrast = 1.05 / (luminance + 0.05)
+        return blackContrast >= whiteContrast ? .black : .white
+        #else
+        return .black
+        #endif
+    }
+
+    private static func linearized(_ component: CGFloat) -> Double {
+        let value = Double(component)
+        return value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
     }
 
     // MARK: - Helpers

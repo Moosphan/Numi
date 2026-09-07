@@ -8,16 +8,38 @@ final class MembershipCommerceTests: XCTestCase {
         XCTAssertEqual(product.price, 8)
     }
 
-    func testPaywallBenefitsIncludeReleasedPlannedSpendingForecast() throws {
-        let forecast = try XCTUnwrap(
-            MembershipBenefit.paywallBenefits.first { $0.id == MembershipCommercialOffering.plannedSpendingForecast.rawValue }
+    func testPaywallBenefitsPresentSevenFocusedCoreAndPreviewCapabilities() throws {
+        let scheduledBills = try XCTUnwrap(
+            MembershipBenefit.paywallBenefits.first { $0.id == "scheduledBills" }
+        )
+        let currency = try XCTUnwrap(
+            MembershipBenefit.paywallBenefits.first { $0.id == "currencyPreview" }
+        )
+        let cloudSync = try XCTUnwrap(
+            MembershipBenefit.paywallBenefits.first { $0.id == "cloudSyncPreview" }
+        )
+        let aiRecord = try XCTUnwrap(
+            MembershipBenefit.paywallBenefits.first { $0.id == "aiRecordPreview" }
+        )
+        let themes = try XCTUnwrap(
+            MembershipBenefit.paywallBenefits.first { $0.id == MembershipCommercialOffering.premiumThemes.rawValue }
         )
 
-        XCTAssertEqual(MembershipBenefit.paywallBenefits.count, 5)
-        XCTAssertEqual(forecast.availability, .included)
-        XCTAssertEqual(forecast.icon, "calendar.badge.clock")
-        XCTAssertEqual(forecast.titleKey, "membership.benefit.forecast.title")
-        XCTAssertEqual(MembershipCommercialOffering.allCases.count, 5)
+        XCTAssertEqual(MembershipBenefit.paywallBenefits.count, 7)
+        XCTAssertNil(MembershipBenefit.paywallBenefits.first { $0.id == MembershipCommercialOffering.plannedSpendingForecast.rawValue })
+        XCTAssertEqual(scheduledBills.availability, .included)
+        XCTAssertEqual(scheduledBills.icon, "calendar.badge.checkmark")
+        XCTAssertEqual(scheduledBills.titleKey, "membership.benefit.scheduledBills.title")
+        XCTAssertEqual(scheduledBills.palette.illustration, "pro-membership-subscription")
+        XCTAssertEqual(currency.availability, .preview)
+        XCTAssertEqual(currency.titleKey, "membership.benefit.currency.title")
+        XCTAssertEqual(cloudSync.availability, .preview)
+        XCTAssertEqual(cloudSync.palette.illustration, "pro-membership-sync")
+        XCTAssertEqual(aiRecord.availability, .preview)
+        XCTAssertEqual(aiRecord.palette.illustration, "pro-membership-ai")
+        XCTAssertEqual(themes.availability, .included)
+        XCTAssertEqual(themes.titleKey, "membership.benefit.themes.title")
+        XCTAssertEqual(MembershipCommercialOffering.allCases.count, 6)
     }
 
     func testLifetimeWinsRegardlessOfRecurringOrder() {

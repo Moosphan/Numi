@@ -10,6 +10,7 @@ public struct MembershipBenefitsView: View {
     @State private var selectedPlan: MembershipPlan = .yearlyPro
     @State private var selectedBenefitPage = 0
     @State private var confirmLifetimeUpgrade = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .body) private var heroHeight = 300
 
     public init(controller: MembershipController? = nil, context: MembershipPaywallContext? = nil) {
@@ -77,6 +78,18 @@ public struct MembershipBenefitsView: View {
         .tabViewStyle(.page(indexDisplayMode: .never))
         #endif
         .frame(height: heroHeight)
+        .accessibilityLabel(NumiLocalized.string("membership.benefits.title"))
+        .accessibilityValue(NumiLocalized.string("membership.benefit.pager.position", Int64(selectedBenefitPage + 1), Int64(benefits.count)))
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment:
+                selectedBenefitPage = min(selectedBenefitPage + 1, benefits.count - 1)
+            case .decrement:
+                selectedBenefitPage = max(selectedBenefitPage - 1, 0)
+            @unknown default:
+                break
+            }
+        }
         .overlay(alignment: .bottom) {
             HStack(spacing: 0) {
                 ForEach(Array(benefits.enumerated()), id: \.offset) { index, benefit in
@@ -86,11 +99,11 @@ public struct MembershipBenefitsView: View {
                         Capsule()
                             .fill(benefits[selectedBenefitPage].palette.ink.opacity(selectedBenefitPage == index ? 0.75 : 0.20))
                             .frame(width: selectedBenefitPage == index ? 18 : 5, height: 5)
-                            .frame(width: 32, height: 28)
+                            .frame(width: 36, height: 44)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(NumiLocalized.string(benefit.titleKey))
+                    .accessibilityLabel("\(NumiLocalized.string(benefit.titleKey)). \(NumiLocalized.string("membership.benefit.pager.position", Int64(index + 1), Int64(benefits.count)))")
                     .accessibilityAddTraits(selectedBenefitPage == index ? [.isSelected] : [])
                 }
             }
@@ -101,7 +114,7 @@ public struct MembershipBenefitsView: View {
     }
 
     private var introduction: some View {
-        VStack(spacing: NumiSpacing.s2) {
+        VStack(spacing: dynamicTypeSize.isAccessibilitySize ? NumiSpacing.s1 : NumiSpacing.s2) {
             Text(NumiLocalized.string("membership.unlock.title"))
                 .font(NumiFont.title)
                 .foregroundStyle(NumiColor.textPrimary)
@@ -183,7 +196,7 @@ public struct MembershipBenefitsView: View {
     }
 
     private var purchaseDock: some View {
-        VStack(spacing: NumiSpacing.s2) {
+        VStack(spacing: dynamicTypeSize.isAccessibilitySize ? NumiSpacing.s1 : NumiSpacing.s2) {
             if let errorKey = membership.productErrorKey {
                 Button {
                     Task { await membership.loadProducts() }
@@ -208,7 +221,7 @@ public struct MembershipBenefitsView: View {
                     .font(NumiFont.bodyStrong)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, NumiSpacing.s4)
-                    .foregroundStyle(NumiColor.textPrimary)
+                    .foregroundStyle(NumiColor.onControlFillStrong)
                     .background(NumiColor.controlFillStrong)
                     .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
                     .shadow(color: NumiColor.accentDeep.opacity(0.09), radius: 8, y: 4)
@@ -248,7 +261,7 @@ public struct MembershipBenefitsView: View {
             .foregroundStyle(NumiColor.textTertiary)
         }
         .padding(.horizontal, NumiSpacing.s4)
-        .padding(.top, NumiSpacing.s3)
+        .padding(.top, dynamicTypeSize.isAccessibilitySize ? NumiSpacing.s2 : NumiSpacing.s3)
         .padding(.bottom, NumiSpacing.s2)
         .background {
             NumiColor.surfaceFloatingSolid
@@ -318,9 +331,12 @@ public struct MembershipBenefitsView: View {
             .init(id: "ledgers", titleKey: "membership.comparison.ledgers", free: .text("membership.comparison.two")),
             .init(id: "accounts", titleKey: "membership.comparison.accounts", free: .text("membership.comparison.twenty")),
             .init(id: "subscriptions", titleKey: "membership.comparison.subscriptions", free: .text("membership.comparison.three")),
+            .init(id: "currency", titleKey: "membership.comparison.currencies", free: .unavailable, pro: .text("membership.benefit.preview.notIncluded")),
             .init(id: "installments", titleKey: "membership.comparison.installments", free: .text("membership.comparison.two")),
+            .init(id: "cloudSync", titleKey: "membership.comparison.sync", free: .unavailable, pro: .text("membership.benefit.preview.notIncluded")),
+            .init(id: "aiRecord", titleKey: "membership.comparison.ai", free: .unavailable, pro: .text("membership.benefit.preview.notIncluded")),
+            .init(id: "premiumThemes", titleKey: "membership.comparison.themes", free: .text("membership.comparison.one")),
             .init(id: "encryptedBackup", titleKey: "membership.comparison.encryptedBackup", free: .unavailable),
-            .init(id: "premiumThemes", titleKey: "membership.comparison.themes", free: .unavailable),
             .init(id: "dataExport", titleKey: "membership.comparison.dataExport", free: .check),
             .init(id: "privacy", titleKey: "membership.comparison.privacy", free: .check)
         ]
@@ -350,27 +366,43 @@ struct MembershipBenefit: Equatable, Identifiable {
             availability: .included
         ),
         .init(
-            id: MembershipCommercialOffering.subscriptions.rawValue,
-            icon: "calendar.badge.clock",
-            titleKey: "membership.benefit.subscriptions.title",
-            detailKey: "membership.benefit.subscriptions.detail",
+            id: "scheduledBills",
+            icon: "calendar.badge.checkmark",
+            titleKey: "membership.benefit.scheduledBills.title",
+            detailKey: "membership.benefit.scheduledBills.detail",
             palette: .violet,
             availability: .included
         ),
         .init(
-            id: MembershipCommercialOffering.plannedSpendingForecast.rawValue,
-            icon: "calendar.badge.clock",
-            titleKey: "membership.benefit.forecast.title",
-            detailKey: "membership.benefit.forecast.detail",
+            id: "currencyPreview",
+            icon: "globe.americas.fill",
+            titleKey: "membership.benefit.currency.title",
+            detailKey: "membership.benefit.currency.detail",
             palette: .sky,
-            availability: .included
+            availability: .preview
         ),
         .init(
-            id: MembershipCommercialOffering.installments.rawValue,
-            icon: "checklist.checked",
-            titleKey: "membership.benefit.installments.title",
-            detailKey: "membership.benefit.installments.detail",
-            palette: .rose,
+            id: "cloudSyncPreview",
+            icon: "icloud.and.arrow.up",
+            titleKey: "membership.benefit.sync.title",
+            detailKey: "membership.benefit.sync.detail",
+            palette: .indigo,
+            availability: .preview
+        ),
+        .init(
+            id: "aiRecordPreview",
+            icon: "sparkles",
+            titleKey: "membership.benefit.ai.title",
+            detailKey: "membership.benefit.ai.detail",
+            palette: .coral,
+            availability: .preview
+        ),
+        .init(
+            id: MembershipCommercialOffering.premiumThemes.rawValue,
+            icon: "paintpalette.fill",
+            titleKey: "membership.benefit.themes.title",
+            detailKey: "membership.benefit.themes.detail",
+            palette: .teal,
             availability: .included
         ),
         .init(
@@ -385,15 +417,17 @@ struct MembershipBenefit: Equatable, Identifiable {
 }
 
 enum MembershipHeroPalette: Equatable {
-    case violet, sunset, mint, rose, sky
+    case violet, sunset, mint, sky, teal, indigo, coral
 
     var illustration: String {
         switch self {
-        case .violet: "pro-membership-ai"
+        case .violet: "pro-membership-subscription"
         case .sunset: "pro-membership-ledgers"
         case .mint: "pro-membership-security"
-        case .rose: "pro-membership-budget"
         case .sky: "pro-membership-currency"
+        case .teal: "pro-membership-themes"
+        case .indigo: "pro-membership-sync"
+        case .coral: "pro-membership-ai"
         }
     }
 
@@ -402,8 +436,10 @@ enum MembershipHeroPalette: Equatable {
         case .violet: [Color(red: 0.96, green: 0.94, blue: 0.99), Color(red: 0.88, green: 0.86, blue: 0.96)]
         case .sunset: [Color(red: 1.00, green: 0.96, blue: 0.89), Color(red: 0.98, green: 0.88, blue: 0.79)]
         case .mint: [Color(red: 0.94, green: 0.98, blue: 0.93), Color(red: 0.82, green: 0.93, blue: 0.87)]
-        case .rose: [Color(red: 1.00, green: 0.95, blue: 0.95), Color(red: 0.96, green: 0.85, blue: 0.89)]
         case .sky: [Color(red: 0.93, green: 0.98, blue: 1.00), Color(red: 0.80, green: 0.91, blue: 0.99)]
+        case .teal: [Color(red: 0.91, green: 0.99, blue: 0.97), Color(red: 0.76, green: 0.92, blue: 0.91)]
+        case .indigo: [Color(red: 0.94, green: 0.95, blue: 1.00), Color(red: 0.82, green: 0.87, blue: 0.99)]
+        case .coral: [Color(red: 1.00, green: 0.95, blue: 0.91), Color(red: 1.00, green: 0.84, blue: 0.78)]
         }
     }
 
@@ -413,8 +449,10 @@ enum MembershipHeroPalette: Equatable {
         case .violet: Color(red: 0.29, green: 0.24, blue: 0.43)
         case .sunset: Color(red: 0.43, green: 0.28, blue: 0.20)
         case .mint: Color(red: 0.18, green: 0.35, blue: 0.28)
-        case .rose: Color(red: 0.43, green: 0.25, blue: 0.33)
         case .sky: Color(red: 0.16, green: 0.32, blue: 0.49)
+        case .teal: Color(red: 0.12, green: 0.34, blue: 0.32)
+        case .indigo: Color(red: 0.20, green: 0.25, blue: 0.49)
+        case .coral: Color(red: 0.48, green: 0.22, blue: 0.19)
         }
     }
 }
@@ -454,7 +492,7 @@ private struct MembershipBenefitPagerCard: View {
                     .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(benefit.palette.ink)
                     .frame(width: 26, height: 26)
-                    .background(.white.opacity(0.65))
+                    .background(badgeBackground)
                     .clipShape(Circle())
                 Spacer()
                 Text(badgeTitle)
@@ -481,7 +519,7 @@ private struct MembershipBenefitPagerCard: View {
                 .renderingMode(.original)
                 .scaledToFit()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .accessibilityLabel(NumiLocalized.string(benefit.titleKey))
+                .accessibilityHidden(true)
                 .accessibilityIdentifier("membership.hero.illustration")
         }
         .padding(.horizontal, NumiSpacing.s4)
@@ -495,6 +533,13 @@ private struct MembershipBenefitPagerCard: View {
             isPro ? NumiLocalized.string("membership.pro.active") : "Pro"
         case .preview:
             NumiLocalized.string("membership.benefit.preview.badge")
+        }
+    }
+
+    private var badgeBackground: Color {
+        switch benefit.availability {
+        case .included: .white.opacity(0.65)
+        case .preview: benefit.palette.ink.opacity(0.12)
         }
     }
 }
@@ -570,7 +615,7 @@ private struct MembershipPlanCard: View {
     private func membershipBadge(_ text: String) -> some View {
         Text(text)
             .font(NumiFont.caption.weight(.semibold))
-            .foregroundStyle(NumiColor.accentDeep)
+            .foregroundStyle(NumiColor.onControlFillStrong)
             .padding(.horizontal, NumiSpacing.s2)
             .padding(.vertical, 3)
             .background(NumiColor.controlFillStrong, in: Capsule())
@@ -578,30 +623,67 @@ private struct MembershipPlanCard: View {
 }
 
 private struct MembershipComparisonRow: Identifiable {
-    enum FreeValue { case check, unavailable, text(String) }
+    enum Value { case check, unavailable, text(String) }
     let id: String
     let titleKey: String
-    let free: FreeValue
+    let free: Value
+    var pro: Value = .check
 }
 
 private struct MembershipComparisonRowView: View {
     let row: MembershipComparisonRow
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                accessibilitySizeLayout
+            } else {
+                standardLayout
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilitySummary)
+    }
+
+    private var standardLayout: some View {
         HStack(spacing: NumiSpacing.s2) {
             Text(NumiLocalized.string(row.titleKey))
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: NumiSpacing.s1)
-            freeValue.frame(width: 58)
-            availabilityIcon(isIncluded: true).frame(width: 58)
+            value(row.free).frame(width: 58)
+            value(row.pro).frame(width: 58)
         }
         .padding(.vertical, NumiSpacing.s3)
     }
 
-    @ViewBuilder private var freeValue: some View {
-        switch row.free {
+    private var accessibilitySizeLayout: some View {
+        VStack(alignment: .leading, spacing: NumiSpacing.s2) {
+            Text(NumiLocalized.string(row.titleKey))
+                .font(NumiFont.bodySmall)
+                .foregroundStyle(NumiColor.textSecondary)
+            HStack(spacing: NumiSpacing.s4) {
+                comparisonStatus(title: NumiLocalized.string("membership.comparison.free"), value: row.free)
+                comparisonStatus(title: "Pro", value: row.pro)
+            }
+        }
+        .padding(.vertical, NumiSpacing.s3)
+    }
+
+    private func comparisonStatus(title: String, value: MembershipComparisonRow.Value) -> some View {
+        VStack(alignment: .leading, spacing: NumiSpacing.s1) {
+            Text(title)
+                .font(NumiFont.caption)
+                .foregroundStyle(NumiColor.textTertiary)
+            self.value(value)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder private func value(_ value: MembershipComparisonRow.Value) -> some View {
+        switch value {
         case .check: availabilityIcon(isIncluded: true)
         case .unavailable: availabilityIcon(isIncluded: false)
         case .text(let key):
@@ -615,5 +697,17 @@ private struct MembershipComparisonRowView: View {
         Image(systemName: isIncluded ? "checkmark.circle.fill" : "minus.circle.fill")
             .font(.system(size: 18, weight: .semibold))
             .foregroundStyle(isIncluded ? NumiColor.accentPrimary : NumiColor.textTertiary.opacity(0.55))
+    }
+
+    private var accessibilitySummary: String {
+        "\(NumiLocalized.string(row.titleKey)). \(NumiLocalized.string("membership.comparison.free")): \(valueDescription(row.free)). Pro: \(valueDescription(row.pro))"
+    }
+
+    private func valueDescription(_ value: MembershipComparisonRow.Value) -> String {
+        switch value {
+        case .check: NumiLocalized.string("membership.comparison.included")
+        case .unavailable: NumiLocalized.string("membership.comparison.notIncluded")
+        case .text(let key): NumiLocalized.string(key)
+        }
     }
 }

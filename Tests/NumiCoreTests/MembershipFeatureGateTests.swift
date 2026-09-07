@@ -50,7 +50,7 @@ final class MembershipFeatureGateTests: XCTestCase {
     func testV1CommercialOfferingOnlyContainsReleasedProBenefits() {
         XCTAssertEqual(
             Set(MembershipCommercialOffering.allCases.map(\.rawValue)),
-            ["unlimitedOrganization", "subscriptions", "plannedSpendingForecast", "installments", "encryptedBackup"]
+            ["unlimitedOrganization", "subscriptions", "plannedSpendingForecast", "installments", "premiumThemes", "encryptedBackup"]
         )
     }
 }

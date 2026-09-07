@@ -448,20 +448,20 @@ final class AppUILocalizationBundleTests: XCTestCase {
         )
     }
 
-    func testMembershipV1BenefitsOnlyDescribeReleasedOfferings() {
+    func testMembershipBannerCopySeparatesReleasedBenefitsFromFeaturePreviews() {
         let expectedValues = [
-            "zh-Hans": (subscriptions: "更多订阅与循环记账", installments: "更多分期与还款计划", backup: "加密备份", forecast: "未来 30 天计划支出"),
-            "en": (subscriptions: "More subscriptions & recurring entries", installments: "More installments & payment plans", backup: "Encrypted backups", forecast: "Planned spending, next 30 days"),
-            "zh-Hant": (subscriptions: "更多訂閱與循環記帳", installments: "更多分期與還款計畫", backup: "加密備份", forecast: "未來 30 天計畫支出"),
-            "ja": (subscriptions: "サブスクと繰り返し記帳をもっと", installments: "分割払いと返済プランをもっと", backup: "暗号化バックアップ", forecast: "今後30日間の予定支出")
+            "zh-Hans": (bills: "订阅与分期，一处掌控", sync: "跨设备同步", ai: "AI 快速记账", preview: "功能预览 · 暂未包含"),
+            "en": (bills: "Subscriptions & installments, in one place", sync: "Cross-device sync", ai: "AI quick record", preview: "Preview · not included yet"),
+            "zh-Hant": (bills: "訂閱與分期，一處掌控", sync: "跨裝置同步", ai: "AI 快速記帳", preview: "功能預覽 · 尚未包含"),
+            "ja": (bills: "サブスクと分割払いを一元管理", sync: "デバイス間同期", ai: "AIクイック記帳", preview: "プレビュー・現在は対象外")
         ]
 
         for (language, expected) in expectedValues {
             let locale = Locale(identifier: language)
-            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.subscriptions.title", locale: locale), expected.subscriptions)
-            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.installments.title", locale: locale), expected.installments)
-            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.security.title", locale: locale), expected.backup)
-            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.forecast.title", locale: locale), expected.forecast)
+            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.scheduledBills.title", locale: locale), expected.bills)
+            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.sync.title", locale: locale), expected.sync)
+            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.ai.title", locale: locale), expected.ai)
+            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.preview.notIncluded", locale: locale), expected.preview)
         }
     }
 

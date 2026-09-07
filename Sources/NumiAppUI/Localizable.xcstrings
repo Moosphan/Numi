@@ -16098,6 +16098,24 @@
         "ja": { "stringUnit": { "state": "translated", "value": "支払い記録、繰り上げ完済、期日の変更まで、各回を明確に管理。" } }
       }
     },
+    "membership.benefit.scheduledBills.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅与分期，一处掌控" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Subscriptions & installments, in one place" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱與分期，一處掌控" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクと分割払いを一元管理" } }
+      }
+    },
+    "membership.benefit.scheduledBills.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用提醒、自动记账与还款进度，把每一笔固定支出安排明白。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Use reminders, automatic entries, and repayment progress to stay ahead of every fixed bill." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "用提醒、自動記帳與還款進度，把每一筆固定支出安排明白。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "リマインダー、自動記帳、返済の進捗で、毎月の固定支出をわかりやすく管理。" } }
+      }
+    },
     "membership.benefit.currency.title": {
       "extractionState": "manual",
       "localizations": {
@@ -16110,10 +16128,64 @@
     "membership.benefit.currency.detail": {
       "extractionState": "manual",
       "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "跨币种记录与汇总将在完成发布验证后开放。" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Cross-currency recording and totals will open after release validation." } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "跨幣種記錄與彙總將在完成發佈驗證後開放。" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "複数通貨の記録と集計は、リリース検証の完了後に提供予定です。" } }
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "跨币种记录、自动更新汇率与统一汇总，让每一次出行和消费都更清楚。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Cross-currency records, automatic rates, and unified totals make every trip and purchase clearer." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "跨幣種記錄、自動更新匯率與統一彙總，讓每一次出行和消費都更清楚。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "複数通貨の記録、自動為替レート、統一した集計で、旅先でも日々の支出でも見通しよく。" } }
+      }
+    },
+    "membership.benefit.sync.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "跨设备同步" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Cross-device sync" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "跨裝置同步" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "デバイス間同期" } }
+      }
+    },
+    "membership.benefit.sync.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "在手机与其他设备之间延续同一本账，让记录始终随手可见。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Continue the same ledger across your phone and other devices, with every record close at hand." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "在手機與其他裝置之間延續同一本帳，讓記錄始終隨手可見。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "スマートフォンと他のデバイスで同じ帳簿を続け、いつでも記録を手元に。" } }
+      }
+    },
+    "membership.benefit.ai.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 快速记账" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI quick record" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 快速記帳" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIクイック記帳" } }
+      }
+    },
+    "membership.benefit.ai.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "说一句或写一句，自动整理金额、分类与账户；保存前仍由你确认。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Say or type it once; AI prepares the amount, category, and account for your review before saving." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "說一句或寫一句，自動整理金額、分類與帳戶；儲存前仍由你確認。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "話すか入力するだけで、金額・カテゴリ・口座を下書きに整理。保存前に必ず確認できます。" } }
+      }
+    },
+    "membership.benefit.themes.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "高级主题" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Premium themes" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "進階主題" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プレミアムテーマ" } }
+      }
+    },
+    "membership.benefit.themes.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "海湾蓝、鸢尾紫与暖杏主题，让每天查看账本更舒适。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Ocean Blue, Iris Violet, and Warm Apricot make everyday reviews feel more personal." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "海灣藍、鳶尾紫與暖杏主題，讓每天查看帳本更舒適。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "オーシャンブルー、アイリスバイオレット、ウォームアプリコットで、毎日の確認をもっと心地よく。" } }
       }
     },
     "membership.benefit.forecast.title": {
@@ -16141,6 +16213,24 @@
         "en": { "stringUnit": { "state": "translated", "value": "Preview" } },
         "zh-Hant": { "stringUnit": { "state": "translated", "value": "功能預覽" } },
         "ja": { "stringUnit": { "state": "translated", "value": "プレビュー" } }
+      }
+    },
+    "membership.benefit.preview.notIncluded": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "功能预览 · 暂未包含" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Preview · not included yet" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "功能預覽 · 尚未包含" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プレビュー・現在は対象外" } }
+      }
+    },
+    "membership.benefit.pager.position": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "权益 %lld / %lld" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Benefit %lld of %lld" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "權益 %lld / %lld" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "特典 %lld / %lld" } }
       }
     },
     "membership.benefit.security.title": {
@@ -16341,6 +16431,24 @@
         "ja": { "stringUnit": { "state": "translated", "value": "分割払いプラン" } }
       }
     },
+    "membership.comparison.sync": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "跨设备同步" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Cross-device sync" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "跨裝置同步" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "デバイス間同期" } }
+      }
+    },
+    "membership.comparison.ai": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 快速记账" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI quick record" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 快速記帳" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIクイック記帳" } }
+      }
+    },
     "membership.comparison.encryptedBackup": {
       "extractionState": "manual",
       "localizations": {
@@ -16375,6 +16483,15 @@
         "en": { "stringUnit": { "state": "translated", "value": "Currencies & rates" } },
         "zh-Hant": { "stringUnit": { "state": "translated", "value": "多貨幣與匯率" } },
         "ja": { "stringUnit": { "state": "translated", "value": "複数通貨と為替レート" } }
+      }
+    },
+    "membership.comparison.forecast": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未来 30 天计划支出" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Planned spending, next 30 days" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未來 30 天計畫支出" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "今後30日間の予定支出" } }
       }
     },
     "membership.comparison.security": {
@@ -16431,6 +16548,15 @@
         "ja": { "stringUnit": { "state": "translated", "value": "非対応" } }
       }
     },
+    "membership.comparison.included": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已包含" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Included" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已包含" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "含まれます" } }
+      }
+    },
     "membership.purchase.unavailable": {
       "extractionState": "manual",
       "localizations": {
@@ -16452,10 +16578,10 @@
     "membership.paywall.description": {
       "extractionState": "manual",
       "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "解锁更多空间与守护：无限账本、账户、订阅和分期，以及加密备份。" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Unlock more room and protection: unlimited ledgers, accounts, subscriptions, installments, and encrypted backups." } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "解鎖更多空間與守護：無限帳本、帳戶、訂閱和分期，以及加密備份。" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "帳簿、口座、サブスク、分割払いを無制限に。暗号化バックアップも利用できます。" } }
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "解锁更多空间、从容规划、个性外观与数据守护：无限账本、账户、订阅和分期，高级主题与加密备份。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unlock more space, calmer planning, personal style, and protection: unlimited ledgers, accounts, subscriptions, installments, premium themes, and encrypted backups." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "解鎖更多空間、從容規劃、個性外觀與資料守護：無限帳本、帳戶、訂閱和分期，進階主題與加密備份。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "より多くの管理枠、ゆとりある計画、あなたらしいスタイルと保護を。帳簿・口座・サブスク・分割払いの無制限、プレミアムテーマ、暗号化バックアップを利用できます。" } }
       }
     },
     "membership.unlock.title": {

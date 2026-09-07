@@ -51,6 +51,7 @@ public enum MembershipCommercialOffering: String, CaseIterable, Sendable {
     case subscriptions
     case plannedSpendingForecast
     case installments
+    case premiumThemes
     case encryptedBackup
 }
 
