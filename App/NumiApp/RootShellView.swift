@@ -558,6 +558,9 @@ struct RootShellView: View {
                 onApplyCustomRange: { range in
                     insightsCustomRange = range
                 },
+                onClearCustomRange: {
+                    insightsCustomRange = nil
+                },
                 onApplyAccountFilter: { accountID in
                     insightsAccountID = accountID
                 },

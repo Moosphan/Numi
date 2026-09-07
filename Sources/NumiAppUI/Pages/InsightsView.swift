@@ -63,6 +63,7 @@ public struct InsightsView: View {
     private let onNextPeriod: () -> Void
     private let onTimeDimensionChange: (InsightsTimeDimension) -> Void
     private let onApplyCustomRange: (InsightsCustomRange) -> Void
+    private let onClearCustomRange: () -> Void
     private let onApplyAccountFilter: (UUID?) -> Void
     private let onSelectCategory: (InsightsDistributionRow, String) -> Void
 
@@ -70,6 +71,7 @@ public struct InsightsView: View {
     @State private var customRangeStart = Date()
     @State private var customRangeEnd = Date()
     @State private var showsCustomRangeEditor = false
+    @State private var showsAdvancedOptions = false
     @State private var showsModuleCustomizer = false
     @State private var showsAccountFilterPicker = false
     @State private var draftAccountID: UUID?
@@ -97,6 +99,7 @@ public struct InsightsView: View {
         onNextPeriod: @escaping () -> Void = {},
         onTimeDimensionChange: @escaping (InsightsTimeDimension) -> Void = { _ in },
         onApplyCustomRange: @escaping (InsightsCustomRange) -> Void = { _ in },
+        onClearCustomRange: @escaping () -> Void = {},
         onApplyAccountFilter: @escaping (UUID?) -> Void = { _ in },
         onSelectCategory: @escaping (InsightsDistributionRow, String) -> Void = { _, _ in }
     ) {
@@ -115,6 +118,7 @@ public struct InsightsView: View {
         self.onNextPeriod = onNextPeriod
         self.onTimeDimensionChange = onTimeDimensionChange
         self.onApplyCustomRange = onApplyCustomRange
+        self.onClearCustomRange = onClearCustomRange
         self.onApplyAccountFilter = onApplyAccountFilter
         self.onSelectCategory = onSelectCategory
     }
@@ -123,75 +127,32 @@ public struct InsightsView: View {
         NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.insightsHome") {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // Time dimension - capsule style with sliding indicator
-                CapsuleTabPicker(
-                    options: InsightsTimeDimension.allCases.map(\.displayName),
-                    selectedIndex: InsightsTimeDimension.allCases.firstIndex(of: selectedDimension) ?? 0
-                ) { index in
-                    let dim = InsightsTimeDimension.allCases[index]
-                    selectedDimension = dim
-                    onTimeDimensionChange(dim)
-                }
-                .padding(.horizontal, 2)
-                .padding(.vertical, 2)
-
                 HStack(spacing: NumiSpacing.s2) {
-                    Button {
-                        startCustomRangeSelection()
-                    } label: {
-                        HStack(spacing: NumiSpacing.s3) {
-                            Image(systemName: "calendar.badge.clock")
-                                .font(.system(size: 15, weight: .semibold))
-                            Text(customRange == nil ? "insight.custom.range" : "insight.custom.range.active")
-                                .font(NumiFont.bodyStrong)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .semibold))
-                        }
-                        .foregroundStyle(NumiColor.accentDeep)
-                        .padding(.horizontal, NumiSpacing.s4)
-                        .frame(height: 42)
-                        .background(NumiColor.surfaceCardSubtle)
-                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                    CapsuleTabPicker(
+                        options: InsightsTimeDimension.allCases.map(\.displayName),
+                        selectedIndex: InsightsTimeDimension.allCases.firstIndex(of: selectedDimension) ?? 0
+                    ) { index in
+                        let dim = InsightsTimeDimension.allCases[index]
+                        selectedDimension = dim
+                        onTimeDimensionChange(dim)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("action.insightsCustomRange")
+                    .padding(.horizontal, 2)
+                    .padding(.vertical, 2)
 
                     Button {
-                        startModuleCustomization()
+                        openAdvancedOptions()
                     } label: {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(.system(size: 15, weight: .semibold))
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                            .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(NumiColor.accentDeep)
                             .frame(width: 42, height: 42)
                             .background(NumiColor.surfaceCardSubtle)
-                            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                            .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(NumiLocalized.string("insight.customize.modules"))
-                    .accessibilityIdentifier("action.insightsCustomizeModules")
+                    .accessibilityLabel(NumiLocalized.string("insight.advanced.options"))
+                    .accessibilityIdentifier("action.insightsAdvancedOptions")
                 }
-
-                Button {
-                    startAccountFilterSelection()
-                } label: {
-                    HStack(spacing: NumiSpacing.s3) {
-                        Image(systemName: "building.2")
-                            .font(.system(size: 15, weight: .semibold))
-                        Text(selectedAccountName)
-                            .font(NumiFont.bodyStrong)
-                            .lineLimit(1)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .semibold))
-                    }
-                    .foregroundStyle(NumiColor.accentDeep)
-                    .padding(.horizontal, NumiSpacing.s4)
-                    .frame(height: 42)
-                    .background(NumiColor.surfaceCardSubtle)
-                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("action.insightsAccountFilter")
 
                 // Period navigation
                 HStack(spacing: NumiSpacing.s3) {
@@ -232,6 +193,10 @@ public struct InsightsView: View {
                     .disabled(customRange != nil)
                 }
                 .padding(.horizontal, NumiSpacing.s4)
+
+                if selectedAccountID != nil {
+                    activeAccountFilterChip
+                }
 
                 // Summary grid
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: NumiSpacing.s3) {
@@ -288,6 +253,71 @@ public struct InsightsView: View {
         .background(NumiColor.surfacePage)
         .navigationTitle(Text(NumiLocalized.string("insight.title")))
         .modifier(LargeTitleNavigationChrome())
+        .sheet(isPresented: $showsAdvancedOptions) {
+            NavigationStack {
+                List {
+                    Section {
+                        Button {
+                            presentCustomRangeEditor()
+                        } label: {
+                            advancedOptionRow(
+                                title: NumiLocalized.string("insight.custom.range"),
+                                systemImage: "calendar.badge.clock"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("action.insightsCustomRange")
+
+                        if customRange != nil {
+                            Button {
+                                onClearCustomRange()
+                                showsAdvancedOptions = false
+                            } label: {
+                                advancedOptionRow(
+                                    title: NumiLocalized.string("insight.custom.range.clear"),
+                                    systemImage: "calendar"
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
+                    Section {
+                        Button {
+                            presentAccountFilterPicker()
+                        } label: {
+                            advancedOptionRow(
+                                title: NumiLocalized.string("insight.account.filter.title"),
+                                detail: selectedAccountID == nil ? nil : selectedAccountName,
+                                systemImage: "building.2"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("action.insightsAccountFilter")
+
+                        Button {
+                            presentModuleCustomizer()
+                        } label: {
+                            advancedOptionRow(
+                                title: NumiLocalized.string("insight.customize.modules"),
+                                systemImage: "rectangle.3.group"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("action.insightsCustomizeModules")
+                    }
+                }
+                .navigationTitle(NumiLocalized.string("insight.advanced.options"))
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(NumiLocalized.string("common.done")) {
+                            showsAdvancedOptions = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
+        }
         .sheet(isPresented: $showsCustomRangeEditor) {
             NavigationStack {
                 Form {
@@ -567,12 +597,89 @@ public struct InsightsView: View {
         }
     }
 
+    private func openAdvancedOptions() {
+        switch membership.decision(for: .openAdvancedInsights) {
+        case .granted:
+            showsAdvancedOptions = true
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
+    private func presentCustomRangeEditor() {
+        showsAdvancedOptions = false
+        DispatchQueue.main.async {
+            startCustomRangeSelection()
+        }
+    }
+
+    private func presentAccountFilterPicker() {
+        showsAdvancedOptions = false
+        DispatchQueue.main.async {
+            startAccountFilterSelection()
+        }
+    }
+
+    private func presentModuleCustomizer() {
+        showsAdvancedOptions = false
+        DispatchQueue.main.async {
+            startModuleCustomization()
+        }
+    }
+
+    @ViewBuilder
+    private func advancedOptionRow(title: String, detail: String? = nil, systemImage: String) -> some View {
+        HStack(spacing: NumiSpacing.s3) {
+            Image(systemName: systemImage)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(NumiColor.accentDeep)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.textPrimary)
+                if let detail {
+                    Text(detail)
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.textSecondary)
+                }
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(NumiColor.textTertiary)
+        }
+        .contentShape(Rectangle())
+    }
+
     private var selectedAccountName: String {
         guard let selectedAccountID else {
             return NumiLocalized.string("insight.account.all")
         }
         return accounts.first { $0.id == selectedAccountID }?.localizedDisplayName
             ?? NumiLocalized.string("insight.account.all")
+    }
+
+    private var activeAccountFilterChip: some View {
+        Button {
+            onApplyAccountFilter(nil)
+        } label: {
+            HStack(spacing: NumiSpacing.s2) {
+                Image(systemName: "building.2")
+                Text(selectedAccountName)
+                    .lineLimit(1)
+                Image(systemName: "xmark.circle.fill")
+            }
+            .font(NumiFont.bodySmall)
+            .foregroundStyle(NumiColor.accentDeep)
+            .padding(.horizontal, NumiSpacing.s3)
+            .frame(height: 32)
+            .background(NumiColor.surfaceCardSubtle)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, NumiSpacing.s4)
+        .accessibilityIdentifier("insights.activeAccountFilter")
     }
 
     private func startAccountFilterSelection() {

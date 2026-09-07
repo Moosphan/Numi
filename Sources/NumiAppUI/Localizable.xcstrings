@@ -3655,6 +3655,24 @@
         "ja": { "stringUnit": { "state": "translated", "value": "口座を絞り込む" } }
       }
     },
+    "insight.advanced.options": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "高级洞悉" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Advanced Insights" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "進階洞悉" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "詳細な洞察" } }
+      }
+    },
+    "insight.custom.range.clear": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "恢复时间维度" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Use Time Dimension" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "恢復時間維度" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "時間単位に戻す" } }
+      }
+    },
     "insight.trend.title": {
       "extractionState": "manual",
       "localizations": {
