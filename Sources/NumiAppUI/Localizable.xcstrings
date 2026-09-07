@@ -4748,6 +4748,78 @@
         }
       }
     },
+    "plans.forecast.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未来 30 天计划支出" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Planned Spending, Next 30 Days" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未來 30 天計畫支出" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "今後30日間の予定支出" } }
+      }
+    },
+    "plans.forecast.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "此卡仅用于预览，不会因查看而创建交易；订阅仍按各自设置执行" } },
+        "en": { "stringUnit": { "state": "translated", "value": "This is a preview only. Viewing it creates no transactions; subscriptions follow their own billing settings" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "此卡僅用於預覽，不會因查看而建立交易；訂閱仍依各自設定執行" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "このカードはプレビュー専用です。表示しても取引は作成されず、サブスクリプションは各設定どおりに処理されます" } }
+      }
+    },
+    "plans.forecast.locked": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "解锁计划支出预览" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unlock planned spending preview" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "解鎖計畫支出預覽" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "予定支出プレビューをアンロック" } }
+      }
+    },
+    "plans.forecast.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未来 30 天没有待处理的计划支出" } },
+        "en": { "stringUnit": { "state": "translated", "value": "No planned payments are due in the next 30 days" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未來 30 天沒有待處理的計畫支出" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "今後30日間に予定されている支払いはありません" } }
+      }
+    },
+    "plans.forecast.excluded": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%lld 笔不同币种计划未计入总额" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%lld plan(s) in another currency are excluded" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "%lld 筆不同幣種計畫未計入總額" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "他の通貨の%lld件は合計に含まれていません" } }
+      }
+    },
+    "plans.forecast.excluded.only": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未来 30 天有 %lld 笔其他币种计划支出，未计入 %@ 预计合计" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%lld planned payment(s) use another currency and are excluded from the %@ expected total" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未來 30 天有 %lld 筆其他幣種計畫支出，未計入 %@ 預計合計" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "今後30日間の他通貨による予定支出%lld件は、%@の予定合計に含まれていません" } }
+      }
+    },
+    "plans.forecast.total": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%@ 预计合计" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%@ expected total" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "%@ 預計合計" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%@ の予定合計" } }
+      }
+    },
+    "plans.forecast.showing.nearest": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "共 %lld 笔计划支出，显示最近 %lld 笔" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%lld planned payments; showing the next %lld" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "共 %lld 筆計畫支出，顯示最近 %lld 筆" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "予定支出は%lld件。直近%lld件を表示しています" } }
+      }
+    },
     "subscription.info": {
       "extractionState": "manual",
       "localizations": {
@@ -16042,6 +16114,24 @@
         "en": { "stringUnit": { "state": "translated", "value": "Cross-currency recording and totals will open after release validation." } },
         "zh-Hant": { "stringUnit": { "state": "translated", "value": "跨幣種記錄與彙總將在完成發佈驗證後開放。" } },
         "ja": { "stringUnit": { "state": "translated", "value": "複数通貨の記録と集計は、リリース検証の完了後に提供予定です。" } }
+      }
+    },
+    "membership.benefit.forecast.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未来 30 天计划支出" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Planned spending, next 30 days" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未來 30 天計畫支出" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "今後30日間の予定支出" } }
+      }
+    },
+    "membership.benefit.forecast.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "集中预览订阅与待还分期，提前看清未来负担。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Preview subscriptions and unpaid installments together to see what’s ahead." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "集中預覽訂閱與待還分期，提前看清未來負擔。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクと未払いの分割払いをまとめて確認し、これからの負担を見通せます。" } }
       }
     },
     "membership.benefit.preview.badge": {

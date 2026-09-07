@@ -358,12 +358,12 @@ struct MembershipBenefit: Equatable, Identifiable {
             availability: .included
         ),
         .init(
-            id: "currencyPreview",
-            icon: "globe.americas.fill",
-            titleKey: "membership.benefit.currency.title",
-            detailKey: "membership.benefit.currency.detail",
+            id: MembershipCommercialOffering.plannedSpendingForecast.rawValue,
+            icon: "calendar.badge.clock",
+            titleKey: "membership.benefit.forecast.title",
+            detailKey: "membership.benefit.forecast.detail",
             palette: .sky,
-            availability: .preview
+            availability: .included
         ),
         .init(
             id: MembershipCommercialOffering.installments.rawValue,

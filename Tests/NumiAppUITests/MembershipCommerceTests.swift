@@ -8,15 +8,16 @@ final class MembershipCommerceTests: XCTestCase {
         XCTAssertEqual(product.price, 8)
     }
 
-    func testPaywallBenefitsKeepCurrencyAsPreview() throws {
-        let currency = try XCTUnwrap(
-            MembershipBenefit.paywallBenefits.first { $0.id == "currencyPreview" }
+    func testPaywallBenefitsIncludeReleasedPlannedSpendingForecast() throws {
+        let forecast = try XCTUnwrap(
+            MembershipBenefit.paywallBenefits.first { $0.id == MembershipCommercialOffering.plannedSpendingForecast.rawValue }
         )
 
         XCTAssertEqual(MembershipBenefit.paywallBenefits.count, 5)
-        XCTAssertEqual(currency.availability, .preview)
-        XCTAssertEqual(currency.titleKey, "membership.benefit.currency.title")
-        XCTAssertEqual(MembershipCommercialOffering.allCases.count, 4)
+        XCTAssertEqual(forecast.availability, .included)
+        XCTAssertEqual(forecast.icon, "calendar.badge.clock")
+        XCTAssertEqual(forecast.titleKey, "membership.benefit.forecast.title")
+        XCTAssertEqual(MembershipCommercialOffering.allCases.count, 5)
     }
 
     func testLifetimeWinsRegardlessOfRecurringOrder() {

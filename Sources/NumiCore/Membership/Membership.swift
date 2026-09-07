@@ -49,6 +49,7 @@ public enum MembershipCapability: String, CaseIterable, Codable, Hashable, Senda
 public enum MembershipCommercialOffering: String, CaseIterable, Sendable {
     case unlimitedOrganization
     case subscriptions
+    case plannedSpendingForecast
     case installments
     case encryptedBackup
 }

@@ -450,10 +450,10 @@ final class AppUILocalizationBundleTests: XCTestCase {
 
     func testMembershipV1BenefitsOnlyDescribeReleasedOfferings() {
         let expectedValues = [
-            "zh-Hans": (subscriptions: "更多订阅与循环记账", installments: "更多分期与还款计划", backup: "加密备份"),
-            "en": (subscriptions: "More subscriptions & recurring entries", installments: "More installments & payment plans", backup: "Encrypted backups"),
-            "zh-Hant": (subscriptions: "更多訂閱與循環記帳", installments: "更多分期與還款計畫", backup: "加密備份"),
-            "ja": (subscriptions: "サブスクと繰り返し記帳をもっと", installments: "分割払いと返済プランをもっと", backup: "暗号化バックアップ")
+            "zh-Hans": (subscriptions: "更多订阅与循环记账", installments: "更多分期与还款计划", backup: "加密备份", forecast: "未来 30 天计划支出"),
+            "en": (subscriptions: "More subscriptions & recurring entries", installments: "More installments & payment plans", backup: "Encrypted backups", forecast: "Planned spending, next 30 days"),
+            "zh-Hant": (subscriptions: "更多訂閱與循環記帳", installments: "更多分期與還款計畫", backup: "加密備份", forecast: "未來 30 天計畫支出"),
+            "ja": (subscriptions: "サブスクと繰り返し記帳をもっと", installments: "分割払いと返済プランをもっと", backup: "暗号化バックアップ", forecast: "今後30日間の予定支出")
         ]
 
         for (language, expected) in expectedValues {
@@ -461,6 +461,7 @@ final class AppUILocalizationBundleTests: XCTestCase {
             XCTAssertEqual(NumiLocalized.lookup("membership.benefit.subscriptions.title", locale: locale), expected.subscriptions)
             XCTAssertEqual(NumiLocalized.lookup("membership.benefit.installments.title", locale: locale), expected.installments)
             XCTAssertEqual(NumiLocalized.lookup("membership.benefit.security.title", locale: locale), expected.backup)
+            XCTAssertEqual(NumiLocalized.lookup("membership.benefit.forecast.title", locale: locale), expected.forecast)
         }
     }
 
@@ -926,6 +927,25 @@ final class AppUILocalizationBundleTests: XCTestCase {
             XCTAssertEqual(NumiLocalized.lookup("sync.requested", locale: locale), expected.requested)
             XCTAssertEqual(NumiLocalized.lookup("sync.requested.at", locale: locale), expected.requestedAt)
             XCTAssertEqual(NumiLocalized.lookup("sync.last.completed", locale: locale), expected.lastCompleted)
+        }
+    }
+
+    func testAdvancedPlanForecastCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (title: "未来 30 天计划支出", detail: "此卡仅用于预览，不会因查看而创建交易；订阅仍按各自设置执行", locked: "解锁计划支出预览", total: "CNY 预计合计", excludedOnly: "未来 30 天有 2 笔其他币种计划支出，未计入 CNY 预计合计", showingNearest: "共 5 笔计划支出，显示最近 3 笔"),
+            "en": (title: "Planned Spending, Next 30 Days", detail: "This is a preview only. Viewing it creates no transactions; subscriptions follow their own billing settings", locked: "Unlock planned spending preview", total: "CNY expected total", excludedOnly: "2 planned payment(s) use another currency and are excluded from the CNY expected total", showingNearest: "5 planned payments; showing the next 3"),
+            "zh-Hant": (title: "未來 30 天計畫支出", detail: "此卡僅用於預覽，不會因查看而建立交易；訂閱仍依各自設定執行", locked: "解鎖計畫支出預覽", total: "CNY 預計合計", excludedOnly: "未來 30 天有 2 筆其他幣種計畫支出，未計入 CNY 預計合計", showingNearest: "共 5 筆計畫支出，顯示最近 3 筆"),
+            "ja": (title: "今後30日間の予定支出", detail: "このカードはプレビュー専用です。表示しても取引は作成されず、サブスクリプションは各設定どおりに処理されます", locked: "予定支出プレビューをアンロック", total: "CNY の予定合計", excludedOnly: "今後30日間の他通貨による予定支出2件は、CNYの予定合計に含まれていません", showingNearest: "予定支出は5件。直近3件を表示しています")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("plans.forecast.title", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("plans.forecast.detail", locale: locale), expected.detail)
+            XCTAssertEqual(NumiLocalized.lookup("plans.forecast.locked", locale: locale), expected.locked)
+            XCTAssertEqual(NumiLocalized.format("plans.forecast.total", arguments: ["CNY"], locale: locale), expected.total)
+            XCTAssertEqual(NumiLocalized.format("plans.forecast.excluded.only", arguments: [Int64(2), "CNY"], locale: locale), expected.excludedOnly)
+            XCTAssertEqual(NumiLocalized.format("plans.forecast.showing.nearest", arguments: [Int64(5), Int64(3)], locale: locale), expected.showingNearest)
         }
     }
 

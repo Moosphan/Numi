@@ -158,6 +158,7 @@ public struct PlansView: View {
                     }
                 }
                 budgetOverviewSection
+                cashflowForecastSection
                 subscriptionsSection
                 installmentsSection
             }
@@ -321,6 +322,128 @@ public struct PlansView: View {
                 }
             }
         }
+    }
+
+    private var cashflowForecastSection: some View {
+        let forecast = UpcomingPlanCashflowForecast.make(
+            subscriptions: subscriptions,
+            installmentPlans: installmentPlans,
+            installmentPeriods: installmentPeriods,
+            from: Date(),
+            through: forecastEndDate,
+            currencyCode: defaultCurrencyCode
+        )
+
+        return VStack(alignment: .leading, spacing: NumiSpacing.s3) {
+            PlanSectionHeader(
+                title: NumiLocalized.string("plans.forecast.title"),
+                trailingText: "Pro",
+                accessibilityIdentifier: "plans.section.cashflowForecast"
+            )
+
+            switch membership.decision(for: .openAdvancedPlans) {
+            case .granted:
+                VStack(alignment: .leading, spacing: NumiSpacing.s3) {
+                    Label(NumiLocalized.string("plans.forecast.total", defaultCurrencyCode), systemImage: "calendar.badge.clock")
+                        .font(NumiFont.caption)
+                        .foregroundStyle(NumiColor.textSecondary)
+                    Text(privacyAmountDisplayPolicy.display(forecast.total))
+                        .font(NumiFont.title)
+                        .foregroundStyle(NumiColor.textPrimary)
+                    if forecast.excludedCurrencyItemCount > 0 && !forecast.items.isEmpty {
+                        Label(NumiLocalized.string("plans.forecast.excluded", Int64(forecast.excludedCurrencyItemCount)), systemImage: "exclamationmark.triangle.fill")
+                            .font(NumiFont.caption)
+                            .foregroundStyle(NumiColor.negativeText)
+                    }
+                    Text(NumiLocalized.string("plans.forecast.detail"))
+                        .font(NumiFont.caption)
+                        .foregroundStyle(NumiColor.textSecondary)
+
+                    if forecast.items.isEmpty {
+                        if forecast.excludedCurrencyItemCount > 0 {
+                            Text(NumiLocalized.string(
+                                "plans.forecast.excluded.only",
+                                Int64(forecast.excludedCurrencyItemCount),
+                                defaultCurrencyCode
+                            ))
+                            .font(NumiFont.bodySmall)
+                            .foregroundStyle(NumiColor.textSecondary)
+                        } else {
+                            Text(NumiLocalized.string("plans.forecast.empty"))
+                                .font(NumiFont.bodySmall)
+                                .foregroundStyle(NumiColor.textSecondary)
+                        }
+                    } else {
+                        ForEach(forecast.items.prefix(3)) { item in
+                            HStack(spacing: NumiSpacing.s2) {
+                                Image(systemName: item.kind == .subscription ? "repeat" : "creditcard")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(NumiColor.accentDeep)
+                                    .frame(width: 22)
+                                Text(item.title)
+                                    .font(NumiFont.bodySmall)
+                                    .foregroundStyle(NumiColor.textPrimary)
+                                Spacer()
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text(item.dueDate.numiFormatted(.dateTime.month().day()))
+                                        .font(NumiFont.caption)
+                                        .foregroundStyle(NumiColor.textTertiary)
+                                    Text(privacyAmountDisplayPolicy.display(item.amount))
+                                        .font(NumiFont.bodySmall)
+                                        .foregroundStyle(NumiColor.textPrimary)
+                                }
+                            }
+                            .accessibilityElement(children: .combine)
+                        }
+
+                        if forecast.items.count > 3 {
+                            Text(NumiLocalized.string(
+                                "plans.forecast.showing.nearest",
+                                Int64(forecast.items.count),
+                                Int64(3)
+                            ))
+                            .font(NumiFont.caption)
+                            .foregroundStyle(NumiColor.textSecondary)
+                        }
+
+                    }
+                }
+                .padding(NumiSpacing.s4)
+                .background(NumiColor.surfaceCard)
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+            case .blocked(let context):
+                Button {
+                    membershipPaywallContext = context
+                } label: {
+                    HStack(spacing: NumiSpacing.s3) {
+                        PlanSymbolBadge(iconName: "calendar.badge.clock", tint: NumiColor.accentDeep, background: NumiColor.iconBackground, size: 36)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(NumiLocalized.string("plans.forecast.locked"))
+                                .font(NumiFont.bodyStrong)
+                                .foregroundStyle(NumiColor.textPrimary)
+                            Text(NumiLocalized.string("plans.forecast.detail"))
+                                .font(NumiFont.caption)
+                                .foregroundStyle(NumiColor.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(NumiColor.textTertiary)
+                    }
+                    .padding(NumiSpacing.s4)
+                    .background(NumiColor.surfaceCard)
+                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(NumiLocalized.string("plans.forecast.locked")). \(NumiLocalized.string("plans.forecast.detail"))")
+                .accessibilityHint(NumiLocalized.string("theme.requires.pro.hint"))
+            }
+        }
+    }
+
+    private var forecastEndDate: Date {
+        Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
     }
 
     private var subscriptionsSection: some View {
