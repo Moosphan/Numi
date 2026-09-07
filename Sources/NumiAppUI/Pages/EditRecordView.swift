@@ -82,14 +82,18 @@ public struct EditRecordView: View {
             }
             .onAppear {
                 ensureSelectedCategory()
-                ensureSelectedTargetAccount()
+                ensureSelectedAccounts()
             }
             .onChange(of: selectedType) { _, _ in
                 ensureSelectedCategory()
-                ensureSelectedTargetAccount()
+                ensureSelectedAccounts()
             }
             .onChange(of: selectedCurrencyCode) { _, newValue in
                 inputState.updateCurrencyCode(newValue)
+                ensureSelectedAccounts()
+            }
+            .onChange(of: selectedAccountID) { _, _ in
+                ensureSelectedAccounts()
             }
             .sheet(isPresented: $isDatePickerPresented) {
                 datePickerSheet
@@ -268,6 +272,15 @@ public struct EditRecordView: View {
                     inlineNoteField
                 }
             }
+
+            if visibleAccounts.isEmpty {
+                Label(NumiLocalized.string("record.account.currency.unavailable"), systemImage: "exclamationmark.circle.fill")
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(NumiColor.negativeText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, NumiSpacing.s2)
+                    .accessibilityIdentifier("record.accountCurrencyUnavailable")
+            }
         }
     }
 
@@ -308,7 +321,8 @@ public struct EditRecordView: View {
     }
 
     private var visibleAccounts: [Account] {
-        accounts.filter { !$0.isHidden }
+        TransactionAccountCurrencyPolicy.compatibleAccounts(accounts, currencyCode: selectedCurrencyCode)
+            .filter { !$0.isHidden }
     }
 
     private var targetAccounts: [Account] {
@@ -377,15 +391,15 @@ public struct EditRecordView: View {
         }
     }
 
-    private func ensureSelectedTargetAccount() {
-        if selectedAccountID == nil {
+    private func ensureSelectedAccounts() {
+        if !visibleAccounts.contains(where: { $0.id == selectedAccountID }) {
             selectedAccountID = visibleAccounts.first?.id
         }
         guard selectedType == .transfer else {
             selectedTargetAccountID = nil
             return
         }
-        if selectedTargetAccount == nil {
+        if !targetAccounts.contains(where: { $0.id == selectedTargetAccountID }) {
             selectedTargetAccountID = targetAccounts.first?.id
         }
     }

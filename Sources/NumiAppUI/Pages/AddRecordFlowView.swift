@@ -7,7 +7,7 @@ public struct AddRecordFlowView: View {
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
     private let currencyOptions: [NumiCurrencyOption]
-    private let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Void
+    private let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool
 
     @State private var selectedType: TransactionType = .expense
     @State private var selectedDraft: TransactionDraft?
@@ -17,7 +17,7 @@ public struct AddRecordFlowView: View {
         categories: [NumiCore.Category],
         accounts: [Account],
         currencyOptions: [NumiCurrencyOption],
-        onSave: @escaping (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Void
+        onSave: @escaping (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool
     ) {
         self.categories = categories
         self.accounts = accounts
@@ -51,13 +51,16 @@ public struct AddRecordFlowView: View {
                             }
                         },
                         onSave: { type, money, category, account, targetAccount, occurredAt, note in
-                            onSave(type, money, category, account, targetAccount, occurredAt, note)
-                            savedContext = SavedRecordContext(
-                                accountID: account?.id,
-                                targetAccountID: targetAccount?.id,
-                                occurredAt: occurredAt,
-                                currencyCode: money.currencyCode
-                            )
+                            let didSave = onSave(type, money, category, account, targetAccount, occurredAt, note)
+                            if didSave {
+                                savedContext = SavedRecordContext(
+                                    accountID: account?.id,
+                                    targetAccountID: targetAccount?.id,
+                                    occurredAt: occurredAt,
+                                    currencyCode: money.currencyCode
+                                )
+                            }
+                            return didSave
                         },
                         onDone: {
                             dismiss()
@@ -207,7 +210,7 @@ private struct AddRecordEditorOverlay: View {
     let currencyOptions: [NumiCurrencyOption]
     let savedContext: SavedRecordContext?
     let onBack: () -> Void
-    let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Void
+    let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool
     let onDone: () -> Void
     let onAddAnother: () -> Void
 
@@ -338,7 +341,7 @@ private struct AddRecordEntryContent: View {
     let currencyOptions: [NumiCurrencyOption]
     let bottomSafeAreaInset: CGFloat
     let savedContext: SavedRecordContext?
-    let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Void
+    let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool
     let onDone: () -> Void
     let onAddAnother: () -> Void
 
@@ -359,7 +362,7 @@ private struct AddRecordEntryContent: View {
         currencyOptions: [NumiCurrencyOption],
         bottomSafeAreaInset: CGFloat = 0,
         savedContext: SavedRecordContext? = nil,
-        onSave: @escaping (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Void,
+        onSave: @escaping (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool,
         onDone: @escaping () -> Void = {},
         onAddAnother: @escaping () -> Void = {}
     ) {
@@ -391,6 +394,10 @@ private struct AddRecordEntryContent: View {
         .onAppear(perform: ensureSelectedAccounts)
         .onChange(of: selectedCurrencyCode) { _, newValue in
             inputState.updateCurrencyCode(newValue)
+            ensureSelectedAccounts()
+        }
+        .onChange(of: selectedAccountID) { _, _ in
+            ensureSelectedAccounts()
         }
         .sheet(isPresented: $isDatePickerPresented) {
             datePickerSheet
@@ -404,13 +411,15 @@ private struct AddRecordEntryContent: View {
                 }
                 Spacer()
                 Button(NumiLocalized.string( "addRecordFlow.action.saveAndAddAnother")) {
-                    save()
-                    onAddAnother()
+                    if save() {
+                        onAddAnother()
+                    }
                 }
                 .disabled(!canSubmit)
                 Button(draft.type == .transfer ? NumiLocalized.string( "addRecordFlow.action.saveTransfer") : NumiLocalized.string( "addRecordFlow.action.saveRecord")) {
-                    save()
-                    onDone()
+                    if save() {
+                        onDone()
+                    }
                 }
                 .disabled(!canSubmit)
                 .accessibilityIdentifier("action.keyboardSubmitRecord")
@@ -456,8 +465,9 @@ private struct AddRecordEntryContent: View {
             )
             HStack(spacing: NumiSpacing.s2) {
                 Button {
-                    save()
-                    onAddAnother()
+                    if save() {
+                        onAddAnother()
+                    }
                 } label: {
                     Text(NumiLocalized.string("addRecordFlow.action.saveAndAddAnother"))
                         .font(NumiFont.bodyStrong)
@@ -474,8 +484,9 @@ private struct AddRecordEntryContent: View {
                 .accessibilityValue("style.dateAccent")
 
                 Button {
-                    save()
-                    onDone()
+                    if save() {
+                        onDone()
+                    }
                 } label: {
                     Text(draft.type == .transfer ? "addRecordFlow.action.saveTransfer" : "addRecordFlow.action.saveRecord")
                         .font(NumiFont.bodyStrong)
@@ -566,6 +577,15 @@ private struct AddRecordEntryContent: View {
                     inlineNoteField
                 }
             }
+
+            if visibleAccounts.isEmpty {
+                Label(NumiLocalized.string("record.account.currency.unavailable"), systemImage: "exclamationmark.circle.fill")
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(NumiColor.negativeText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, NumiSpacing.s2)
+                    .accessibilityIdentifier("record.accountCurrencyUnavailable")
+            }
         }
     }
 
@@ -603,7 +623,8 @@ private struct AddRecordEntryContent: View {
     }
 
     private var visibleAccounts: [Account] {
-        accounts.filter { !$0.isHidden }
+        TransactionAccountCurrencyPolicy.compatibleAccounts(accounts, currencyCode: selectedCurrencyCode)
+            .filter { !$0.isHidden }
     }
 
     private var targetAccounts: [Account] {
@@ -661,21 +682,26 @@ private struct AddRecordEntryContent: View {
     }
 
     private func ensureSelectedAccounts() {
-        if selectedAccountID == nil {
+        if !visibleAccounts.contains(where: { $0.id == selectedAccountID }) {
             selectedAccountID = visibleAccounts.first?.id
         }
-        if draft.type == .transfer, selectedTargetAccountID == nil {
+        guard draft.type == .transfer else {
+            selectedTargetAccountID = nil
+            return
+        }
+        if !targetAccounts.contains(where: { $0.id == selectedTargetAccountID }) {
             selectedTargetAccountID = targetAccounts.first?.id
         }
     }
 
-    private func save() {
+    @discardableResult
+    private func save() -> Bool {
         isNoteFocused = false
-        guard let money = try? inputState.money() else { return }
+        guard let money = try? inputState.money(), canSubmit else { return false }
         if draft.type == .transfer, selectedAccount?.id == selectedTargetAccount?.id {
-            return
+            return false
         }
-        onSave(
+        return onSave(
             draft.type,
             money,
             selectedCategory,

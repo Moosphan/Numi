@@ -1421,20 +1421,26 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         accountID: UUID?,
         targetAccountID: UUID?
     ) throws {
-        guard type == .transfer else { return }
         guard let accountID else { throw SwiftDataBookkeepingStoreError.accountNotFound }
+        guard let source = fetchAccountEntity(id: accountID) else {
+            throw SwiftDataBookkeepingStoreError.accountNotFound
+        }
+        guard source.currencyCode == amount.currencyCode else {
+            throw type == .transfer
+                ? SwiftDataBookkeepingStoreError.transferCurrencyMismatch
+                : SwiftDataBookkeepingStoreError.accountCurrencyMismatch
+        }
+        guard type == .transfer else { return }
         guard let targetAccountID else {
             throw SwiftDataBookkeepingStoreError.transferTargetRequired
         }
         guard accountID != targetAccountID else {
             throw SwiftDataBookkeepingStoreError.transferAccountsMustDiffer
         }
-        guard let source = fetchAccountEntity(id: accountID),
-              let target = fetchAccountEntity(id: targetAccountID) else {
+        guard let target = fetchAccountEntity(id: targetAccountID) else {
             throw SwiftDataBookkeepingStoreError.accountNotFound
         }
-        guard source.currencyCode == amount.currencyCode,
-              target.currencyCode == amount.currencyCode else {
+        guard target.currencyCode == amount.currencyCode else {
             throw SwiftDataBookkeepingStoreError.transferCurrencyMismatch
         }
     }
@@ -1561,6 +1567,7 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
 
 public enum SwiftDataBookkeepingStoreError: Error, Equatable {
     case accountNotFound
+    case accountCurrencyMismatch
     case categoryNotFound
     case invalidCategory
     case transactionNotFound

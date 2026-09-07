@@ -287,19 +287,25 @@ struct RootShellView: View {
                 currencyOptions: currencyOptions
             ) { type, money, category, account, targetAccount, occurredAt, note in
                 guard let accountID = account?.id ?? store.accounts.first?.id,
-                      let ledgerID = currentLedger?.id else { return }
+                      let ledgerID = currentLedger?.id else { return false }
                 let targetAccountID = type == .transfer ? targetAccount?.id : nil
-                _ = try? store.createTransaction(
-                    type: type,
-                    amount: money,
-                    categoryID: type == .transfer ? nil : category?.id,
-                    accountID: accountID,
-                    targetAccountID: targetAccountID,
-                    ledgerID: ledgerID,
-                    note: note,
-                    occurredAt: occurredAt
-                )
-                alignHomeAnchorDate(to: occurredAt)
+                do {
+                    _ = try store.createTransaction(
+                        type: type,
+                        amount: money,
+                        categoryID: type == .transfer ? nil : category?.id,
+                        accountID: accountID,
+                        targetAccountID: targetAccountID,
+                        ledgerID: ledgerID,
+                        note: note,
+                        occurredAt: occurredAt
+                    )
+                    alignHomeAnchorDate(to: occurredAt)
+                    return true
+                } catch {
+                    showToast(NumiLocalized.string("error.record.save.failed"), isError: true)
+                    return false
+                }
             }
             .accessibilityIdentifier("sheet.addRecord")
             .presentationDetents([.large])

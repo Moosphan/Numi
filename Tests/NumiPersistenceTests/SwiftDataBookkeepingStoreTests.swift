@@ -1031,6 +1031,32 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testExpenseRejectsAccountWithMismatchedCurrencyBeforeCreatingTransaction() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let ledgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let usdAccount = try store.createAccount(
+            name: "USD Cash",
+            type: .cash,
+            balance: .zero(currencyCode: "USD")
+        )
+
+        XCTAssertThrowsError(try store.createTransaction(
+            type: .expense,
+            amount: try Money(decimalString: "12.30", currencyCode: "CNY"),
+            categoryID: nil,
+            accountID: usdAccount.id,
+            ledgerID: ledgerID,
+            note: "货币不匹配"
+        )) { error in
+            XCTAssertEqual(error as? SwiftDataBookkeepingStoreError, .accountCurrencyMismatch)
+        }
+
+        XCTAssertTrue(store.visibleTransactions.isEmpty)
+        XCTAssertEqual(store.accounts.first { $0.id == usdAccount.id }?.balance, .zero(currencyCode: "USD"))
+    }
+
+    @MainActor
     func testInvalidTransferUpdateLeavesOriginalTransactionAndBalancesUntouched() throws {
         let store = try SwiftDataBookkeepingStore(inMemory: true)
         try store.seedDefaultsIfNeeded()

@@ -642,6 +642,15 @@
         }
       }
     },
+    "error.record.save.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法保存记录，请检查账户币种和必填项后重试。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unable to save this record. Check the account currency and required fields, then try again." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "無法儲存記錄，請檢查帳戶幣別和必填欄位後再試。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "記録を保存できません。口座の通貨と必須項目を確認して、もう一度お試しください。" } }
+      }
+    },
     "record.amount": {
       "extractionState": "manual",
       "localizations": {
@@ -814,6 +823,15 @@
             "value": "アカウント"
           }
         }
+      }
+    },
+    "record.account.currency.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "没有与所选币种匹配的账户，请先创建对应币种账户。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "No account matches the selected currency. Create an account in that currency first." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "沒有與所選幣別相符的帳戶，請先建立對應幣別帳戶。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "選択した通貨に一致する口座がありません。先にその通貨の口座を作成してください。" } }
       }
     },
     "record.new": {

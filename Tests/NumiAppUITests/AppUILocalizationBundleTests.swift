@@ -172,6 +172,40 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testRecordSaveFailureCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "无法保存记录，请检查账户币种和必填项后重试。",
+            "en": "Unable to save this record. Check the account currency and required fields, then try again.",
+            "zh-Hant": "無法儲存記錄，請檢查帳戶幣別和必填欄位後再試。",
+            "ja": "記録を保存できません。口座の通貨と必須項目を確認して、もう一度お試しください。"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("error.record.save.failed", locale: Locale(identifier: language)),
+                expected,
+                "Missing record-save failure copy for \(language)"
+            )
+        }
+    }
+
+    func testNoCompatibleAccountCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "没有与所选币种匹配的账户，请先创建对应币种账户。",
+            "en": "No account matches the selected currency. Create an account in that currency first.",
+            "zh-Hant": "沒有與所選幣別相符的帳戶，請先建立對應幣別帳戶。",
+            "ja": "選択した通貨に一致する口座がありません。先にその通貨の口座を作成してください。"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("record.account.currency.unavailable", locale: Locale(identifier: language)),
+                expected,
+                "Missing unavailable-account copy for \(language)"
+            )
+        }
+    }
+
     func testBatchEditCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (title: "批量编辑", action: "修改分类", hint: "仅修改同一收支类型的分类"),
