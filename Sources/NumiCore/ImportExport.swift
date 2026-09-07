@@ -68,6 +68,14 @@ public struct CSVImportResult: Equatable, Sendable {
         self.transactions = transactions
         self.errors = errors
     }
+
+    /// CSV preserves the original amount currency for each transaction, but does not
+    /// carry the ledger's historical exchange-rate snapshots.
+    public func containsForeignCurrency(comparedTo referenceCurrencyCode: String) -> Bool {
+        transactions.contains {
+            $0.amount.currencyCode.caseInsensitiveCompare(referenceCurrencyCode) != .orderedSame
+        }
+    }
 }
 
 public enum CSVImportField: String, CaseIterable, Codable, Identifiable, Sendable {

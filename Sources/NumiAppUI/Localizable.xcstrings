@@ -8563,6 +8563,24 @@
         "ja": { "stringUnit": { "state": "translated", "value": "エラー行" } }
       }
     },
+    "io.import.csv.currency.warning.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "外币记录会保留原币种" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Foreign-currency records keep their original currency" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "外幣記錄會保留原幣別" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "外貨建ての記録は元の通貨で保持されます" } }
+      }
+    },
+    "io.import.csv.currency.warning.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "CSV 不包含历史汇率快照；导入后跨币种历史汇总需要已有或补充的历史汇率。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "CSV does not include historical rate snapshots. Historical cross-currency totals require existing or added rates after import." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "CSV 不包含歷史匯率快照；匯入後跨幣別歷史彙總需要既有或補充的歷史匯率。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "CSVには過去の為替レートのスナップショットは含まれません。インポート後の通貨換算集計には、既存または追加した過去のレートが必要です。" } }
+      }
+    },
     "io.import.csv.file.fail": {
       "extractionState": "manual",
       "localizations": {

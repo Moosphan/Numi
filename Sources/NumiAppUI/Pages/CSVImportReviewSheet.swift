@@ -149,6 +149,28 @@ public struct CSVImportReviewSheet: View {
                 .font(NumiFont.bodySmall)
                 .foregroundStyle(NumiColor.textSecondary)
 
+            if preview.containsForeignCurrency(comparedTo: context.ledger.currencyCode) {
+                HStack(alignment: .top, spacing: NumiSpacing.s3) {
+                    Image(systemName: "arrow.left.arrow.right.circle.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(NumiColor.expenseText)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(NumiLocalized.string("io.import.csv.currency.warning.title"))
+                            .font(NumiFont.bodyStrong)
+                            .foregroundStyle(NumiColor.textPrimary)
+                        Text(NumiLocalized.string("io.import.csv.currency.warning.message"))
+                            .font(NumiFont.footnote)
+                            .foregroundStyle(NumiColor.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(NumiSpacing.s3)
+                .background(NumiColor.expenseBackground, in: RoundedRectangle(cornerRadius: NumiRadius.lg))
+                .accessibilityIdentifier("io.import.csv.currency.warning")
+            }
+
             VStack(spacing: 0) {
                 ForEach(Array(preview.transactions.prefix(20).enumerated()), id: \.element.id) { index, transaction in
                     HStack(spacing: NumiSpacing.s3) {

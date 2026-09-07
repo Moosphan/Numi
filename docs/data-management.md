@@ -49,6 +49,7 @@ id,type,amount,currency,occurredAt,categoryID,accountID,targetAccountID,note,rei
 - 备注中的逗号、双引号和换行会按 CSV 规则转义。
 - 导入时可为外部列选择字段映射；分类和账户可使用 UUID 或名称匹配。无效行会在确认前展示，不会阻塞其余有效记录。
 - CSV 导入会把确认后的记录追加到 App 当前快照的首个账本。多账本场景请先确认目标账本，再执行导入。
+- CSV 会保留每笔交易的原币种与金额，但不包含 `exchangeRateHistory` 历史汇率快照。导入外币记录后，跨币种历史汇总需要目标数据中已有或手动补充对应日期的汇率；如需完整迁移历史汇率，请使用 JSON 或加密备份。
 
 ### 加密备份与恢复
 

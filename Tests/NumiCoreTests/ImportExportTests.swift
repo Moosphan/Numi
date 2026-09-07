@@ -87,6 +87,21 @@ final class ImportExportTests: XCTestCase {
         XCTAssertEqual(result.transactions[0].amount, try Money(decimalString: "12.30", currencyCode: "USD"))
     }
 
+    func testCSVImportResultIdentifiesForeignCurrencyAgainstTargetLedger() {
+        let result = NumiCSVImporter.importTransactions(
+            csv: "type,amount,currency\nexpense,12.30,CNY\nincome,8.50,USD",
+            currencyCode: "CNY"
+        )
+
+        XCTAssertTrue(result.containsForeignCurrency(comparedTo: "CNY"))
+
+        let singleCurrencyResult = NumiCSVImporter.importTransactions(
+            csv: "type,amount,currency\nexpense,8.50,USD",
+            currencyCode: "USD"
+        )
+        XCTAssertFalse(singleCurrencyResult.containsForeignCurrency(comparedTo: "USD"))
+    }
+
     func testCSVImporterMapsQuotedValuesAndResolvesNames() throws {
         let category = Category(kind: .expense, name: "餐饮", icon: "fork.knife", sortOrder: 0)
         let account = Account(name: "现金", type: .cash, balance: .zero(currencyCode: "CNY"))

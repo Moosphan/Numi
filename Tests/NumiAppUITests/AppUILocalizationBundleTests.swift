@@ -128,6 +128,33 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testCSVForeignCurrencyImportWarningCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (
+                title: "外币记录会保留原币种",
+                message: "CSV 不包含历史汇率快照；导入后跨币种历史汇总需要已有或补充的历史汇率。"
+            ),
+            "en": (
+                title: "Foreign-currency records keep their original currency",
+                message: "CSV does not include historical rate snapshots. Historical cross-currency totals require existing or added rates after import."
+            ),
+            "zh-Hant": (
+                title: "外幣記錄會保留原幣別",
+                message: "CSV 不包含歷史匯率快照；匯入後跨幣別歷史彙總需要既有或補充的歷史匯率。"
+            ),
+            "ja": (
+                title: "外貨建ての記録は元の通貨で保持されます",
+                message: "CSVには過去の為替レートのスナップショットは含まれません。インポート後の通貨換算集計には、既存または追加した過去のレートが必要です。"
+            )
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("io.import.csv.currency.warning.title", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("io.import.csv.currency.warning.message", locale: locale), expected.message)
+        }
+    }
+
     func testBatchEditCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (title: "批量编辑", action: "修改分类", hint: "仅修改同一收支类型的分类"),
