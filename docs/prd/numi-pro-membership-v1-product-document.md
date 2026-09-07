@@ -101,7 +101,7 @@ Numi 是一款 iOS 本地优先的记账 App。用户数据默认保存在设备
 | JSON/CSV 导入、导出、CSV 映射/预览/错误行、导入前恢复点 | `DataManagementView`、`BackupService`、`ImportRecoveryPointService`；P0B-02/03 Done；CSV 映射模板的新建已接 `.openAdvancedImportExport` | 基础已验证，效率增强部分交付 | F：基础导入导出；P1：新建映射模板 | 可移植性与撤销风险是用户数据权利；基础导入导出永远免费。降级后用户仍可加载或删除已保存的模板，不能被锁定。 |
 | 加密备份创建与恢复 | `BackupView` 已接 `openEncryptedBackup` Gate；P0B-01 Done | 已验证 | P0：创建加密备份；F：普通导出、恢复和已有备份恢复 | 加密备份是高级安全增强；但不允许用订阅阻止用户恢复自己已有的备份。 |
 | Face ID/密码锁、后台模糊、隐藏金额 | `SettingsView`、`PrivacyAmountDisplayPolicy`；P0B-04 Done | 已验证 | F | 财务隐私是底线，不做付费墙。 |
-| App 内 AI 文本解析（Claude/Qwen/DeepSeek） | `TransactionLLMService`、设置中的 provider/key；`openAIRecord` 已枚举但未接 UI Gate | 有基础代码，依赖用户 Key/外部服务 | P1 | 发布前明确“自带 Key”还是“平台额度”；不得承诺无限 AI。若自带 Key，可考虑免费基础解析，Pro 仅售自动化/批量能力。 |
+| App 内 AI 文本解析（Claude/Qwen/DeepSeek） | `TransactionLLMService`、设置中的 provider/key；首次向每个所选服务商解析前会说明发送的内容并请求确认，解析结果会进入可编辑草稿而非直接写入；`openAIRecord` 已枚举但未接 UI Gate | 有基础代码，依赖用户 Key/外部服务 | P1 | 发布前明确“自带 Key”还是“平台额度”，并补限额和超额策略；不得承诺无限 AI。若自带 Key，可考虑免费基础解析，Pro 仅售自动化/批量能力。 |
 | Siri / App Shortcuts 记账 | `RecordTransactionIntent`；P1-05 Partial | 未完成真实端到端验证 | F：基础快捷记账；P1：增强自动化 | 系统辅助功能不宜整体锁定；只把未来高价值的多步骤自动化设为 Pro。 |
 | 主题、系统深浅色、运行时四语言 | `ThemeSelectionView`、`NumiAppLanguage`；四语言回归 | 基础可用 | F：系统/默认主题与四语言；P1：新增高级主题包 | 无障碍与语言不能收费。只有额外视觉包才可作为低优先级 Pro 装饰。 |
 | App Icon、组件库、设计 Token | `NumiColor`、`NumiFont`、`NumiSpacing` 等 | 工程资产 | N / P2 | 当前不是用户可选权益；若未来新增图标包，单独作为 P2。 |

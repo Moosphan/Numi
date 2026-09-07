@@ -17849,6 +17849,42 @@
           }
         }
       }
+    },
+    "ai.record.privacy.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 记账数据说明" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI recording data notice" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 記帳資料說明" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AI記帳のデータに関するお知らせ" } }
+      }
+    },
+    "ai.record.privacy.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "继续后，本次输入、可见分类和账户名称会发送给 %@ 解析。Numi 不会将账单保存到自己的服务器；数据处理和保留规则以该服务商为准。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Continuing sends this input plus visible category and account names to %@ for parsing. Numi does not store your records on its own servers; that provider's data rules apply." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "繼續後，本次輸入、可見分類和帳戶名稱會傳送至 %@ 解析。Numi 不會將帳單儲存在自己的伺服器；資料處理和保留規則以該服務商為準。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "続行すると、今回の入力と表示中のカテゴリ・口座名が %@ に送信され、解析されます。Numi 自身のサーバーには記録を保存せず、データの取り扱いは当該サービスの規約に従います。" } }
+      }
+    },
+    "ai.record.privacy.continue": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "继续并解析" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Continue and parse" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "繼續並解析" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "続行して解析" } }
+      }
+    },
+    "ai.record.review.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 已解析，请核对并按需修改后再保存。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI has parsed this record. Review and edit it before saving." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 已完成解析，請核對並視需要修改後再儲存。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIが解析しました。内容を確認・編集してから保存してください。" } }
+      }
     }
   },
   "version": "1.0"

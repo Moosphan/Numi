@@ -26,6 +26,7 @@ struct RootShellView: View {
     @AppStorage("app.subscription.reminder.daysBefore") private var subscriptionReminderDaysBefore = 1
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @AppStorage("app.currentLedgerID") private var currentLedgerIDString: String = ""
+    @AppStorage("app.ai.privacy.acknowledgedProvider") private var acknowledgedAIPrivacyProviderID = ""
     @AppStorage(NumiAppLanguage.pendingToastDefaultsKey) private var pendingLanguageToastCode: String = ""
     @StateObject private var rateService = ExchangeRateService.shared
 
@@ -73,6 +74,10 @@ struct RootShellView: View {
     @State private var aiRecordToast: String?
     @State private var aiRecordToastIsError = false
     @State private var showAIRecordToast = false
+    @State private var pendingAIRecordText: String?
+    @State private var pendingAIRecordProviderID: String?
+    @State private var isAIPrivacyDisclosurePresented = false
+    @State private var aiRecordDraft: TransactionDraft?
     @State private var insightsDimension: InsightsTimeDimension = .month
     @State private var insightsAnchorDate = Date()
     @State private var insightsCustomRange: InsightsCustomRange?
@@ -320,6 +325,29 @@ struct RootShellView: View {
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(28)
         }
+        .sheet(item: $aiRecordDraft) { draft in
+            AddRecordFlowView(
+                categories: store.categories,
+                accounts: store.accounts,
+                currencyOptions: currencyOptions,
+                initialDraft: draft,
+                reviewMessage: NumiLocalized.string("ai.record.review.message")
+            ) { type, money, category, account, targetAccount, occurredAt, note in
+                saveAIRecordDraft(
+                    type: type,
+                    money: money,
+                    category: category,
+                    account: account,
+                    targetAccount: targetAccount,
+                    occurredAt: occurredAt,
+                    note: note
+                )
+            }
+            .accessibilityIdentifier("sheet.aiRecordReview")
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(28)
+        }
         .sheet(item: selectedTransactionBinding) { transaction in
             let category = category(for: transaction)
             RecordDetailView(
@@ -423,6 +451,26 @@ struct RootShellView: View {
             }
             .presentationDetents([.medium, .large])
             .presentationCornerRadius(28)
+        }
+        .confirmationDialog(
+            NumiLocalized.string("ai.record.privacy.title"),
+            isPresented: $isAIPrivacyDisclosurePresented,
+            titleVisibility: .visible
+        ) {
+            Button(NumiLocalized.string("ai.record.privacy.continue")) {
+                guard let text = pendingAIRecordText,
+                      let providerID = pendingAIRecordProviderID else { return }
+                acknowledgedAIPrivacyProviderID = providerID
+                pendingAIRecordText = nil
+                pendingAIRecordProviderID = nil
+                Task { await performAIRecord(text: text) }
+            }
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {
+                pendingAIRecordText = nil
+                pendingAIRecordProviderID = nil
+            }
+        } message: {
+            Text(NumiLocalized.string("ai.record.privacy.message", aiProviderDisplayName(for: pendingAIRecordProviderID)))
         }
     }
 
@@ -1542,6 +1590,21 @@ struct RootShellView: View {
             return
         }
 
+        guard let providerID = resolvedAIProviderID() else {
+            showToast(NumiLocalized.string("error.ai.no.key"), isError: true)
+            return
+        }
+
+        if AIRecordPrivacyPolicy.requiresDisclosure(
+            providerID: providerID,
+            acknowledgedProviderID: acknowledgedAIPrivacyProviderID
+        ) {
+            pendingAIRecordText = text
+            pendingAIRecordProviderID = providerID
+            isAIPrivacyDisclosurePresented = true
+            return
+        }
+
         Task {
             await performAIRecord(text: text)
         }
@@ -1549,32 +1612,26 @@ struct RootShellView: View {
 
     private func performAIRecord(text: String) async {
         let defaults = UserDefaults.standard
-        let provider = defaults.string(forKey: "app.ai.provider") ?? "claude"
         let claudeKey = defaults.string(forKey: "app.ai.claudeAPIKey") ?? ""
         let qwenKey = defaults.string(forKey: "app.ai.qwenAPIKey") ?? ""
         let dsKey = defaults.string(forKey: "app.ai.deepseekAPIKey") ?? ""
 
-        // 选择 parser
+        guard let provider = resolvedAIProviderID() else {
+            showToast(NumiLocalized.string("error.ai.no.key"), isError: true)
+            return
+        }
+
         let parser: TransactionLLMService
         switch provider {
-        case "qwen" where !qwenKey.isEmpty:
+        case "qwen":
             parser = QwenTransactionParser(apiKey: qwenKey)
-        case "deepseek" where !dsKey.isEmpty:
+        case "deepseek":
             parser = DeepSeekTransactionParser(apiKey: dsKey)
-        case "claude" where !claudeKey.isEmpty:
+        case "claude":
             parser = ClaudeTransactionParser(apiKey: claudeKey)
         default:
-            // 尝试任意可用 key
-            if !dsKey.isEmpty {
-                parser = DeepSeekTransactionParser(apiKey: dsKey)
-            } else if !claudeKey.isEmpty {
-                parser = ClaudeTransactionParser(apiKey: claudeKey)
-            } else if !qwenKey.isEmpty {
-                parser = QwenTransactionParser(apiKey: qwenKey)
-            } else {
-                showToast(NumiLocalized.string( "error.ai.no.key"), isError: true)
-                return
-            }
+            assertionFailure("Unsupported AI provider")
+            return
         }
 
         let visibleCategories = store.categories.filter { !$0.isHidden }
@@ -1607,32 +1664,90 @@ struct RootShellView: View {
             }
 
             let money = try Money(decimalString: "\(parsed.amount)", currencyCode: activeCurrencyCode)
-            guard let ledgerID = currentLedger?.id else {
+            guard currentLedger != nil else {
                 showToast(NumiLocalized.string( "error.ai.no.ledger"), isError: true)
                 return
             }
-            _ = try store.createTransaction(
+
+            aiRecordDraft = TransactionDraft(
                 type: parsed.type,
-                amount: money,
                 categoryID: category?.id,
+                amount: money,
                 accountID: account.id,
                 targetAccountID: parsed.type == .transfer ? targetAccount?.id : nil,
-                ledgerID: ledgerID,
+                occurredAt: parsed.occurredAt,
                 note: parsed.note
             )
+        } catch {
+            showToast(NumiLocalized.string("error.ai.record.fail", error.localizedDescription), isError: true)
+        }
+    }
 
-            let symbol = switch parsed.type {
+    private func saveAIRecordDraft(
+        type: TransactionType,
+        money: Money,
+        category: NumiCore.Category?,
+        account: Account?,
+        targetAccount: Account?,
+        occurredAt: Date,
+        note: String
+    ) -> Bool {
+        guard let accountID = account?.id,
+              let ledgerID = currentLedger?.id else { return false }
+        do {
+            _ = try store.createTransaction(
+                type: type,
+                amount: money,
+                categoryID: type == .transfer ? nil : category?.id,
+                accountID: accountID,
+                targetAccountID: type == .transfer ? targetAccount?.id : nil,
+                ledgerID: ledgerID,
+                note: note,
+                occurredAt: occurredAt,
+                convertedAmountAtRecord: convertedAmountCapturedAtRecord(for: money, occurredAt: occurredAt)
+            )
+            alignHomeAnchorDate(to: occurredAt)
+            let symbol = switch type {
             case .income: "+"
             case .expense: "-"
             case .transfer: ""
             }
-            let amountStr = "\(parsed.amount)"
-            let localizedCategoryName = parsed.type == .transfer
+            let categoryName = type == .transfer
                 ? NumiLocalized.string("other.transfer")
-                : (category?.localizedDisplayName ?? parsed.categoryName)
-            showToast(NumiLocalized.string("error.ai.record.success", localizedCategoryName, symbol, "¥\(amountStr)"))
+                : (category?.localizedDisplayName ?? NumiLocalized.string("empty.no.category"))
+            showToast(NumiLocalized.string(
+                "error.ai.record.success",
+                categoryName,
+                symbol,
+                money.formatted(locale: NumiLocalized.currentLocale)
+            ))
+            return true
         } catch {
-            showToast(NumiLocalized.string("error.ai.record.fail", error.localizedDescription), isError: true)
+            showToast(NumiLocalized.string("error.record.save.failed"), isError: true)
+            return false
+        }
+    }
+
+    private func resolvedAIProviderID() -> String? {
+        let defaults = UserDefaults.standard
+        let preferredProvider = defaults.string(forKey: "app.ai.provider") ?? "claude"
+        let availableKeys = [
+            "claude": defaults.string(forKey: "app.ai.claudeAPIKey") ?? "",
+            "qwen": defaults.string(forKey: "app.ai.qwenAPIKey") ?? "",
+            "deepseek": defaults.string(forKey: "app.ai.deepseekAPIKey") ?? ""
+        ]
+
+        if let preferredKey = availableKeys[preferredProvider], !preferredKey.isEmpty {
+            return preferredProvider
+        }
+        return ["deepseek", "claude", "qwen"].first { !(availableKeys[$0] ?? "").isEmpty }
+    }
+
+    private func aiProviderDisplayName(for providerID: String?) -> String {
+        switch providerID {
+        case "qwen": "Qwen"
+        case "deepseek": "DeepSeek"
+        default: "Claude"
         }
     }
 

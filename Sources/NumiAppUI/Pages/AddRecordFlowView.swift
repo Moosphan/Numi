@@ -7,9 +7,10 @@ public struct AddRecordFlowView: View {
     private let categories: [NumiCore.Category]
     private let accounts: [Account]
     private let currencyOptions: [NumiCurrencyOption]
+    private let reviewMessage: String?
     private let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool
 
-    @State private var selectedType: TransactionType = .expense
+    @State private var selectedType: TransactionType
     @State private var selectedDraft: TransactionDraft?
     @State private var savedContext: SavedRecordContext?
 
@@ -17,12 +18,17 @@ public struct AddRecordFlowView: View {
         categories: [NumiCore.Category],
         accounts: [Account],
         currencyOptions: [NumiCurrencyOption],
+        initialDraft: TransactionDraft? = nil,
+        reviewMessage: String? = nil,
         onSave: @escaping (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool
     ) {
         self.categories = categories
         self.accounts = accounts
         self.currencyOptions = currencyOptions
+        self.reviewMessage = reviewMessage
         self.onSave = onSave
+        _selectedType = State(initialValue: initialDraft?.type ?? .expense)
+        _selectedDraft = State(initialValue: initialDraft)
     }
 
     public var body: some View {
@@ -44,6 +50,7 @@ public struct AddRecordFlowView: View {
                         categories: categories,
                         accounts: accounts,
                         currencyOptions: currencyOptions,
+                        reviewMessage: reviewMessage,
                         savedContext: savedContext,
                         onBack: {
                             withAnimation(.spring(response: 0.32, dampingFraction: 0.88)) {
@@ -192,14 +199,32 @@ struct SavedRecordContext {
 public struct TransactionDraft: Hashable, Identifiable {
     public let type: TransactionType
     public let categoryID: UUID?
+    public let amount: Money?
+    public let accountID: UUID?
+    public let targetAccountID: UUID?
+    public let occurredAt: Date?
+    public let note: String?
 
     public var id: String {
         "\(type.rawValue)-\(categoryID?.uuidString ?? "transfer")"
     }
 
-    public init(type: TransactionType, categoryID: UUID?) {
+    public init(
+        type: TransactionType,
+        categoryID: UUID?,
+        amount: Money? = nil,
+        accountID: UUID? = nil,
+        targetAccountID: UUID? = nil,
+        occurredAt: Date? = nil,
+        note: String? = nil
+    ) {
         self.type = type
         self.categoryID = categoryID
+        self.amount = amount
+        self.accountID = accountID
+        self.targetAccountID = targetAccountID
+        self.occurredAt = occurredAt
+        self.note = note
     }
 }
 
@@ -208,6 +233,7 @@ private struct AddRecordEditorOverlay: View {
     let categories: [NumiCore.Category]
     let accounts: [Account]
     let currencyOptions: [NumiCurrencyOption]
+    let reviewMessage: String?
     let savedContext: SavedRecordContext?
     let onBack: () -> Void
     let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool
@@ -256,6 +282,17 @@ private struct AddRecordEditorOverlay: View {
                         }
                         .padding(.horizontal, NumiSpacing.s4)
                         .padding(.bottom, NumiSpacing.s2)
+
+                        if let reviewMessage {
+                            Label(reviewMessage, systemImage: "sparkles")
+                                .font(NumiFont.footnote)
+                                .foregroundStyle(NumiColor.accentDeep)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, NumiSpacing.s4)
+                                .padding(.vertical, NumiSpacing.s2)
+                                .background(NumiColor.surfaceCardSubtle)
+                                .accessibilityIdentifier("aiRecord.reviewNotice")
+                        }
 
                         AddRecordEntryContent(
                             draft: draft,
@@ -375,12 +412,13 @@ private struct AddRecordEntryContent: View {
         self.onSave = onSave
         self.onDone = onDone
         self.onAddAnother = onAddAnother
-        let initialCurrency = savedContext?.currencyCode ?? currencyOptions.first?.code ?? "CNY"
+        let initialCurrency = draft.amount?.currencyCode ?? savedContext?.currencyCode ?? currencyOptions.first?.code ?? "CNY"
         _selectedCurrencyCode = State(initialValue: initialCurrency)
-        _inputState = State(initialValue: MoneyInputState(currencyCode: initialCurrency))
-        _selectedDate = State(initialValue: Date())  // 始终用当前时间
-        _selectedAccountID = State(initialValue: savedContext?.accountID)
-        _selectedTargetAccountID = State(initialValue: savedContext?.targetAccountID)
+        _inputState = State(initialValue: draft.amount.map(MoneyInputState.init(money:)) ?? MoneyInputState(currencyCode: initialCurrency))
+        _selectedDate = State(initialValue: draft.occurredAt ?? Date())
+        _selectedAccountID = State(initialValue: draft.accountID ?? savedContext?.accountID)
+        _selectedTargetAccountID = State(initialValue: draft.targetAccountID ?? savedContext?.targetAccountID)
+        _note = State(initialValue: draft.note ?? "")
     }
 
     var body: some View {
