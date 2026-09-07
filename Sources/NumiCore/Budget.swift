@@ -62,13 +62,18 @@ public enum BudgetSpendingCalculator {
             return true
         }
         func normalizedAmount(_ transaction: Transaction) throws -> Money {
-            guard transaction.amount.currencyCode != currencyCode.uppercased() else { return transaction.amount }
+            let targetCurrencyCode = currencyCode.uppercased()
+            guard transaction.amount.currencyCode != targetCurrencyCode else { return transaction.amount }
+            if let convertedAmountAtRecord = transaction.convertedAmountAtRecord,
+               convertedAmountAtRecord.currencyCode == targetCurrencyCode {
+                return convertedAmountAtRecord
+            }
             guard let exchangeRateHistory,
                   let converted = exchangeRateHistory.convert(transaction.amount, to: currencyCode, on: transaction.occurredAt)
             else {
                 throw TransactionSummaryError.missingExchangeRate(
                     sourceCurrencyCode: transaction.amount.currencyCode,
-                    targetCurrencyCode: currencyCode.uppercased()
+                    targetCurrencyCode: targetCurrencyCode
                 )
             }
             return converted

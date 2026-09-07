@@ -48,6 +48,27 @@ final class BudgetCalculatorTests: XCTestCase {
         XCTAssertEqual(spending, try Money(decimalString: "71.43", currencyCode: "CNY"))
     }
 
+    func testBudgetSpendingPrefersAmountCapturedWhenTheRecordWasCreated() throws {
+        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        let laterCorrectedHistory = ExchangeRateHistory(snapshots: [
+            ExchangeRateSnapshot(baseCode: "CNY", rates: ["CNY": 1, "USD": 0.10], effectiveDate: date)
+        ])
+        let transaction = Transaction(
+            type: .expense,
+            amount: try Money(decimalString: "10", currencyCode: "USD"),
+            occurredAt: date,
+            convertedAmountAtRecord: try Money(decimalString: "72", currencyCode: "CNY")
+        )
+
+        let spending = try BudgetSpendingCalculator.spending(
+            from: [transaction],
+            currencyCode: "CNY",
+            exchangeRateHistory: laterCorrectedHistory
+        )
+
+        XCTAssertEqual(spending, try Money(decimalString: "72", currencyCode: "CNY"))
+    }
+
     func testLegacyTransactionJSONWithoutBudgetLinksStillDecodes() throws {
         let json = """
         {"id":"00000000-0000-0000-0000-000000000001","type":"expense","amount":{"minorUnits":100,"currencyCode":"CNY"},"occurredAt":"2026-01-01T00:00:00Z","ledgerID":"00000000-0000-0000-0000-000000000002","note":"旧数据"}
