@@ -147,6 +147,37 @@ final class TransactionServiceTests: XCTestCase {
         XCTAssertEqual(reopenedStore.visibleTransactions.last?.note, "快捷指令午餐")
     }
 
+    func testTransactionServiceUsesRuntimeLocalizedNamesForShortcutParsing() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TransactionServiceLocalizationTests", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let storeURL = directory.appendingPathComponent("Numi.store")
+        let appStore = try SwiftDataBookkeepingStore(storeURL: storeURL)
+        try appStore.seedDefaultsIfNeeded()
+        let diningCategory = try XCTUnwrap(appStore.categories.first { $0.builtInKey == "category.default.expense.dining" })
+        let cashAccount = try XCTUnwrap(appStore.accounts.first { $0.builtInKey == "account.default.cash" })
+
+        UserDefaults.standard.set("en", forKey: languageKey)
+        let service = TransactionService(storeURL: storeURL)
+        XCTAssertTrue(service.availableCategoryNames().contains("Dining"))
+
+        _ = try service.createTransaction(from: ParsedTransaction(
+            type: .expense,
+            amount: 12,
+            categoryName: "Dining",
+            accountName: "Cash",
+            occurredAt: Date(timeIntervalSince1970: 1_725_000_000),
+            note: "Lunch"
+        ))
+
+        let reopenedStore = try SwiftDataBookkeepingStore(storeURL: storeURL)
+        XCTAssertEqual(reopenedStore.visibleTransactions.last?.categoryID, diningCategory.id)
+        XCTAssertEqual(reopenedStore.visibleTransactions.last?.accountID, cashAccount.id)
+    }
+
     func testSharedStoreMigrationCopiesLegacySQLiteFilesOnlyWhenNeeded() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SharedStoreMigrationTests", isDirectory: true)

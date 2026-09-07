@@ -63,7 +63,10 @@ public final class TransactionService: @unchecked Sendable {
         let desc = FetchDescriptor<CategoryEntity>(
             predicate: #Predicate { !$0.isHidden }
         )
-        return (try? context.fetch(desc).map(\.name)) ?? []
+        guard let categories = try? context.fetch(desc) else { return [] }
+        return categories
+            .map(categoryModel)
+            .localizedCategoryNames()
     }
 
     // MARK: - 创建
@@ -136,28 +139,31 @@ public final class TransactionService: @unchecked Sendable {
 
     private func resolveCategory(_ name: String) -> CategoryEntity? {
         guard let context else { return nil }
-        // 精确匹配
-        let exact = FetchDescriptor<CategoryEntity>(
-            predicate: #Predicate { $0.name == name && !$0.isHidden }
-        )
-        if let found = try? context.fetch(exact).first {
-            return found
-        }
-        // 模糊匹配
         let all = FetchDescriptor<CategoryEntity>(
             predicate: #Predicate { !$0.isHidden }
         )
         guard let categories = try? context.fetch(all) else { return nil }
-        return categories.first { $0.name.contains(name) || name.contains($0.name) }
+        guard let match = categories
+            .map(categoryModel)
+            .resolveLocalizedCategory(named: name) else {
+            return nil
+        }
+        return categories.first { $0.id == match.id }
     }
 
     private func resolveAccount(_ name: String?) -> AccountEntity? {
         guard let context else { return nil }
         guard let name, !name.isEmpty else { return nil }
         let desc = FetchDescriptor<AccountEntity>(
-            predicate: #Predicate { $0.name == name && !$0.isHidden }
+            predicate: #Predicate { !$0.isHidden }
         )
-        return try? context.fetch(desc).first
+        guard let accounts = try? context.fetch(desc) else { return nil }
+        guard let match = accounts
+            .map(accountModel)
+            .resolveLocalizedAccount(named: name) else {
+            return nil
+        }
+        return accounts.first { $0.id == match.id }
     }
 
     private func defaultAccount() -> AccountEntity? {
@@ -172,6 +178,30 @@ public final class TransactionService: @unchecked Sendable {
         guard let context else { return nil }
         let desc = FetchDescriptor<LedgerEntity>(sortBy: [SortDescriptor(\.name)])
         return try? context.fetch(desc).first
+    }
+
+    private func categoryModel(_ entity: CategoryEntity) -> NumiCore.Category {
+        NumiCore.Category(
+            id: entity.id,
+            kind: CategoryKind(rawValue: entity.kindRawValue) ?? .expense,
+            name: entity.name,
+            builtInKey: entity.builtInKey,
+            icon: entity.icon,
+            isHidden: entity.isHidden,
+            sortOrder: entity.sortOrder
+        )
+    }
+
+    private func accountModel(_ entity: AccountEntity) -> Account {
+        Account(
+            id: entity.id,
+            name: entity.name,
+            builtInKey: entity.builtInKey,
+            type: AccountType(rawValue: entity.typeRawValue) ?? .other,
+            balance: Money(minorUnits: entity.balanceMinorUnits, currencyCode: entity.currencyCode),
+            isIncludedInAssets: entity.isIncludedInAssets,
+            isHidden: entity.isHidden
+        )
     }
 }
 
