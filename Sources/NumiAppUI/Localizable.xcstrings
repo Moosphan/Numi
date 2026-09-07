@@ -3655,6 +3655,24 @@
         "ja": { "stringUnit": { "state": "translated", "value": "口座を絞り込む" } }
       }
     },
+    "insight.trend.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "收支趋势" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Cash Flow Trend" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "收支趨勢" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "収支の推移" } }
+      }
+    },
+    "insight.trend.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "红色为支出，绿色为收入" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Red for expenses, green for income" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "紅色為支出，綠色為收入" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "赤は支出、緑は収入" } }
+      }
+    },
     "budget.title": {
       "extractionState": "manual",
       "localizations": {

@@ -50,6 +50,7 @@ public struct InsightsView: View {
     @ObservedObject private var membership = MembershipController.shared
     private let summary: TransactionSummary
     private let previousPeriodSummary: TransactionSummary?
+    private let trendPoints: [CashflowTrendPoint]
     private let hasUnavailableHistoricalRate: Bool
     private let expenseDistribution: [InsightsDistributionRow]
     private let incomeDistribution: [InsightsDistributionRow]
@@ -83,6 +84,7 @@ public struct InsightsView: View {
     public init(
         summary: TransactionSummary,
         previousPeriodSummary: TransactionSummary? = nil,
+        trendPoints: [CashflowTrendPoint] = [],
         hasUnavailableHistoricalRate: Bool = false,
         distribution: [InsightsDistributionRow],
         incomeDistribution: [InsightsDistributionRow] = [],
@@ -100,6 +102,7 @@ public struct InsightsView: View {
     ) {
         self.summary = summary
         self.previousPeriodSummary = previousPeriodSummary
+        self.trendPoints = trendPoints
         self.hasUnavailableHistoricalRate = hasUnavailableHistoricalRate
         self.expenseDistribution = distribution
         self.incomeDistribution = incomeDistribution
@@ -240,6 +243,10 @@ public struct InsightsView: View {
 
                 if customRange != nil, let previousPeriodSummary {
                     periodComparisonSection(previousPeriodSummary)
+                }
+
+                if customRange != nil, !trendPoints.isEmpty {
+                    cashflowTrendSection
                 }
 
                 if hasUnavailableHistoricalRate {
@@ -454,6 +461,64 @@ public struct InsightsView: View {
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
         .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
         .accessibilityIdentifier("insights.periodComparison")
+    }
+
+    private var cashflowTrendSection: some View {
+        let maximum = max(
+            1,
+            trendPoints.map { max($0.expense.minorUnits, $0.income.minorUnits) }.max() ?? 1
+        )
+
+        return VStack(alignment: .leading, spacing: NumiSpacing.s3) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(NumiLocalized.string("insight.trend.title"))
+                    .font(NumiFont.bodyStrong)
+                    .foregroundStyle(NumiColor.textPrimary)
+                Text(NumiLocalized.string("insight.trend.subtitle"))
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(NumiColor.textSecondary)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .bottom, spacing: NumiSpacing.s2) {
+                    ForEach(trendPoints) { point in
+                        VStack(spacing: NumiSpacing.s2) {
+                            HStack(alignment: .bottom, spacing: 3) {
+                                trendBar(
+                                    amount: point.expense.minorUnits,
+                                    maximum: maximum,
+                                    color: NumiColor.expenseText
+                                )
+                                trendBar(
+                                    amount: point.income.minorUnits,
+                                    maximum: maximum,
+                                    color: NumiColor.incomeText
+                                )
+                            }
+                            Text(point.date.numiFormatted(.dateTime.month().day()))
+                                .font(NumiFont.caption)
+                                .foregroundStyle(NumiColor.textTertiary)
+                                .lineLimit(1)
+                        }
+                        .frame(width: 40)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("\(point.date.numiFormatted(.dateTime.month().day())): \(NumiLocalized.string("insight.expense")) \(privacyAmountDisplayPolicy.display(point.expense)), \(NumiLocalized.string("insight.income")) \(privacyAmountDisplayPolicy.display(point.income))")
+                    }
+                }
+                .frame(height: 126, alignment: .bottom)
+            }
+        }
+        .padding(NumiSpacing.s4)
+        .background(NumiColor.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+        .accessibilityIdentifier("insights.cashflowTrend")
+    }
+
+    private func trendBar(amount: Int64, maximum: Int64, color: Color) -> some View {
+        RoundedRectangle(cornerRadius: 3, style: .continuous)
+            .fill(color)
+            .frame(width: 12, height: max(3, 82 * CGFloat(amount) / CGFloat(maximum)))
     }
 
     @ViewBuilder

@@ -12,6 +12,11 @@ struct RootShellView: View {
         let hasUnavailableHistoricalRate: Bool
     }
 
+    private struct InsightsTrendResult {
+        let points: [CashflowTrendPoint]
+        let hasUnavailableHistoricalRate: Bool
+    }
+
     @AppStorage("app.theme.id") private var themeID = NumiTheme.default.id
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
@@ -525,6 +530,7 @@ struct RootShellView: View {
     private var insightsRoot: some View {
         let summaryResult = insightsSummary()
         let previousSummaryResult = insightsPreviousPeriodSummary()
+        let trendResult = insightsTrend()
         let distribution = insightsDistribution()
         let income = insightsIncomeDistribution()
         let periodTitle = insightsPeriodTitle
@@ -533,7 +539,8 @@ struct RootShellView: View {
             InsightsView(
                 summary: summaryResult.summary,
                 previousPeriodSummary: previousSummaryResult?.summary,
-                hasUnavailableHistoricalRate: summaryResult.hasUnavailableHistoricalRate || (previousSummaryResult?.hasUnavailableHistoricalRate ?? false),
+                trendPoints: trendResult?.points ?? [],
+                hasUnavailableHistoricalRate: summaryResult.hasUnavailableHistoricalRate || (previousSummaryResult?.hasUnavailableHistoricalRate ?? false) || (trendResult?.hasUnavailableHistoricalRate ?? false),
                 distribution: distribution,
                 incomeDistribution: income,
                 categories: store.categories,
@@ -1064,6 +1071,24 @@ struct RootShellView: View {
                 && InsightsAccountFilterPolicy.includes(transaction, accountID: effectiveInsightsAccountID)
         }
         return currencySummary(for: transactions)
+    }
+
+    private func insightsTrend() -> InsightsTrendResult? {
+        guard insightsCustomRange != nil else { return nil }
+        do {
+            return InsightsTrendResult(
+                points: try CashflowTrend.daily(
+                    transactions: insightsFilteredTransactions,
+                    interval: insightsDateInterval,
+                    currencyCode: activeCurrencyCode,
+                    exchangeRateHistory: rateService.history,
+                    calendar: calendar
+                ),
+                hasUnavailableHistoricalRate: false
+            )
+        } catch {
+            return InsightsTrendResult(points: [], hasUnavailableHistoricalRate: true)
+        }
     }
 
     private func insightsDistribution() -> [InsightsDistributionRow] {

@@ -181,6 +181,26 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testInsightsTrendCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "收支趋势",
+            "en": "Cash Flow Trend",
+            "zh-Hant": "收支趨勢",
+            "ja": "収支の推移"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("insight.trend.title", locale: Locale(identifier: language)),
+                expected
+            )
+            XCTAssertNotEqual(
+                NumiLocalized.lookup("insight.trend.subtitle", locale: Locale(identifier: language)),
+                "insight.trend.subtitle"
+            )
+        }
+    }
+
     func testCSVForeignCurrencyImportWarningCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (
