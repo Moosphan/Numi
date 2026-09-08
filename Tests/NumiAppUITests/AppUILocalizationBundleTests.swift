@@ -77,37 +77,6 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
-    func testHomeSummaryCustomizationCopyCoversAllSupportedRuntimeLanguages() {
-        let expectedValues = [
-            "zh-Hans": (title: "自定义首页摘要", hint: "调整摘要卡的显示顺序。结余和记账次数仅在 Pro 中显示。"),
-            "en": (title: "Customize Home Summary", hint: "Reorder your summary cards. Balance and record count are shown with Pro."),
-            "zh-Hant": (title: "自訂首頁摘要", hint: "調整摘要卡的顯示順序。結餘和記帳次數僅在 Pro 中顯示。"),
-            "ja": (title: "ホームの集計をカスタマイズ", hint: "集計カードの表示順を変更できます。残高と記録件数はProで表示されます。")
-        ]
-
-        for (language, expected) in expectedValues {
-            let locale = Locale(identifier: language)
-            XCTAssertEqual(NumiLocalized.lookup("home.summary.customize.title", locale: locale), expected.title)
-            XCTAssertEqual(NumiLocalized.lookup("home.summary.customize.hint", locale: locale), expected.hint)
-        }
-    }
-
-    func testHomeSummaryComparisonCopyCoversAllSupportedRuntimeLanguages() {
-        let expectedValues = [
-            "zh-Hans": "首页摘要自定义",
-            "en": "Custom Home Summary",
-            "zh-Hant": "首頁摘要自訂",
-            "ja": "ホーム集計のカスタマイズ"
-        ]
-
-        for (language, expected) in expectedValues {
-            XCTAssertEqual(
-                NumiLocalized.lookup("membership.comparison.homeSummary", locale: Locale(identifier: language)),
-                expected
-            )
-        }
-    }
-
     func testInsightsCSVExportCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": "导出 CSV 洞悉报告",

@@ -11590,51 +11590,6 @@
         }
       }
     },
-    "home.summary.customize": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自定义首页摘要" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Customize Home Summary" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自訂首頁摘要" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "ホームの集計をカスタマイズ" } }
-      }
-    },
-    "home.summary.customize.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自定义首页摘要" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Customize Home Summary" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自訂首頁摘要" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "ホームの集計をカスタマイズ" } }
-      }
-    },
-    "home.summary.customize.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "调整摘要卡的显示顺序。结余和记账次数仅在 Pro 中显示。" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Reorder your summary cards. Balance and record count are shown with Pro." } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "調整摘要卡的顯示順序。結餘和記帳次數僅在 Pro 中顯示。" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "集計カードの表示順を変更できます。残高と記録件数はProで表示されます。" } }
-      }
-    },
-    "home.summary.customize.move.up": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "上移摘要卡" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Move summary card up" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "上移摘要卡" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "集計カードを上へ移動" } }
-      }
-    },
-    "home.summary.customize.move.down": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "下移摘要卡" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Move summary card down" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "下移摘要卡" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "集計カードを下へ移動" } }
-      }
-    },
     "home.timeRange": {
       "extractionState": "manual",
       "localizations": {
@@ -16790,15 +16745,6 @@
         "en": { "stringUnit": { "state": "translated", "value": "Create encrypted backups" } },
         "zh-Hant": { "stringUnit": { "state": "translated", "value": "建立加密備份" } },
         "ja": { "stringUnit": { "state": "translated", "value": "暗号化バックアップの作成" } }
-      }
-    },
-    "membership.comparison.homeSummary": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "首页摘要自定义" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Custom Home Summary" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "首頁摘要自訂" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "ホーム集計のカスタマイズ" } }
       }
     },
     "membership.comparison.insightsReport": {
