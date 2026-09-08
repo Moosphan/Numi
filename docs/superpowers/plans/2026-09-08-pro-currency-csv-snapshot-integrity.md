@@ -90,4 +90,4 @@ Expected: malformed row is rejected and the standard exported CSV continues to p
 - [x] **Step 1: Add the CSV conversion-currency validation evidence to P1-03.**
 - [x] **Step 2: Run `swift test`, String Catalog JSON validation, `git diff --check`, and the iOS Simulator Debug build.**
 - [x] **Step 3: Install and launch the current build on the booted simulator.**
-- [ ] **Step 4: Commit, push, and add the resulting evidence to GitHub Issue #4 / Project 2.**
+- [x] **Step 4: Commit, push, and add the resulting evidence to GitHub Issue #4 / Project 2.**
