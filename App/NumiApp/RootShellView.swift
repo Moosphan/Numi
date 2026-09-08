@@ -99,19 +99,25 @@ struct RootShellView: View {
 
     init() {
         do {
-            CloudSyncSharedPreference.setCloudSyncEnabled(
-                UserDefaults.standard.bool(forKey: "app.sync.icloudEnabled")
+            let requestedCloudSyncEnabled = UserDefaults.standard.bool(forKey: "app.sync.icloudEnabled")
+            let activeMode = CloudSyncStorePolicy.storageMode(
+                isCloudSyncEnabled: CloudSyncSharedPreference.isCloudSyncEnabled
             )
+            let sharedMode = CloudSyncStoreTransitionPolicy.sharedStorageMode(
+                activeMode: activeMode,
+                requestedCloudSyncEnabled: requestedCloudSyncEnabled,
+                appliesRequestedMode: true
+            )
+            CloudSyncSharedPreference.setCloudSyncEnabled(sharedMode == .cloudKit)
             let store = try Self.makeStore()
             try store.seedDefaultsIfNeeded()
             try Self.seedDemoDataIfNeeded(store: store)
             _store = StateObject(wrappedValue: store)
-            // SwiftData's CloudKit configuration is fixed when the store is
+            // SwiftData's store configuration is fixed when the store is
             // created. Clear the relaunch notice only after this launch has
-            // successfully opened the CloudKit-backed store.
-            if UserDefaults.standard.bool(forKey: "app.sync.icloudEnabled") {
-                UserDefaults.standard.set(false, forKey: "app.sync.icloudMigrationNeedsRelaunch")
-            }
+            // successfully opened the requested store, whether sync was
+            // enabled or disabled.
+            UserDefaults.standard.set(false, forKey: "app.sync.icloudMigrationNeedsRelaunch")
 
             // 注入 CloudKit 同步闭包
             iCloudSyncService.shared.onPerformSync = {

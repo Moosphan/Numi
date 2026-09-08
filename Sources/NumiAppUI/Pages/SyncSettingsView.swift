@@ -182,7 +182,6 @@ public class iCloudSyncService: ObservableObject {
     public func toggleSync() {
         isSyncEnabled.toggle()
         defaults.set(isSyncEnabled, forKey: "app.sync.icloudEnabled")
-        CloudSyncSharedPreference.setCloudSyncEnabled(isSyncEnabled)
         if isSyncEnabled {
             Task { await performSync() }
         }
@@ -354,6 +353,8 @@ public struct SyncSettingsView: View {
 
                 if syncService.isSyncEnabled, migrationNeedsRelaunch, hasPendingMigration?() == true {
                     migrationRelaunchCard
+                } else if migrationNeedsRelaunch {
+                    storageRestartCard
                 } else if syncService.isSyncEnabled, hasPendingMigration?() == true, onMigrationAssessment != nil {
                     migrationReviewCard
                 }
@@ -476,6 +477,7 @@ public struct SyncSettingsView: View {
         guard isEnabled != syncService.isSyncEnabled else { return }
         guard isEnabled else {
             syncService.toggleSync()
+            migrationNeedsRelaunch = true
             return
         }
         switch membership.decision(for: .openICloudSync) {
@@ -506,6 +508,30 @@ public struct SyncSettingsView: View {
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(NumiColor.textPrimary)
                 Text(NumiLocalized.string("sync.migration.restart.message"))
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(NumiColor.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(NumiSpacing.s4)
+        .background(NumiColor.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
+
+    private var storageRestartCard: some View {
+        HStack(alignment: .top, spacing: NumiSpacing.s3) {
+            Image(systemName: "arrow.clockwise")
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 36, height: 36)
+                .background(NumiColor.iconBackground)
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                .foregroundStyle(NumiColor.accentPrimary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(NumiLocalized.string("sync.storage.restart.title"))
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundStyle(NumiColor.textPrimary)
+                Text(NumiLocalized.string("sync.storage.restart.message"))
                     .font(NumiFont.footnote)
                     .foregroundStyle(NumiColor.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)

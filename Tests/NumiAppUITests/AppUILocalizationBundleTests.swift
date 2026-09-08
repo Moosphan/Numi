@@ -430,6 +430,21 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testCloudStorageRestartCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": ("请重新打开 Numi", "同步存储将在重新打开 App 后切换；在此之前，快捷指令仍会使用当前数据。"),
+            "en": ("Reopen Numi", "Sync storage will change after you reopen the app. Until then, Shortcuts keeps using your current data."),
+            "zh-Hant": ("請重新開啟 Numi", "同步儲存空間會在重新開啟 App 後切換；在此之前，捷徑仍會使用目前的資料。"),
+            "ja": ("Numiを再度開いてください", "同期ストレージはアプリを再度開いた後に切り替わります。それまではショートカットは現在のデータを使用します。")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("sync.storage.restart.title", locale: locale), expected.0)
+            XCTAssertEqual(NumiLocalized.lookup("sync.storage.restart.message", locale: locale), expected.1)
+        }
+    }
+
     func testBackupReminderCopyCoversAllSupportedRuntimeLanguages() {
         for language in ["zh-Hans", "zh-Hant", "en", "ja"] {
             let locale = Locale(identifier: language)

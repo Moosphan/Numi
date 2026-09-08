@@ -14,6 +14,21 @@ public enum CloudSyncStorePolicy {
     }
 }
 
+/// A process keeps its store configuration for its whole lifetime. Requests to
+/// change iCloud availability take effect for shared extensions only after the
+/// next app launch has opened the matching store.
+public enum CloudSyncStoreTransitionPolicy {
+    public static func sharedStorageMode(
+        activeMode: CloudSyncStoreMode,
+        requestedCloudSyncEnabled: Bool,
+        appliesRequestedMode: Bool
+    ) -> CloudSyncStoreMode {
+        appliesRequestedMode
+            ? CloudSyncStorePolicy.storageMode(isCloudSyncEnabled: requestedCloudSyncEnabled)
+            : activeMode
+    }
+}
+
 /// The main app mirrors this preference into the App Group so its App Intent
 /// extension can choose the same storage mode in a fresh process.
 public enum CloudSyncSharedPreference {

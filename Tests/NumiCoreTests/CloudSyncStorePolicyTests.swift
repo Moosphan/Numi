@@ -15,4 +15,26 @@ final class CloudSyncStorePolicyTests: XCTestCase {
             .cloudKit
         )
     }
+
+    func testStorageModeDoesNotSwitchUntilTheNextProcessLaunch() {
+        XCTAssertEqual(
+            CloudSyncStoreTransitionPolicy.sharedStorageMode(
+                activeMode: .cloudKit,
+                requestedCloudSyncEnabled: false,
+                appliesRequestedMode: false
+            ),
+            .cloudKit
+        )
+    }
+
+    func testStorageModeAppliesTheRequestedSettingOnLaunch() {
+        XCTAssertEqual(
+            CloudSyncStoreTransitionPolicy.sharedStorageMode(
+                activeMode: .cloudKit,
+                requestedCloudSyncEnabled: false,
+                appliesRequestedMode: true
+            ),
+            .sharedAppGroup
+        )
+    }
 }
