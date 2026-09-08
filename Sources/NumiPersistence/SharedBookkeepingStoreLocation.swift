@@ -1,11 +1,12 @@
 import Foundation
+import NumiCore
 
 /// Resolves the database location shared by the main app and its App Intents extension.
 ///
 /// The main database is deliberately kept in the App Group so a shortcut writes to
 /// the exact same SwiftData store as the foreground app.
 public enum SharedBookkeepingStoreLocation {
-    public static let appGroupIdentifier = "group.com.numi.shared"
+    public static let appGroupIdentifier = CloudSyncSharedPreference.appGroupIdentifier
     public static let storeFileName = "Numi.store"
 
     public static func storeURL(fileManager: FileManager = .default) -> URL? {

@@ -99,6 +99,9 @@ struct RootShellView: View {
 
     init() {
         do {
+            CloudSyncSharedPreference.setCloudSyncEnabled(
+                UserDefaults.standard.bool(forKey: "app.sync.icloudEnabled")
+            )
             let store = try Self.makeStore()
             try store.seedDefaultsIfNeeded()
             try Self.seedDemoDataIfNeeded(store: store)

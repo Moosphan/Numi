@@ -169,6 +169,7 @@ public class iCloudSyncService: ObservableObject {
 
     private init() {
         isSyncEnabled = defaults.bool(forKey: "app.sync.icloudEnabled")
+        CloudSyncSharedPreference.setCloudSyncEnabled(isSyncEnabled)
         isCellularSyncEnabled = defaults.bool(forKey: "app.sync.cellularEnabled")
         lastSyncDate = defaults.object(forKey: "app.sync.lastSyncDate") as? Date
         startNetworkMonitor()
@@ -181,6 +182,7 @@ public class iCloudSyncService: ObservableObject {
     public func toggleSync() {
         isSyncEnabled.toggle()
         defaults.set(isSyncEnabled, forKey: "app.sync.icloudEnabled")
+        CloudSyncSharedPreference.setCloudSyncEnabled(isSyncEnabled)
         if isSyncEnabled {
             Task { await performSync() }
         }

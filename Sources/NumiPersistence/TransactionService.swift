@@ -11,6 +11,18 @@ public final class TransactionService: @unchecked Sendable {
     private let context: ModelContext?
 
     public init() {
+        switch CloudSyncStorePolicy.storageMode(
+            isCloudSyncEnabled: CloudSyncSharedPreference.isCloudSyncEnabled
+        ) {
+        case .cloudKit:
+            let store = Self.makeCloudStore()
+            self.container = store.container
+            self.context = store.context
+            return
+        case .sharedAppGroup:
+            break
+        }
+
         guard let containerURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: Self.appGroupID) else {
             self.container = nil
@@ -44,6 +56,29 @@ public final class TransactionService: @unchecked Sendable {
                 InstallmentPlanEntity.self,
                 InstallmentPeriodEntity.self,
                 configurations: config
+            )
+            return (container, ModelContext(container))
+        } catch {
+            return (nil, nil)
+        }
+    }
+
+    private static func makeCloudStore() -> (container: ModelContainer?, context: ModelContext?) {
+        do {
+            let configuration = ModelConfiguration(
+                "NumiCloud",
+                cloudKitDatabase: .private("iCloud.com.local.Numi")
+            )
+            let container = try ModelContainer(
+                for: LedgerEntity.self,
+                CategoryEntity.self,
+                AccountEntity.self,
+                TransactionEntity.self,
+                BudgetSettingEntity.self,
+                SubscriptionEntity.self,
+                InstallmentPlanEntity.self,
+                InstallmentPeriodEntity.self,
+                configurations: configuration
             )
             return (container, ModelContext(container))
         } catch {
