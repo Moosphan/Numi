@@ -238,7 +238,8 @@ public struct SettingsView: View {
                             DataManagementView(
                                 exportSnapshot: export,
                                 importSnapshot: importFn,
-                                appendTransactions: appendFn
+                                appendTransactions: appendFn,
+                                currentLedgerID: currentLedgerID
                             )
                         } label: {
                             settingsRow(NumiLocalized.string( "setting.import.export"), icon: "square.and.arrow.up")

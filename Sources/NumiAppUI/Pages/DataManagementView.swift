@@ -27,12 +27,14 @@ public struct DataManagementView: View {
     private let importSnapshot: (BookkeepingSnapshot) throws -> Void
     private let appendTransactions: ([NumiCore.Transaction]) throws -> Void
     private let recoveryPointService: ImportRecoveryPointService
+    private let currentLedgerID: UUID?
 
     @State private var showImportJSON = false
     @State private var showImportCSV = false
     @State private var showCSVImportReview = false
     @State private var csvImportDocument: CSVImportDocument?
     @State private var csvImportSnapshot: BookkeepingSnapshot?
+    @State private var csvImportLedger: Ledger?
     @State private var hasImportRecoveryPoint: Bool
     @State private var showRestoreRecoveryConfirmation = false
     @State private var shareURL: ShareableURL?
@@ -43,11 +45,13 @@ public struct DataManagementView: View {
         exportSnapshot: @escaping () -> BookkeepingSnapshot,
         importSnapshot: @escaping (BookkeepingSnapshot) throws -> Void,
         appendTransactions: @escaping ([NumiCore.Transaction]) throws -> Void,
+        currentLedgerID: UUID? = nil,
         recoveryPointService: ImportRecoveryPointService = .shared
     ) {
         self.exportSnapshot = exportSnapshot
         self.importSnapshot = importSnapshot
         self.appendTransactions = appendTransactions
+        self.currentLedgerID = currentLedgerID
         self.recoveryPointService = recoveryPointService
         _hasImportRecoveryPoint = State(initialValue: recoveryPointService.hasRecoveryPoint)
     }
@@ -95,9 +99,10 @@ public struct DataManagementView: View {
             Text(NumiLocalized.string("io.import.restore.confirm.message"))
         }
         .sheet(isPresented: $showCSVImportReview) {
-            if let csvImportDocument, let csvImportSnapshot {
+            if let csvImportDocument, let csvImportSnapshot, let csvImportLedger {
                 CSVImportReviewSheet(
                     document: csvImportDocument,
+                    ledger: csvImportLedger,
                     snapshot: csvImportSnapshot,
                     onImport: importCSVTransactions
                 )
@@ -337,12 +342,16 @@ public struct DataManagementView: View {
                     throw CSVImportDocumentError.missingHeader
                 }
                 let snapshot = exportSnapshot()
-                guard !snapshot.ledgers.isEmpty else {
+                guard let targetLedger = CSVImportTargetLedger.resolve(
+                    currentLedgerID: currentLedgerID,
+                    from: snapshot.ledgers
+                ) else {
                     showToastMessage(NumiLocalized.string("io.import.csv.no.ledger"))
                     return
                 }
                 csvImportDocument = try CSVImportDocument(csv: csv)
                 csvImportSnapshot = snapshot
+                csvImportLedger = targetLedger
                 showCSVImportReview = true
             } catch {
                 showToastMessage(NumiLocalized.string("io.import.csv.file.fail", error.localizedDescription))

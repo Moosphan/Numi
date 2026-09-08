@@ -17,13 +17,14 @@ public struct CSVImportReviewSheet: View {
 
     public init(
         document: CSVImportDocument,
+        ledger: Ledger,
         snapshot: BookkeepingSnapshot,
         templateStore: CSVImportMappingTemplateStore = .shared,
         onImport: @escaping ([NumiCore.Transaction]) -> Void
     ) {
         self.document = document
         context = CSVImportContext(
-            ledger: snapshot.ledgers[0],
+            ledger: ledger,
             categories: snapshot.categories,
             accounts: snapshot.accounts
         )
