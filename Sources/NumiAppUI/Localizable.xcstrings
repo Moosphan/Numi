@@ -9256,6 +9256,15 @@
         "ja": { "stringUnit": { "state": "translated", "value": "記録時換算額の通貨は対象の帳簿通貨と一致する必要があります" } }
       }
     },
+    "io.import.error.converted.amount.currency.mismatch": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "备份中的固定折算金额币种与所属账本不一致" } },
+        "en": { "stringUnit": { "state": "translated", "value": "A recorded converted amount in this backup does not match its ledger currency" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "備份中的固定換算金額幣別與所屬帳本不一致" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "バックアップ内の記録時換算額の通貨が帳簿通貨と一致しません" } }
+      }
+    },
     "io.import.csv.file.fail": {
       "extractionState": "manual",
       "localizations": {

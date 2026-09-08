@@ -949,6 +949,8 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
     }
 
     public func importSnapshot(_ snapshot: BookkeepingSnapshot) throws {
+        try validateConvertedAmounts(in: snapshot)
+
         // 清空现有数据
         try resetAllData()
 
@@ -1055,6 +1057,18 @@ public final class SwiftDataBookkeepingStore: ObservableObject {
         try save()
         changeRevision += 1
         objectWillChange.send()
+    }
+
+    private func validateConvertedAmounts(in snapshot: BookkeepingSnapshot) throws {
+        let ledgersByID = Dictionary(uniqueKeysWithValues: snapshot.ledgers.map { ($0.id, $0) })
+        for transaction in snapshot.transactions {
+            guard let convertedAmount = transaction.convertedAmountAtRecord,
+                  let ledger = ledgersByID[transaction.ledgerID]
+            else { continue }
+            guard convertedAmount.currencyCode.caseInsensitiveCompare(ledger.currencyCode) == .orderedSame else {
+                throw SnapshotImportValidationError.convertedAmountCurrencyMismatch
+            }
+        }
     }
 
     public func resetAllData() throws {

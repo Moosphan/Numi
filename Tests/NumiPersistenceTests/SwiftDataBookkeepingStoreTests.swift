@@ -1450,6 +1450,38 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
         XCTAssertEqual(restoredSnapshot.installmentPeriods, snapshot.installmentPeriods)
     }
 
+    @MainActor
+    func testImportSnapshotRejectsConvertedAmountInAnotherLedgerCurrencyBeforeReplacingData() throws {
+        let store = try SwiftDataBookkeepingStore(inMemory: true)
+        try store.seedDefaultsIfNeeded()
+        let existingLedgerID = try XCTUnwrap(store.ledgers.first?.id)
+        let existingAccountID = try XCTUnwrap(store.accounts.first?.id)
+        _ = try store.createTransaction(
+            type: .expense,
+            amount: try Money(decimalString: "8.00", currencyCode: "CNY"),
+            categoryID: nil,
+            accountID: existingAccountID,
+            ledgerID: existingLedgerID,
+            note: "Keep me"
+        )
+
+        let restoredLedger = Ledger(name: "Restored", currencyCode: "CNY")
+        let malformedSnapshot = BookkeepingSnapshot(
+            ledgers: [restoredLedger],
+            transactions: [Transaction(
+                type: .expense,
+                amount: try Money(decimalString: "10.00", currencyCode: "USD"),
+                ledgerID: restoredLedger.id,
+                convertedAmountAtRecord: try Money(decimalString: "72", currencyCode: "JPY")
+            )]
+        )
+
+        XCTAssertThrowsError(try store.importSnapshot(malformedSnapshot)) { error in
+            XCTAssertEqual(error as? SnapshotImportValidationError, .convertedAmountCurrencyMismatch)
+        }
+        XCTAssertEqual(store.visibleTransactions.map(\.note), ["Keep me"])
+    }
+
     private func temporaryStoreURL() throws -> URL {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)

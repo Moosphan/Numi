@@ -346,6 +346,23 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testSnapshotRecordedConversionCurrencyMismatchCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "备份中的固定折算金额币种与所属账本不一致",
+            "en": "A recorded converted amount in this backup does not match its ledger currency",
+            "zh-Hant": "備份中的固定換算金額幣別與所屬帳本不一致",
+            "ja": "バックアップ内の記録時換算額の通貨が帳簿通貨と一致しません"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("io.import.error.converted.amount.currency.mismatch", locale: Locale(identifier: language)),
+                expected,
+                "Missing snapshot conversion currency mismatch copy for \(language)"
+            )
+        }
+    }
+
     func testRecordSaveFailureCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": "无法保存记录，请检查账户币种和必填项后重试。",

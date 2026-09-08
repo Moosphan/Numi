@@ -15,6 +15,11 @@ public enum NumiJSONExporter {
     }
 }
 
+/// A snapshot is structurally valid JSON but cannot safely be restored into a ledger.
+public enum SnapshotImportValidationError: Error, Equatable, Sendable {
+    case convertedAmountCurrencyMismatch
+}
+
 public enum NumiCSVExporter {
     public static func exportTransactions(_ transactions: [Transaction]) -> String {
         let header = "id,type,amount,currency,occurredAt,categoryID,accountID,targetAccountID,note,reimbursementID,refundOfTransactionID,convertedAmountAtRecord,convertedCurrencyAtRecord"

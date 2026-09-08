@@ -9,6 +9,17 @@ private struct ShareableURL: Identifiable {
     let url: URL
 }
 
+private func localizedImportErrorDetail(_ error: Error) -> String {
+    guard let validationError = error as? SnapshotImportValidationError else {
+        return error.localizedDescription
+    }
+
+    switch validationError {
+    case .convertedAmountCurrencyMismatch:
+        return NumiLocalized.string("io.import.error.converted.amount.currency.mismatch")
+    }
+}
+
 // MARK: - Data Management View
 
 public struct DataManagementView: View {
@@ -274,7 +285,7 @@ public struct DataManagementView: View {
             } catch let error as ImportRecoveryPointError {
                 showToastMessage(error.displayMessage)
             } catch {
-                showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+                showToastMessage(NumiLocalized.string("io.import.fail", localizedImportErrorDetail(error)))
             }
         case .failure(let error):
             showToastMessage(NumiLocalized.string("io.import.file.fail", error.localizedDescription))
@@ -295,9 +306,9 @@ public struct DataManagementView: View {
                 try importSnapshot(currentSnapshot)
                 try recoveryPointService.discard()
                 hasImportRecoveryPoint = false
-                showToastMessage(NumiLocalized.string("io.import.rollback.success", importError.localizedDescription))
+                showToastMessage(NumiLocalized.string("io.import.rollback.success", localizedImportErrorDetail(importError)))
             } catch {
-                showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+                showToastMessage(NumiLocalized.string("io.import.fail", localizedImportErrorDetail(error)))
             }
         }
     }
@@ -311,7 +322,7 @@ public struct DataManagementView: View {
         } catch let error as ImportRecoveryPointError {
             showToastMessage(error.displayMessage)
         } catch {
-            showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+            showToastMessage(NumiLocalized.string("io.import.fail", localizedImportErrorDetail(error)))
         }
     }
 
@@ -349,7 +360,7 @@ public struct DataManagementView: View {
             showToastMessage(error.displayMessage)
             return
         } catch {
-            showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+            showToastMessage(NumiLocalized.string("io.import.fail", localizedImportErrorDetail(error)))
             return
         }
 
@@ -363,9 +374,9 @@ public struct DataManagementView: View {
                 try importSnapshot(currentSnapshot)
                 try recoveryPointService.discard()
                 hasImportRecoveryPoint = false
-                showToastMessage(NumiLocalized.string("io.import.rollback.success", importError.localizedDescription))
+                showToastMessage(NumiLocalized.string("io.import.rollback.success", localizedImportErrorDetail(importError)))
             } catch {
-                showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+                showToastMessage(NumiLocalized.string("io.import.fail", localizedImportErrorDetail(error)))
             }
         }
     }
@@ -634,7 +645,7 @@ public struct BackupView: View {
                     try importSnapshot(snapshot)
                     showToastMessage(NumiLocalized.string("backup.restore.success", snapshot.transactions.count))
                 } catch {
-                    showToastMessage(NumiLocalized.string("io.import.fail", error.localizedDescription))
+                    showToastMessage(NumiLocalized.string("io.import.fail", localizedImportErrorDetail(error)))
                 }
             case .failure(let error):
                 showToastMessage(error.displayMessage)

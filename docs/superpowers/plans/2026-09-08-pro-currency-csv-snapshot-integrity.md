@@ -95,3 +95,18 @@ Add `CSVImportErrorCode.convertedAmountCurrencyMismatch`; map it in `CSVImportRe
 - [x] **Step 2: Run `swift test`, String Catalog JSON validation, `git diff --check`, and the iOS Simulator Debug build.**
 - [x] **Step 3: Install and launch the current build on the booted simulator.**
 - [x] **Step 4: Commit, push, and add the resulting evidence to GitHub Issue #4 / Project 2.**
+
+### Task 3: Protect JSON and encrypted backup restoration
+
+**Files:**
+- Modify: `Tests/NumiPersistenceTests/SwiftDataBookkeepingStoreTests.swift`
+- Modify: `Sources/NumiCore/ImportExport.swift`
+- Modify: `Sources/NumiPersistence/SwiftDataBookkeepingStore.swift`
+- Modify: `Sources/NumiAppUI/Pages/DataManagementView.swift`
+- Modify: `Sources/NumiAppUI/Localizable.xcstrings`
+- Modify: `Tests/NumiAppUITests/AppUILocalizationBundleTests.swift`
+
+- [x] **Step 1: Write a failing restore test** proving a mismatched fixed conversion is rejected before existing data is reset.
+- [x] **Step 2: Add a shared snapshot-validation error and validate every transaction against a ledger included in the snapshot.** Legacy transactions pointing to an absent ledger remain compatible with the existing migration path.
+- [x] **Step 3: Map the validation failure to four localized messages** in JSON restore, recovery-point restore, and encrypted backup restore flows.
+- [x] **Step 4: Run focused persistence/localization tests, the full suite, String Catalog validation, `git diff --check`, Simulator Debug build, and launch the app on the booted simulator.**
