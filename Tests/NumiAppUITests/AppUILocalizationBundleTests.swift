@@ -108,6 +108,38 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testInsightsCSVExportCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "导出 CSV 洞悉报告",
+            "en": "Export Insights CSV",
+            "zh-Hant": "匯出 CSV 洞悉報告",
+            "ja": "洞察レポートをCSVで書き出す"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("insight.report.export.csv", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+    }
+
+    func testInsightsReportComparisonCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": "洞悉 CSV 报告导出",
+            "en": "Insights CSV Report Export",
+            "zh-Hant": "洞悉 CSV 報告匯出",
+            "ja": "洞察CSVレポートの書き出し"
+        ]
+
+        for (language, expected) in expectedValues {
+            XCTAssertEqual(
+                NumiLocalized.lookup("membership.comparison.insightsReport", locale: Locale(identifier: language)),
+                expected
+            )
+        }
+    }
+
     func testSiriShortcutGuideCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (title: "Siri 与快捷指令记账", summary: "用语音或快捷指令快速记录一笔账", example: "用 Numi 记录午餐 28 元"),

@@ -79,6 +79,8 @@ public struct InsightsView: View {
     @State private var draftShowsExpenseDistribution = true
     @State private var draftShowsIncomeDistribution = true
     @State private var membershipPaywallContext: MembershipPaywallContext?
+    @State private var insightsReportExportFile: InsightsReportExportFile?
+    @State private var insightsReportExportError: String?
     @AppStorage("insights.module.order") private var moduleOrderRaw = ""
     @AppStorage("insights.module.expenseDistribution.visible") private var showsExpenseDistribution = true
     @AppStorage("insights.module.incomeDistribution.visible") private var showsIncomeDistribution = true
@@ -313,6 +315,17 @@ public struct InsightsView: View {
                             )
                         }
                         .accessibilityIdentifier("action.insightsShareReport")
+
+                        Button {
+                            exportInsightsCSVReport()
+                        } label: {
+                            advancedOptionRow(
+                                title: NumiLocalized.string("insight.report.export.csv"),
+                                systemImage: "tablecells.badge.ellipsis"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("action.insightsExportCSVReport")
                     }
                 }
                 .navigationTitle(NumiLocalized.string("insight.advanced.options"))
@@ -449,6 +462,24 @@ public struct InsightsView: View {
                 }
             }
             .presentationDetents([.medium])
+        }
+        .sheet(item: $insightsReportExportFile) { file in
+#if canImport(UIKit)
+            NumiShareSheet(items: [file.url])
+#else
+            EmptyView()
+#endif
+        }
+        .alert(
+            NumiLocalized.string("io.export"),
+            isPresented: Binding(
+                get: { insightsReportExportError != nil },
+                set: { if !$0 { insightsReportExportError = nil } }
+            )
+        ) {
+            Button(NumiLocalized.string("common.done"), role: .cancel) {}
+        } message: {
+            Text(insightsReportExportError ?? "")
         }
         .task { await membership.start() }
         .membershipPaywall(context: $membershipPaywallContext)
@@ -675,6 +706,27 @@ public struct InsightsView: View {
             summary: summary,
             previousSummary: previousPeriodSummary
         )
+    }
+
+    private func exportInsightsCSVReport() {
+        switch membership.decision(for: .openAdvancedInsights) {
+        case .granted:
+            do {
+                let csv = InsightsReportFormatter.csv(
+                    periodTitle: periodTitle,
+                    accountName: selectedAccountID == nil ? nil : selectedAccountName,
+                    summary: summary
+                )
+                insightsReportExportFile = InsightsReportExportFile(
+                    url: try InsightsReportFileExporter.write(csv: csv)
+                )
+            } catch {
+                insightsReportExportError = NumiLocalized.string("error.export.fail", error.localizedDescription)
+            }
+        case .blocked(let context):
+            showsAdvancedOptions = false
+            membershipPaywallContext = context
+        }
     }
 
     private var activeAccountFilterChip: some View {
@@ -1109,6 +1161,11 @@ public struct CategoryTransactionsDetailView: View {
             fallbackCategoryIcon: fallbackIconName
         )
     }
+}
+
+private struct InsightsReportExportFile: Identifiable {
+    let id = UUID()
+    let url: URL
 }
 
 // MARK: - AnyShapeShape Helper

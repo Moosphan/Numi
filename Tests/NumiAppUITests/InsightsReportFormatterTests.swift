@@ -36,4 +36,27 @@ final class InsightsReportFormatterTests: XCTestCase {
         XCTAssertTrue(report.contains("¥120.00"))
         XCTAssertTrue(report.contains("与上一周期对比"))
     }
+
+    func testFormatsMachineReadableCSVReportWithScopeAndSummaryRows() {
+        let summary = TransactionSummary(
+            expense: Money(minorUnits: 12_000, currencyCode: "CNY"),
+            income: Money(minorUnits: 20_000, currencyCode: "CNY"),
+            balance: Money(minorUnits: 8_000, currencyCode: "CNY"),
+            recordCount: 3
+        )
+
+        let report = InsightsReportFormatter.csv(
+            periodTitle: "2026年9月",
+            accountName: "现金, 日常",
+            summary: summary,
+            locale: Locale(identifier: "en")
+        )
+
+        XCTAssertEqual(report.split(separator: "\n").first, "period,account,metric,value,currency")
+        XCTAssertTrue(report.contains("\"现金, 日常\""))
+        XCTAssertTrue(report.contains("Expense,120,CNY"))
+        XCTAssertTrue(report.contains("Income,200,CNY"))
+        XCTAssertTrue(report.contains("Balance,80,CNY"))
+        XCTAssertTrue(report.contains("Record Count,3,"))
+    }
 }

@@ -3862,6 +3862,15 @@
         "ja": { "stringUnit": { "state": "translated", "value": "洞察の概要を共有" } }
       }
     },
+    "insight.report.export.csv": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "导出 CSV 洞悉报告" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Export Insights CSV" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "匯出 CSV 洞悉報告" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "洞察レポートをCSVで書き出す" } }
+      }
+    },
     "insight.report.account": {
       "extractionState": "manual",
       "localizations": {
@@ -16736,6 +16745,15 @@
         "en": { "stringUnit": { "state": "translated", "value": "Custom Home Summary" } },
         "zh-Hant": { "stringUnit": { "state": "translated", "value": "首頁摘要自訂" } },
         "ja": { "stringUnit": { "state": "translated", "value": "ホーム集計のカスタマイズ" } }
+      }
+    },
+    "membership.comparison.insightsReport": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "洞悉 CSV 报告导出" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Insights CSV Report Export" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "洞悉 CSV 報告匯出" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "洞察CSVレポートの書き出し" } }
       }
     },
     "membership.comparison.dataExport": {
