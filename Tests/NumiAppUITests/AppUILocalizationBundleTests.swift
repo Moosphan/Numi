@@ -1115,6 +1115,22 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testPlanForecastHorizonCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (title: "预测范围", shortYear: "1 年", forecast: "未来 90 天计划支出"),
+            "en": (title: "Forecast Range", shortYear: "1 Year", forecast: "Planned Spending, Next 90 Days"),
+            "zh-Hant": (title: "預測範圍", shortYear: "1 年", forecast: "未來 90 天計畫支出"),
+            "ja": (title: "予測期間", shortYear: "1年", forecast: "今後90日間の予定支出")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("plans.forecast.horizon", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("plans.forecast.horizon.365", locale: locale), expected.shortYear)
+            XCTAssertEqual(NumiLocalized.format("plans.forecast.title.days", arguments: [Int64(90)], locale: locale), expected.forecast)
+        }
+    }
+
     func testRuntimeDisplayPrefersCurrentLocalizedCategoryAndAccountNamesOverStaleFallbackStrings() {
         let category = Category(
             kind: .expense,

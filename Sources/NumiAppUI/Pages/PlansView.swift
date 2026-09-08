@@ -61,6 +61,7 @@ public struct BudgetCardModel: Identifiable, Equatable {
 public struct PlansView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     @AppStorage("app.subscription.requiresConfirmation") private var requiresSubscriptionConfirmation = false
+    @AppStorage("plans.forecast.horizon.days") private var forecastHorizonDays = PlanForecastHorizon.thirtyDays.rawValue
     @ObservedObject private var membership = MembershipController.shared
     @State private var editingDraft: BudgetDraft?
     @State private var showAddSubscription = false
@@ -336,7 +337,7 @@ public struct PlansView: View {
 
         return VStack(alignment: .leading, spacing: NumiSpacing.s3) {
             PlanSectionHeader(
-                title: NumiLocalized.string("plans.forecast.title"),
+                title: NumiLocalized.string("plans.forecast.title.days", Int64(forecastHorizon.rawValue)),
                 trailingText: "Pro",
                 accessibilityIdentifier: "plans.section.cashflowForecast"
             )
@@ -359,10 +360,20 @@ public struct PlansView: View {
                         .font(NumiFont.caption)
                         .foregroundStyle(NumiColor.textSecondary)
 
+                    Picker(NumiLocalized.string("plans.forecast.horizon"), selection: $forecastHorizonDays) {
+                        ForEach(PlanForecastHorizon.allCases) { horizon in
+                            Text(forecastHorizonTitle(for: horizon))
+                                .tag(horizon.rawValue)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("plans.forecast.horizon")
+
                     if forecast.items.isEmpty {
                         if forecast.excludedCurrencyItemCount > 0 {
                             Text(NumiLocalized.string(
-                                "plans.forecast.excluded.only",
+                                "plans.forecast.excluded.only.days",
+                                Int64(forecastHorizon.rawValue),
                                 Int64(forecast.excludedCurrencyItemCount),
                                 defaultCurrencyCode
                             ))
@@ -443,7 +454,15 @@ public struct PlansView: View {
     }
 
     private var forecastEndDate: Date {
-        Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
+        Calendar.current.date(byAdding: .day, value: forecastHorizon.rawValue, to: Date()) ?? Date()
+    }
+
+    private var forecastHorizon: PlanForecastHorizon {
+        PlanForecastHorizon.resolve(rawValue: forecastHorizonDays)
+    }
+
+    private func forecastHorizonTitle(for horizon: PlanForecastHorizon) -> String {
+        NumiLocalized.string("plans.forecast.horizon.\(horizon.rawValue)")
     }
 
     private var subscriptionsSection: some View {

@@ -4937,6 +4937,60 @@
         }
       }
     },
+    "plans.forecast.horizon": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "预测范围" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Forecast Range" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "預測範圍" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "予測期間" } }
+      }
+    },
+    "plans.forecast.horizon.30": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "30 天" } },
+        "en": { "stringUnit": { "state": "translated", "value": "30 Days" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "30 天" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "30日" } }
+      }
+    },
+    "plans.forecast.horizon.90": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "90 天" } },
+        "en": { "stringUnit": { "state": "translated", "value": "90 Days" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "90 天" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "90日" } }
+      }
+    },
+    "plans.forecast.horizon.365": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "1 年" } },
+        "en": { "stringUnit": { "state": "translated", "value": "1 Year" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "1 年" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "1年" } }
+      }
+    },
+    "plans.forecast.title.days": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未来 %lld 天计划支出" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Planned Spending, Next %lld Days" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未來 %lld 天計畫支出" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "今後%lld日間の予定支出" } }
+      }
+    },
+    "plans.forecast.excluded.only.days": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未来 %lld 天有 %lld 笔其他币种计划支出，未计入 %@ 预计合计" } },
+        "en": { "stringUnit": { "state": "translated", "value": "In the next %lld days, %lld planned payment(s) use another currency and are excluded from the %@ expected total" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未來 %lld 天有 %lld 筆其他幣種計畫支出，未計入 %@ 預計合計" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "今後%lld日間の他通貨による予定支出%lld件は、%@の予定合計に含まれていません" } }
+      }
+    },
     "plans.forecast.title": {
       "extractionState": "manual",
       "localizations": {
