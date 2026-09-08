@@ -117,6 +117,35 @@
         }
       }
     },
+    "intent.error.icloud.preparing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 数据正在准备中，请稍后再试"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud data is still preparing. Please try again shortly"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 資料正在準備中，請稍後再試"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloudデータを準備しています。しばらくしてからもう一度お試しください"
+          }
+        }
+      }
+    },
     "intent.error.no.key": {
       "extractionState": "manual",
       "localizations": {

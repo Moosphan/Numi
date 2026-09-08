@@ -18,8 +18,16 @@ struct RecordTransactionIntent: AppIntent {
         }
         let categories = service.availableCategoryNames()
 
-        guard !categories.isEmpty else {
+        switch SiriQuickRecordReadinessPolicy.state(
+            hasCategories: !categories.isEmpty,
+            storageMode: service.storageMode
+        ) {
+        case .ready:
+            break
+        case .setUpCategories:
             return .result(dialog: IntentDialog(LocalizedStringResource("intent.error.no.categories")))
+        case .waitForCloudData:
+            return .result(dialog: IntentDialog(LocalizedStringResource("intent.error.icloud.preparing")))
         }
 
         guard let parser = Config.transactionParser() else {

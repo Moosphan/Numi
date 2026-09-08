@@ -9,11 +9,14 @@ public final class TransactionService: @unchecked Sendable {
     private static let appGroupID = "group.com.numi.shared"
     private let container: ModelContainer?
     private let context: ModelContext?
+    public let storageMode: CloudSyncStoreMode
 
     public init() {
-        switch CloudSyncStorePolicy.storageMode(
+        let mode = CloudSyncStorePolicy.storageMode(
             isCloudSyncEnabled: CloudSyncSharedPreference.isCloudSyncEnabled
-        ) {
+        )
+        storageMode = mode
+        switch mode {
         case .cloudKit:
             let store = Self.makeCloudStore()
             self.container = store.container
@@ -38,6 +41,7 @@ public final class TransactionService: @unchecked Sendable {
     /// Creates a service for the same store URL used by the main app.
     /// This initializer keeps the cross-process write path testable without an App Group entitlement.
     public init(storeURL: URL) {
+        storageMode = .sharedAppGroup
         let store = Self.makeStore(at: storeURL)
         self.container = store.container
         self.context = store.context
