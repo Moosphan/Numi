@@ -6,6 +6,8 @@
 
 - [x] 主 App bundle identifier：`com.local.Numi`。
 - [x] 当前版本：`1.0 (1)`；最低系统版本：iOS 17.0。
+- [x] 2026-09-08：无签名 Release iPhoneOS 构建通过，产物包含 App 可执行文件、`PrivacyInfo.xcprivacy` 与 `Metadata.appintents`。
+- [ ] 2026-09-08：签名 Release archive 尚不可生成；当前项目未配置 Apple Developer 开发团队，且仍使用测试标识符 `com.local.Numi`。配置生产团队、标识符与容器后重新归档。
 - [x] App Icon 资源包含 iPhone、iPad 及 1024×1024 App Store marketing 槽位。
 - [x] 主 App 已配置 App Group `group.com.numi.shared` 与私有 CloudKit 容器 `iCloud.com.local.Numi`。
 - [x] `App/NumiApp/PrivacyInfo.xcprivacy` 已随主 App 资源构建，声明 `UserDefaults` 的 required-reason API：`CA92.1`。
