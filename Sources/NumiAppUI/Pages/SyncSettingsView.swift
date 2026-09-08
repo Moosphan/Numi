@@ -313,8 +313,27 @@ public struct SyncSettingsView: View {
     @StateObject private var syncService = iCloudSyncService.shared
     @ObservedObject private var membership = MembershipController.shared
     @State private var membershipPaywallContext: MembershipPaywallContext?
+    @State private var showMigrationPreparationError = false
+    @State private var showMigrationResolutionError = false
+    @State private var migrationAssessment: CloudMigrationAssessment?
+    @State private var isMigrationConflictPresented = false
+    @AppStorage("app.sync.icloudMigrationNeedsRelaunch") private var migrationNeedsRelaunch = false
+    private let onPrepareMigration: (() throws -> Void)?
+    private let hasPendingMigration: (() -> Bool)?
+    private let onMigrationAssessment: (() throws -> CloudMigrationAssessment?)?
+    private let onResolveMigration: ((CloudMigrationConflictStrategy) throws -> Void)?
 
-    public init() {}
+    public init(
+        onPrepareMigration: (() throws -> Void)? = nil,
+        hasPendingMigration: (() -> Bool)? = nil,
+        onMigrationAssessment: (() throws -> CloudMigrationAssessment?)? = nil,
+        onResolveMigration: ((CloudMigrationConflictStrategy) throws -> Void)? = nil
+    ) {
+        self.onPrepareMigration = onPrepareMigration
+        self.hasPendingMigration = hasPendingMigration
+        self.onMigrationAssessment = onMigrationAssessment
+        self.onResolveMigration = onResolveMigration
+    }
 
     public var body: some View {
         ScrollView {
@@ -330,6 +349,12 @@ public struct SyncSettingsView: View {
 
                 // Sync Status
                 syncStatusCard
+
+                if syncService.isSyncEnabled, migrationNeedsRelaunch, hasPendingMigration?() == true {
+                    migrationRelaunchCard
+                } else if syncService.isSyncEnabled, hasPendingMigration?() == true, onMigrationAssessment != nil {
+                    migrationReviewCard
+                }
 
                 // Manual Sync Button
                 if syncService.isSyncEnabled {
@@ -349,6 +374,25 @@ public struct SyncSettingsView: View {
         .modifier(LargeTitleNavigationChrome())
         .task { await membership.start() }
         .membershipPaywall(context: $membershipPaywallContext)
+        .alert(NumiLocalized.string("sync.migration.prepare.failure.title"), isPresented: $showMigrationPreparationError) {
+            Button(NumiLocalized.string("common.ok"), role: .cancel) {}
+        } message: {
+            Text(NumiLocalized.string("sync.migration.prepare.failure.message"))
+        }
+        .alert(NumiLocalized.string("sync.migration.resolve.failure.title"), isPresented: $showMigrationResolutionError) {
+            Button(NumiLocalized.string("common.ok"), role: .cancel) {}
+        } message: {
+            Text(NumiLocalized.string("sync.migration.resolve.failure.message"))
+        }
+        .sheet(isPresented: $isMigrationConflictPresented) {
+            if let migrationAssessment {
+                CloudMigrationConflictSheet(assessment: migrationAssessment) { strategy in
+                    resolveMigration(strategy)
+                }
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+            }
+        }
     }
 
     // MARK: - Sync Toggle Card
@@ -434,9 +478,100 @@ public struct SyncSettingsView: View {
         }
         switch membership.decision(for: .openICloudSync) {
         case .granted:
+            do {
+                try onPrepareMigration?()
+            } catch {
+                showMigrationPreparationError = true
+                return
+            }
             syncService.toggleSync()
+            migrationNeedsRelaunch = true
         case .blocked(let context):
             membershipPaywallContext = context
+        }
+    }
+
+    private var migrationRelaunchCard: some View {
+        HStack(alignment: .top, spacing: NumiSpacing.s3) {
+            Image(systemName: "arrow.clockwise.icloud")
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 36, height: 36)
+                .background(NumiColor.iconBackground)
+                .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                .foregroundStyle(NumiColor.accentPrimary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(NumiLocalized.string("sync.migration.restart.title"))
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundStyle(NumiColor.textPrimary)
+                Text(NumiLocalized.string("sync.migration.restart.message"))
+                    .font(NumiFont.footnote)
+                    .foregroundStyle(NumiColor.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(NumiSpacing.s4)
+        .background(NumiColor.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
+
+    private var migrationReviewCard: some View {
+        VStack(alignment: .leading, spacing: NumiSpacing.s3) {
+            HStack(spacing: NumiSpacing.s3) {
+                Image(systemName: "arrow.triangle.2.circlepath.icloud")
+                    .font(.system(size: 17, weight: .semibold))
+                    .frame(width: 36, height: 36)
+                    .background(NumiColor.iconBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                    .foregroundStyle(NumiColor.accentPrimary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(NumiLocalized.string("sync.migration.review"))
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(NumiColor.textPrimary)
+                    Text(NumiLocalized.string("sync.migration.pending"))
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            Button(NumiLocalized.string("sync.migration.review")) {
+                prepareMigrationReview()
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(NumiColor.accentPrimary)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .disabled(!hasObservedInitialCloudSync)
+        }
+        .padding(NumiSpacing.s4)
+        .background(NumiColor.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
+    }
+
+    private var hasObservedInitialCloudSync: Bool {
+        if case .success = syncService.syncStatus { return true }
+        return false
+    }
+
+    private func prepareMigrationReview() {
+        do {
+            guard let assessment = try onMigrationAssessment?() else { return }
+            migrationAssessment = assessment
+            isMigrationConflictPresented = true
+        } catch {
+            showMigrationResolutionError = true
+        }
+    }
+
+    private func resolveMigration(_ strategy: CloudMigrationConflictStrategy) {
+        do {
+            try onResolveMigration?(strategy)
+            isMigrationConflictPresented = false
+            migrationAssessment = nil
+        } catch {
+            showMigrationResolutionError = true
         }
     }
 

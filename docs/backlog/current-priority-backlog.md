@@ -63,6 +63,13 @@ Numi 已经从“组件库/原型期”进入“App 集成期”：SwiftUI App S
 | P1-05 | App Intents / Siri 记账产品化 | Partial | `NumiIntents/RecordTransactionIntent.swift` 与 shortcuts provider 已存在；`TransactionService` 现会解析转账目标账户、校验同币种且更新双方余额；Intent 标题、描述、参数、成功/失败 dialog 已改用四语言资源；App Group/SwiftData 初始化失败会返回本地化错误而不再触发扩展崩溃；成功提示现使用实际账本币种格式，不再固定显示人民币符号；快捷指令现在遵循 App 中保存的 Claude/Qwen/DeepSeek 提供商设置，并在首选 Key 缺失时按稳定顺序回退；主 App 在未启用 iCloud 时会优先打开 App Group 的同一 `Numi.store`，并仅在共享存储尚不存在时安全复制旧本地 SQLite 主文件及 WAL/SHM，保留原件；`TransactionService` 与主 App 使用完整相同的 SwiftData schema，回归测试已验证扩展写入后主 App 以同一路径重新打开可读到交易；主 App 回到前台时会发布共享存储的外部变更刷新，双实例回归测试验证快捷指令写入会重新计算主界面数据；分类清单及分类/账户回查现复用运行时多语言匹配，切换界面语言后仍能将 AI 返回的内置名称映射到原有实体；设置页 AI 服务下新增四语言 Siri/快捷指令引导，明确配置状态、三步使用路径和示例口令，不增加会员门槛 | 真机 Shortcut 端到端验证；iCloud 路径统一后处理同步开启场景 | Siri/快捷指令可稳定创建支出/收入/转账 |
 | P1-06 | 运行时本地化完成度 | Partial | SwiftPM 运行时 lookup 已稳定；新增 Core/AppUI 四语言矩阵回归测试，覆盖 `zh-Hans`、`zh-Hant`、`en`、`ja`；所有 AppUI 与 App Shell 中直接传入 SwiftUI 可见 API 的点分本地化 key 现统一经 `NumiLocalized` 解析，并有源码守卫防止回归；记录详情页的标题、关闭与编辑文案已覆盖运行时切换回归测试 | 继续为新增文案保持四语言矩阵，并在发布前补齐真实设备语言切换验收 | macOS SwiftPM 与 iOS simulator 至少各有清晰通过/跳过策略 |
 
+### 2026-09-08 P1-04 同步迁移补充
+
+- 已完成本地→CloudKit 迁移的安全基础：启用 iCloud 前会原子保存本机完整快照；由于 SwiftData 的存储配置仅在启动时确定，界面会要求重新打开 App 后才读取并比较 iCloud Store，避免将当前本机 Store 误判为云端。
+- 首次 CloudKit 生命周期成功完成后，用户可查看双方的交易、账户、分期数量，并在“保留本机完整账本”“保留 iCloud 完整账本”“暂不迁移”之间明确选择；不做逐条智能混合，防止余额、关联交易与分期状态损坏。
+- 已确认的选择会保留本机源快照及 iCloud 恢复快照；取消不写入目标 Store，恢复副本继续保留。新增 Core 策略、迁移协调器、存储回归和四语言文案测试。
+- P1-04 仍为 Partial：必须使用同一 Apple ID 的两台真机完成新增、编辑、删除、离线恢复与冲突选择的端到端验证后，才能去除“实验性”说明。
+
 ## 7. P2 / V1.1+ 功能池
 
 | ID | Backlog | 当前状态 | 下一步 |

@@ -203,7 +203,30 @@ public struct SettingsView: View {
                     .accessibilityIdentifier("settings.currency")
 
                     NavigationLink {
-                        SyncSettingsView()
+                        SyncSettingsView(onPrepareMigration: {
+                            guard let exportSnapshot else { throw CloudMigrationTransferError.stage }
+                            try CloudMigrationTransferService.shared.stage(exportSnapshot())
+                        }, hasPendingMigration: {
+                            CloudMigrationTransferService.shared.isMigrationPending
+                        }, onMigrationAssessment: {
+                            let transfer = CloudMigrationTransferService.shared
+                            guard transfer.isMigrationPending, let exportSnapshot else { return nil }
+                            return CloudMigrationPolicy.assessment(
+                                local: try transfer.load(),
+                                cloud: exportSnapshot()
+                            )
+                        }, onResolveMigration: { strategy in
+                            let transfer = CloudMigrationTransferService.shared
+                            guard let exportSnapshot, let importSnapshot else {
+                                throw CloudMigrationTransferError.load
+                            }
+                            try CloudMigrationCoordinator(transferService: transfer).apply(
+                                local: try transfer.load(),
+                                cloud: exportSnapshot(),
+                                strategy: strategy,
+                                writeDestination: importSnapshot
+                            )
+                        })
                     } label: {
                         settingsRow(NumiLocalized.string( "setting.icloud.sync"), icon: "icloud")
                     }

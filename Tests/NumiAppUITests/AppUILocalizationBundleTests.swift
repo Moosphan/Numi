@@ -363,6 +363,41 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testCloudMigrationConflictCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": ("选择同步数据", "以本机数据为准", "以 iCloud 数据为准", "暂不迁移"),
+            "en": ("Choose sync data", "Keep this device's data", "Keep iCloud data", "Not now"),
+            "zh-Hant": ("選擇同步資料", "以本機資料為準", "以 iCloud 資料為準", "暫不遷移"),
+            "ja": ("同期するデータを選択", "このデバイスのデータを使用", "iCloudのデータを使用", "今は移行しない")
+        ]
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("sync.migration.conflict.title", locale: locale), expected.0)
+            XCTAssertEqual(NumiLocalized.lookup("sync.migration.prefer.local", locale: locale), expected.1)
+            XCTAssertEqual(NumiLocalized.lookup("sync.migration.prefer.cloud", locale: locale), expected.2)
+            XCTAssertEqual(NumiLocalized.lookup("sync.migration.cancel", locale: locale), expected.3)
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.conflict.message", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.empty.cloud.message", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.empty.local.message", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.local.summary", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.cloud.summary", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.review", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.pending", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.restart.title", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.restart.message", locale: locale).contains("sync.migration"))
+        }
+    }
+
+    func testCloudMigrationPreparationFailureCopyCoversAllSupportedRuntimeLanguages() {
+        for language in ["zh-Hans", "zh-Hant", "en", "ja"] {
+            let locale = Locale(identifier: language)
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.prepare.failure.title", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.prepare.failure.message", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.resolve.failure.title", locale: locale).contains("sync.migration"))
+            XCTAssertFalse(NumiLocalized.lookup("sync.migration.resolve.failure.message", locale: locale).contains("sync.migration"))
+        }
+    }
+
     func testRecordSaveFailureCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": "无法保存记录，请检查账户币种和必填项后重试。",
