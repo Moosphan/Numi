@@ -2,6 +2,21 @@ import XCTest
 @testable import NumiCore
 
 final class MembershipFeatureGateTests: XCTestCase {
+
+    func testCommercialOfferingListsAIQuickRecordOnlyAfterTheProFlowIsShippable() {
+        XCTAssertEqual(
+            MembershipCommercialOffering.allCases.map(\.rawValue),
+            [
+                "unlimitedOrganization",
+                "subscriptions",
+                "plannedSpendingForecast",
+                "installments",
+                "premiumThemes",
+                "encryptedBackup",
+                "aiQuickRecord"
+            ]
+        )
+    }
     func testAnnualSavingsUsesTwelveMonthlyPrices() {
         XCTAssertEqual(MembershipAnnualSavings.percent(monthlyPrice: 8, yearlyPrice: 48), 50)
     }
@@ -50,7 +65,7 @@ final class MembershipFeatureGateTests: XCTestCase {
     func testV1CommercialOfferingOnlyContainsReleasedProBenefits() {
         XCTAssertEqual(
             Set(MembershipCommercialOffering.allCases.map(\.rawValue)),
-            ["unlimitedOrganization", "subscriptions", "plannedSpendingForecast", "installments", "premiumThemes", "encryptedBackup"]
+            ["unlimitedOrganization", "subscriptions", "plannedSpendingForecast", "installments", "premiumThemes", "encryptedBackup", "aiQuickRecord"]
         )
     }
 }

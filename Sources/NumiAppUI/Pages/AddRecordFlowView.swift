@@ -8,11 +8,16 @@ public struct AddRecordFlowView: View {
     private let accounts: [Account]
     private let currencyOptions: [NumiCurrencyOption]
     private let reviewMessage: String?
+    private let onAIQuickRecord: ((String) -> Void)?
+    private let initialAIQuickRecordPrompt: String?
+    private let opensAIQuickRecordOnAppear: Bool
     private let onSave: (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool
 
     @State private var selectedType: TransactionType
     @State private var selectedDraft: TransactionDraft?
     @State private var savedContext: SavedRecordContext?
+    @State private var isAIQuickRecordComposerPresented = false
+    @State private var didPresentInitialAIQuickRecord = false
 
     public init(
         categories: [NumiCore.Category],
@@ -20,12 +25,18 @@ public struct AddRecordFlowView: View {
         currencyOptions: [NumiCurrencyOption],
         initialDraft: TransactionDraft? = nil,
         reviewMessage: String? = nil,
+        onAIQuickRecord: ((String) -> Void)? = nil,
+        initialAIQuickRecordPrompt: String? = nil,
+        opensAIQuickRecordOnAppear: Bool = false,
         onSave: @escaping (TransactionType, Money, NumiCore.Category?, Account?, Account?, Date, String) -> Bool
     ) {
         self.categories = categories
         self.accounts = accounts
         self.currencyOptions = currencyOptions
         self.reviewMessage = reviewMessage
+        self.onAIQuickRecord = onAIQuickRecord
+        self.initialAIQuickRecordPrompt = initialAIQuickRecordPrompt
+        self.opensAIQuickRecordOnAppear = opensAIQuickRecordOnAppear
         self.onSave = onSave
         _selectedType = State(initialValue: initialDraft?.type ?? .expense)
         _selectedDraft = State(initialValue: initialDraft)
@@ -86,6 +97,21 @@ public struct AddRecordFlowView: View {
             .animation(.spring(response: 0.34, dampingFraction: 0.9), value: selectedDraft != nil)
         }
         .interactiveDismissDisabled(selectedDraft != nil)
+        .sheet(isPresented: $isAIQuickRecordComposerPresented) {
+            AIQuickRecordComposer(initialPrompt: initialAIQuickRecordPrompt ?? "") { prompt in
+                isAIQuickRecordComposerPresented = false
+                onAIQuickRecord?(prompt)
+            } onDismiss: {
+                isAIQuickRecordComposerPresented = false
+            }
+        }
+        .onAppear {
+            guard opensAIQuickRecordOnAppear, !didPresentInitialAIQuickRecord else { return }
+            didPresentInitialAIQuickRecord = true
+            DispatchQueue.main.async {
+                isAIQuickRecordComposerPresented = true
+            }
+        }
     }
 
     private var categorySelectionPage: some View {
@@ -98,6 +124,10 @@ public struct AddRecordFlowView: View {
                 }
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("picker.transactionType")
+
+                if onAIQuickRecord != nil {
+                    aiQuickRecordEntry
+                }
 
                 if selectedType == .transfer {
                     transferCard
@@ -180,6 +210,178 @@ public struct AddRecordFlowView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("category.transfer")
+    }
+
+    private var aiQuickRecordEntry: some View {
+        Button {
+            isAIQuickRecordComposerPresented = true
+        } label: {
+            HStack(spacing: NumiSpacing.s3) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 19, weight: .bold))
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .frame(width: 44, height: 44)
+                    .background(NumiColor.iconBackground, in: RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(NumiLocalized.string("ai.quickRecord.title"))
+                        .font(NumiFont.bodyStrong)
+                        .foregroundStyle(NumiColor.textPrimary)
+                    Text(NumiLocalized.string("ai.quickRecord.entry.detail"))
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: NumiSpacing.s2)
+
+                Text(NumiLocalized.string("ai.quickRecord.pro.badge"))
+                    .font(NumiFont.caption.weight(.semibold))
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .padding(.horizontal, NumiSpacing.s2)
+                    .padding(.vertical, 4)
+                    .background(NumiColor.controlFill, in: Capsule())
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(NumiColor.textTertiary)
+            }
+            .padding(NumiSpacing.s4)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(NumiColor.surfaceCard)
+            .overlay {
+                RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous)
+                    .stroke(NumiColor.accentPrimary.opacity(0.18), lineWidth: 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(NumiLocalized.string("ai.quickRecord.title"))
+        .accessibilityHint(NumiLocalized.string("ai.quickRecord.entry.detail"))
+        .accessibilityIdentifier("action.aiQuickRecord")
+    }
+}
+
+private struct AIQuickRecordComposer: View {
+    @FocusState private var isPromptFocused: Bool
+    @State private var prompt: String
+
+    let onSubmit: (String) -> Void
+    let onDismiss: () -> Void
+
+    init(initialPrompt: String, onSubmit: @escaping (String) -> Void, onDismiss: @escaping () -> Void) {
+        _prompt = State(initialValue: initialPrompt)
+        self.onSubmit = onSubmit
+        self.onDismiss = onDismiss
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: NumiSpacing.s5) {
+                    VStack(alignment: .leading, spacing: NumiSpacing.s2) {
+                        Label(NumiLocalized.string("ai.quickRecord.title"), systemImage: "sparkles")
+                            .font(NumiFont.title)
+                            .foregroundStyle(NumiColor.textPrimary)
+                        Text(NumiLocalized.string("ai.quickRecord.subtitle"))
+                            .font(NumiFont.bodySmall)
+                            .foregroundStyle(NumiColor.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Label(NumiLocalized.string("ai.quickRecord.byokey"), systemImage: "key.fill")
+                            .font(NumiFont.footnote)
+                            .foregroundStyle(NumiColor.accentDeep)
+                    }
+
+                    VStack(alignment: .leading, spacing: NumiSpacing.s2) {
+                        Text(NumiLocalized.string("ai.quickRecord.prompt"))
+                            .font(NumiFont.bodyStrong)
+                            .foregroundStyle(NumiColor.textPrimary)
+                        ZStack(alignment: .topLeading) {
+                            if prompt.isEmpty {
+                                Text(NumiLocalized.string("ai.quickRecord.placeholder"))
+                                    .font(NumiFont.body)
+                                    .foregroundStyle(NumiColor.textTertiary)
+                                    .padding(.horizontal, NumiSpacing.s3)
+                                    .padding(.vertical, NumiSpacing.s3 + 2)
+                                    .allowsHitTesting(false)
+                            }
+                            TextEditor(text: $prompt)
+                                .font(NumiFont.body)
+                                .focused($isPromptFocused)
+                                .frame(minHeight: 116)
+                                .padding(.horizontal, NumiSpacing.s2)
+                                .padding(.vertical, NumiSpacing.s1)
+                                .scrollContentBackground(.hidden)
+                                .accessibilityLabel(NumiLocalized.string("ai.quickRecord.prompt"))
+                                .accessibilityHint(NumiLocalized.string("ai.quickRecord.prompt.hint"))
+                                .accessibilityIdentifier("input.aiQuickRecordPrompt")
+                        }
+                        .background(NumiColor.surfaceCardSubtle)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous)
+                                .stroke(
+                                    isPromptFocused ? NumiColor.accentPrimary : NumiColor.separator,
+                                    lineWidth: isPromptFocused ? 1.5 : 1
+                                )
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+                    }
+
+                    Label(NumiLocalized.string("ai.quickRecord.example"), systemImage: "text.bubble")
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.textSecondary)
+                        .padding(NumiSpacing.s3)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(NumiColor.iconBackground, in: RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+
+                    Label(NumiLocalized.string("ai.quickRecord.review"), systemImage: "checkmark.shield")
+                        .font(NumiFont.footnote)
+                        .foregroundStyle(NumiColor.accentDeep)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(NumiSpacing.s3)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(NumiColor.controlFill, in: RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
+                }
+                .padding(NumiSpacing.s4)
+                .padding(.bottom, NumiSpacing.s6)
+            }
+            .background(NumiColor.surfacePage)
+            .navigationTitle(NumiLocalized.string("ai.quickRecord.title"))
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(NumiLocalized.string("common.cancel"), action: onDismiss)
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                Button {
+                    guard let normalized = AIQuickRecordPrompt.normalized(prompt) else { return }
+                    onSubmit(normalized)
+                } label: {
+                    Label(NumiLocalized.string("ai.quickRecord.start"), systemImage: "sparkles")
+                        .font(NumiFont.bodyStrong)
+                        .frame(maxWidth: .infinity, minHeight: 52)
+                        .foregroundStyle(NumiColor.onControlFillStrong)
+                        .background(NumiColor.controlFillStrong, in: RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint(NumiLocalized.string("ai.quickRecord.start.hint"))
+                .disabled(AIQuickRecordPrompt.normalized(prompt) == nil)
+                .opacity(AIQuickRecordPrompt.normalized(prompt) == nil ? 0.55 : 1)
+                .padding(.horizontal, NumiSpacing.s4)
+                .padding(.top, NumiSpacing.s2)
+                .padding(.bottom, NumiSpacing.s2)
+                .background(NumiColor.surfaceFloatingSolid)
+                .overlay(alignment: .top) {
+                    Divider().overlay(NumiColor.separator)
+                }
+                .shadow(color: .black.opacity(0.05), radius: 8, y: -3)
+                .accessibilityIdentifier("action.submitAIQuickRecord")
+            }
+            .onAppear { isPromptFocused = true }
+        }
     }
 }
 

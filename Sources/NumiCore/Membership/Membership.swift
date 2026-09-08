@@ -53,6 +53,7 @@ public enum MembershipCommercialOffering: String, CaseIterable, Sendable {
     case installments
     case premiumThemes
     case encryptedBackup
+    case aiQuickRecord
 }
 
 public enum MembershipStatusSource: String, Codable, Sendable {

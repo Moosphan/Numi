@@ -110,6 +110,24 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testAIQuickRecordComposerCopyCoversAllSupportedRuntimeLanguages() {
+        let expectedValues = [
+            "zh-Hans": (title: "AI 快速记账", review: "AI 只会生成可编辑草稿，保存前请确认每一项。", configure: "先配置 AI 服务", loading: "正在生成可编辑草稿…", retry: "重试"),
+            "en": (title: "AI Quick Record", review: "AI creates an editable draft only. Review every detail before saving.", configure: "Configure AI Service First", loading: "Creating editable draft…", retry: "Retry"),
+            "zh-Hant": (title: "AI 快速記帳", review: "AI 只會產生可編輯草稿，儲存前請確認每一項。", configure: "先設定 AI 服務", loading: "正在產生可編輯草稿…", retry: "重試"),
+            "ja": (title: "AIクイック記帳", review: "AIは編集可能な下書きのみを作成します。保存前にすべて確認してください。", configure: "先にAIサービスを設定", loading: "編集可能な下書きを作成中…", retry: "再試行")
+        ]
+
+        for (language, expected) in expectedValues {
+            let locale = Locale(identifier: language)
+            XCTAssertEqual(NumiLocalized.lookup("ai.quickRecord.title", locale: locale), expected.title)
+            XCTAssertEqual(NumiLocalized.lookup("ai.quickRecord.review", locale: locale), expected.review)
+            XCTAssertEqual(NumiLocalized.lookup("ai.quickRecord.configure", locale: locale), expected.configure)
+            XCTAssertEqual(NumiLocalized.lookup("ai.quickRecord.loading", locale: locale), expected.loading)
+            XCTAssertEqual(NumiLocalized.lookup("ai.quickRecord.failure.retry", locale: locale), expected.retry)
+        }
+    }
+
     func testManualExchangeRateCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": (action: "手动设置汇率", description: "离线时可自行设置当前汇率，保存后将关闭自动更新", save: "保存汇率", source: "汇率数据来源：手动设置"),

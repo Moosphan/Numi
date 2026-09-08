@@ -1,6 +1,186 @@
 {
   "sourceLanguage": "zh-Hans",
   "strings": {
+    "ai.quickRecord.byokey": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "需要 Pro 与已配置的 AI 服务" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Requires Pro and a configured AI service" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "需要 Pro 與已設定的 AI 服務" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Proと設定済みのAIサービスが必要です" } }
+      }
+    },
+    "ai.quickRecord.configure": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "先配置 AI 服务" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Configure AI Service First" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "先設定 AI 服務" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "先にAIサービスを設定" } }
+      }
+    },
+    "ai.quickRecord.configure.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "请先在“我的”中配置 Claude、通义千问或 DeepSeek 的 API Key，再开始 AI 快速记账。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Set up an API key for Claude, Qwen, or DeepSeek in My before using AI Quick Record." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "請先在「我的」中設定 Claude、通義千問或 DeepSeek 的 API Key，再開始 AI 快速記帳。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIクイック記帳を始める前に、「マイ」でClaude、Qwen、DeepSeekのAPIキーを設定してください。" } }
+      }
+    },
+    "ai.quickRecord.configure.settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "前往设置" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Go to Settings" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "前往設定" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "設定へ移動" } }
+      }
+    },
+    "ai.quickRecord.configure.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "先配置 AI 服务" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Configure AI Service First" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "先設定 AI 服務" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "先にAIサービスを設定" } }
+      }
+    },
+    "ai.quickRecord.entry.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "说一句话，先生成草稿再确认" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Say it once, then review the draft" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "說一句話，先產生草稿再確認" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "ひとこと話して、下書きを確認" } }
+      }
+    },
+    "ai.quickRecord.failure.edit": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "编辑输入" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Edit Input" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "編輯輸入" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "入力を編集" } }
+      }
+    },
+    "ai.quickRecord.failure.retry": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "重试" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Retry" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "重試" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "再試行" } }
+      }
+    },
+    "ai.quickRecord.failure.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未能生成草稿" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Couldn’t Create Draft" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "無法產生草稿" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "下書きを作成できませんでした" } }
+      }
+    },
+    "ai.quickRecord.example": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "支持支出、收入和转账；结果会先进入可编辑草稿。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Expenses, income, and transfers are supported. Results always open as an editable draft." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "支援支出、收入和轉帳；結果會先進入可編輯草稿。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "支出・収入・振替に対応。結果は必ず編集できる下書きで開きます。" } }
+      }
+    },
+    "ai.quickRecord.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "例如：昨天打车 28 元，用信用卡支付" } },
+        "en": { "stringUnit": { "state": "translated", "value": "For example: Taxi 28 yesterday, paid by credit card" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "例如：昨天搭車 28 元，用信用卡付款" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "例：昨日タクシーで28元、クレジットカード払い" } }
+      }
+    },
+    "ai.quickRecord.prompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "这一笔发生了什么？" } },
+        "en": { "stringUnit": { "state": "translated", "value": "What happened?" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "這一筆發生了什麼？" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "この取引は何でしたか？" } }
+      }
+    },
+    "ai.quickRecord.prompt.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "可描述金额、时间、分类和使用的账户。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "You can include the amount, date, category, and account." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "可描述金額、時間、分類和使用的帳戶。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "金額、日時、カテゴリ、口座を含めて説明できます。" } }
+      }
+    },
+    "ai.quickRecord.pro.badge": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Pro" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Pro" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Pro" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Pro" } }
+      }
+    },
+    "ai.quickRecord.review": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 只会生成可编辑草稿，保存前请确认每一项。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI creates an editable draft only. Review every detail before saving." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 只會產生可編輯草稿，儲存前請確認每一項。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIは編集可能な下書きのみを作成します。保存前にすべて確認してください。" } }
+      }
+    },
+    "ai.quickRecord.start": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "生成草稿" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Create Draft" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "產生草稿" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "下書きを作成" } }
+      }
+    },
+    "ai.quickRecord.start.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "只生成可编辑草稿，保存前仍需确认。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Creates an editable draft only; you still confirm before saving." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "只會產生可編輯草稿，儲存前仍需確認。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "編集可能な下書きのみを作成します。保存前に確認が必要です。" } }
+      }
+    },
+    "ai.quickRecord.loading": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "正在生成可编辑草稿…" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Creating editable draft…" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "正在產生可編輯草稿…" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "編集可能な下書きを作成中…" } }
+      }
+    },
+    "ai.quickRecord.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用自然语言描述一笔账，AI 会整理成待确认的草稿。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Describe a transaction naturally and AI will prepare a draft for your review." } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "用自然語言描述一筆帳，AI 會整理成待確認的草稿。" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "自然な言葉で取引を説明すると、AIが確認用の下書きを作成します。" } }
+      }
+    },
+    "ai.quickRecord.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 快速记账" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI Quick Record" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 快速記帳" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIクイック記帳" } }
+      }
+    },
     "batch.edit": {
       "extractionState": "manual",
       "localizations": {

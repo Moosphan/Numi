@@ -72,6 +72,7 @@ public struct SettingsView: View {
     @AppStorage("app.ai.claudeAPIKey") private var claudeAPIKey: String = ""
     @AppStorage("app.ai.qwenAPIKey") private var qwenAPIKey: String = ""
     @AppStorage("app.ai.deepseekAPIKey") private var deepseekAPIKey: String = ""
+    @AppStorage("app.settings.requestAIConfiguration") private var requestAIConfiguration = false
     @State private var showAIKeySheet = false
     @State private var editingProvider: String = "claude"
     @State private var editingClaudeKey: String = ""
@@ -379,11 +380,27 @@ public struct SettingsView: View {
         .background(NumiColor.surfacePage)
         .navigationTitle(NumiLocalized.string("setting.title"))
         .modifier(LargeTitleNavigationChrome())
+        .onAppear {
+            presentRequestedAIConfigurationIfNeeded()
+        }
+        .onChange(of: requestAIConfiguration) { _, _ in
+            presentRequestedAIConfigurationIfNeeded()
+        }
         .sheet(isPresented: $showLanguageSheet) {
             languageSheet
                 .presentationDetents([.medium])
                 .presentationCornerRadius(28)
         }
+    }
+
+    private func presentRequestedAIConfigurationIfNeeded() {
+        guard requestAIConfiguration else { return }
+        requestAIConfiguration = false
+        editingProvider = aiProvider
+        editingClaudeKey = claudeAPIKey
+        editingQwenKey = qwenAPIKey
+        editingDeepseekKey = deepseekAPIKey
+        showAIKeySheet = true
     }
 
     static func providerDisplayName(for providerID: String) -> String {

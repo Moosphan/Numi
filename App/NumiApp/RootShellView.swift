@@ -29,6 +29,7 @@ struct RootShellView: View {
     @AppStorage("app.ai.privacy.acknowledgedProvider") private var acknowledgedAIPrivacyProviderID = ""
     @AppStorage(NumiAppLanguage.pendingToastDefaultsKey) private var pendingLanguageToastCode: String = ""
     @StateObject private var rateService = ExchangeRateService.shared
+    @ObservedObject private var membership = MembershipController.shared
 
     enum Tab: String, CaseIterable {
         case transactions
@@ -78,6 +79,12 @@ struct RootShellView: View {
     @State private var pendingAIRecordProviderID: String?
     @State private var isAIPrivacyDisclosurePresented = false
     @State private var aiRecordDraft: TransactionDraft?
+    @State private var membershipPaywallContext: MembershipPaywallContext?
+    @State private var isAIQuickRecordConfigurationPresented = false
+    @State private var isAIRecordParsing = false
+    @State private var failedAIQuickRecordPrompt: String?
+    @State private var aiQuickRecordFailureMessage = ""
+    @State private var isAIQuickRecordFailurePresented = false
     @State private var insightsDimension: InsightsTimeDimension = .month
     @State private var insightsAnchorDate = Date()
     @State private var insightsCustomRange: InsightsCustomRange?
@@ -166,12 +173,36 @@ struct RootShellView: View {
                     .animation(.easeIn(duration: 0.3), value: isBlurred || isLocked)
             }
         }
+        .overlay {
+            if isAIRecordParsing {
+                Color.black.opacity(0.16)
+                    .ignoresSafeArea()
+                    .overlay {
+                        VStack(spacing: NumiSpacing.s3) {
+                            ProgressView()
+                                .controlSize(.large)
+                            Text(NumiLocalized.string("ai.quickRecord.loading"))
+                                .font(NumiFont.bodyStrong)
+                                .multilineTextAlignment(.center)
+                        }
+                        .foregroundStyle(NumiColor.textPrimary)
+                        .padding(NumiSpacing.s5)
+                        .background(NumiColor.surfaceFloatingSolid, in: RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+                        .shadow(color: .black.opacity(0.12), radius: 18, y: 8)
+                        .padding(NumiSpacing.s6)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(NumiLocalized.string("ai.quickRecord.loading"))
+                    .accessibilityAddTraits(.isModal)
+            }
+        }
         .tint(NumiColor.accentDeep)
         .environment(
             \.privacyAmountDisplayPolicy,
             PrivacyAmountDisplayPolicy(isHidden: isAmountDisplayHidden)
         )
         .task {
+            await membership.start()
             if !requiresSubscriptionConfirmation {
                 do {
                     try store.processDueSubscriptions()
@@ -299,7 +330,13 @@ struct RootShellView: View {
             AddRecordFlowView(
                 categories: store.categories,
                 accounts: store.accounts,
-                currencyOptions: currencyOptions
+                currencyOptions: currencyOptions,
+                onAIQuickRecord: { prompt in
+                    failedAIQuickRecordPrompt = nil
+                    beginAIQuickRecord(text: prompt, dismissingAddRecord: true)
+                },
+                initialAIQuickRecordPrompt: failedAIQuickRecordPrompt,
+                opensAIQuickRecordOnAppear: failedAIQuickRecordPrompt != nil
             ) { type, money, category, account, targetAccount, occurredAt, note in
                 guard let accountID = account?.id ?? store.accounts.first?.id,
                       let ledgerID = currentLedger?.id else { return false }
@@ -474,6 +511,35 @@ struct RootShellView: View {
             }
         } message: {
             Text(NumiLocalized.string("ai.record.privacy.message", aiProviderDisplayName(for: pendingAIRecordProviderID)))
+        }
+        .membershipPaywall(context: $membershipPaywallContext)
+        .alert(
+            NumiLocalized.string("ai.quickRecord.configure.title"),
+            isPresented: $isAIQuickRecordConfigurationPresented
+        ) {
+            Button(NumiLocalized.string("ai.quickRecord.configure.settings")) {
+                UserDefaults.standard.set(true, forKey: "app.settings.requestAIConfiguration")
+                selectedTab = .settings
+            }
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(NumiLocalized.string("ai.quickRecord.configure.message"))
+        }
+        .alert(
+            NumiLocalized.string("ai.quickRecord.failure.title"),
+            isPresented: $isAIQuickRecordFailurePresented
+        ) {
+            Button(NumiLocalized.string("ai.quickRecord.failure.retry")) {
+                guard let prompt = failedAIQuickRecordPrompt else { return }
+                beginAIPrivacyCheckedRecord(text: prompt)
+            }
+            Button(NumiLocalized.string("ai.quickRecord.failure.edit")) {
+                guard failedAIQuickRecordPrompt != nil else { return }
+                isAddingRecord = true
+            }
+            Button(NumiLocalized.string("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(aiQuickRecordFailureMessage)
         }
     }
 
@@ -1629,13 +1695,64 @@ struct RootShellView: View {
     private func handleIncomingURL(_ url: URL) {
         guard url.scheme == "numi", url.host == "record" else { return }
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        guard let text = components?.queryItems?.first(where: { $0.name == "text" })?.value, !text.isEmpty else {
+        guard let text = components?.queryItems?.first(where: { $0.name == "text" })?.value else {
             showToast(NumiLocalized.string( "error.missing.text"), isError: true)
             return
         }
+        beginAIQuickRecord(text: text)
+    }
 
+    private func beginAIQuickRecord(text: String, dismissingAddRecord: Bool = false) {
+        guard let normalizedText = AIQuickRecordPrompt.normalized(text) else {
+            showToast(NumiLocalized.string("error.missing.text"), isError: true)
+            return
+        }
+
+        if membership.hasResolvedStatus {
+            routeAIQuickRecord(normalizedText, dismissingAddRecord: dismissingAddRecord)
+        } else {
+            Task {
+                await membership.start()
+                routeAIQuickRecord(normalizedText, dismissingAddRecord: dismissingAddRecord)
+            }
+        }
+    }
+
+    private func routeAIQuickRecord(_ text: String, dismissingAddRecord: Bool) {
+        let destination = AIQuickRecordLaunchPolicy.destination(
+            accessDecision: membership.decision(for: .openAIRecord),
+            hasConfiguredProvider: resolvedAIProviderID() != nil
+        )
+
+        switch destination {
+        case .upgrade(let context):
+            presentAfterAddRecordDismissal(dismissingAddRecord) {
+                membershipPaywallContext = context
+            }
+        case .configureProvider:
+            presentAfterAddRecordDismissal(dismissingAddRecord) {
+                isAIQuickRecordConfigurationPresented = true
+            }
+        case .parse:
+            presentAfterAddRecordDismissal(dismissingAddRecord) {
+                beginAIPrivacyCheckedRecord(text: text)
+            }
+        }
+    }
+
+    private func presentAfterAddRecordDismissal(_ dismissingAddRecord: Bool, action: @escaping () -> Void) {
+        guard dismissingAddRecord else {
+            action()
+            return
+        }
+
+        isAddingRecord = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: action)
+    }
+
+    private func beginAIPrivacyCheckedRecord(text: String) {
         guard let providerID = resolvedAIProviderID() else {
-            showToast(NumiLocalized.string("error.ai.no.key"), isError: true)
+            isAIQuickRecordConfigurationPresented = true
             return
         }
 
@@ -1649,9 +1766,7 @@ struct RootShellView: View {
             return
         }
 
-        Task {
-            await performAIRecord(text: text)
-        }
+        Task { await performAIRecord(text: text) }
     }
 
     private func performAIRecord(text: String) async {
@@ -1664,6 +1779,9 @@ struct RootShellView: View {
             showToast(NumiLocalized.string("error.ai.no.key"), isError: true)
             return
         }
+
+        isAIRecordParsing = true
+        defer { isAIRecordParsing = false }
 
         let parser: TransactionLLMService
         switch provider {
@@ -1703,13 +1821,19 @@ struct RootShellView: View {
 
             guard let account,
                   parsed.type == .transfer ? targetAccount != nil : category != nil else {
-                showToast(NumiLocalized.string( "error.ai.parse.fail"), isError: true)
+                presentAIQuickRecordFailure(
+                    message: NumiLocalized.string("error.ai.parse.fail"),
+                    prompt: text
+                )
                 return
             }
 
             let money = try Money(decimalString: "\(parsed.amount)", currencyCode: activeCurrencyCode)
             guard currentLedger != nil else {
-                showToast(NumiLocalized.string( "error.ai.no.ledger"), isError: true)
+                presentAIQuickRecordFailure(
+                    message: NumiLocalized.string("error.ai.no.ledger"),
+                    prompt: text
+                )
                 return
             }
 
@@ -1723,8 +1847,17 @@ struct RootShellView: View {
                 note: parsed.note
             )
         } catch {
-            showToast(NumiLocalized.string("error.ai.record.fail", error.localizedDescription), isError: true)
+            presentAIQuickRecordFailure(
+                message: NumiLocalized.string("error.ai.record.fail", error.localizedDescription),
+                prompt: text
+            )
         }
+    }
+
+    private func presentAIQuickRecordFailure(message: String, prompt: String) {
+        failedAIQuickRecordPrompt = prompt
+        aiQuickRecordFailureMessage = message
+        isAIQuickRecordFailurePresented = true
     }
 
     private func saveAIRecordDraft(

@@ -8,7 +8,7 @@ final class MembershipCommerceTests: XCTestCase {
         XCTAssertEqual(product.price, 8)
     }
 
-    func testPaywallBenefitsPresentSevenFocusedCoreAndPreviewCapabilities() throws {
+    func testPaywallBenefitsPresentSevenFocusedCoreBenefitsAndFeaturePreviews() throws {
         let scheduledBills = try XCTUnwrap(
             MembershipBenefit.paywallBenefits.first { $0.id == "scheduledBills" }
         )
@@ -19,7 +19,7 @@ final class MembershipCommerceTests: XCTestCase {
             MembershipBenefit.paywallBenefits.first { $0.id == "cloudSyncPreview" }
         )
         let aiRecord = try XCTUnwrap(
-            MembershipBenefit.paywallBenefits.first { $0.id == "aiRecordPreview" }
+            MembershipBenefit.paywallBenefits.first { $0.id == MembershipCommercialOffering.aiQuickRecord.rawValue }
         )
         let themes = try XCTUnwrap(
             MembershipBenefit.paywallBenefits.first { $0.id == MembershipCommercialOffering.premiumThemes.rawValue }
@@ -35,11 +35,11 @@ final class MembershipCommerceTests: XCTestCase {
         XCTAssertEqual(currency.titleKey, "membership.benefit.currency.title")
         XCTAssertEqual(cloudSync.availability, .preview)
         XCTAssertEqual(cloudSync.palette.illustration, "pro-membership-sync")
-        XCTAssertEqual(aiRecord.availability, .preview)
+        XCTAssertEqual(aiRecord.availability, .included)
         XCTAssertEqual(aiRecord.palette.illustration, "pro-membership-ai")
         XCTAssertEqual(themes.availability, .included)
         XCTAssertEqual(themes.titleKey, "membership.benefit.themes.title")
-        XCTAssertEqual(MembershipCommercialOffering.allCases.count, 6)
+        XCTAssertEqual(MembershipCommercialOffering.allCases.count, 7)
     }
 
     func testLifetimeWinsRegardlessOfRecurringOrder() {
