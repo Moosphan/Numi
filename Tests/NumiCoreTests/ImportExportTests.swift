@@ -173,6 +173,7 @@ final class ImportExportTests: XCTestCase {
 
         XCTAssertTrue(result.transactions.isEmpty)
         XCTAssertEqual(result.errors.map(\.lineNumber), [2])
+        XCTAssertEqual(result.errors.first?.code, .convertedAmountCurrencyMismatch)
     }
 
     func testCSVImporterKeepsValidRowsWhenOtherRowsAreInvalid() throws {

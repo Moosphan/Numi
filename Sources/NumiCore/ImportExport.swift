@@ -54,6 +54,7 @@ public enum NumiCSVExporter {
 
 public enum CSVImportErrorCode: Equatable, Sendable {
     case accountCurrencyMismatch
+    case convertedAmountCurrencyMismatch
 }
 
 public struct CSVImportError: Equatable, Sendable {
@@ -410,7 +411,10 @@ public enum NumiCSVImporter {
     ) throws {
         guard let convertedAmount else { return }
         guard convertedAmount.currencyCode.caseInsensitiveCompare(ledgerCurrencyCode) == .orderedSame else {
-            throw ImportFailure("Converted amount currency does not match ledger currency")
+            throw ImportFailure(
+                "Converted amount currency does not match ledger currency",
+                code: .convertedAmountCurrencyMismatch
+            )
         }
     }
 

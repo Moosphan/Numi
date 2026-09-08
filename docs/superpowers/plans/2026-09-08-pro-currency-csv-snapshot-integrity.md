@@ -82,6 +82,10 @@ Run: `swift test --filter 'ImportExportTests/testCSVPreviewRejectsRecordTimeConv
 
 Expected: malformed row is rejected and the standard exported CSV continues to preserve a CNY converted amount.
 
+- [x] **Step 5: Present the validation through a structured, localized error code**
+
+Add `CSVImportErrorCode.convertedAmountCurrencyMismatch`; map it in `CSVImportReviewSheet.localizedMessage(for:)` to `io.import.csv.error.converted.amount.currency.mismatch`. The String Catalog contains Simplified Chinese, Traditional Chinese, English, and Japanese values and has an AppUI localization regression test.
+
 ### Task 2: Document and verify the import boundary
 
 **Files:**

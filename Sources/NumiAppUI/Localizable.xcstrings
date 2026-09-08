@@ -9247,6 +9247,15 @@
         "ja": { "stringUnit": { "state": "translated", "value": "取引通貨が選択した口座の通貨と一致しません" } }
       }
     },
+    "io.import.csv.error.converted.amount.currency.mismatch": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "固定折算金额的币种必须与目标账本币种一致" } },
+        "en": { "stringUnit": { "state": "translated", "value": "The recorded converted amount must use the target ledger currency" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "固定換算金額的幣別必須與目標帳本幣別一致" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "記録時換算額の通貨は対象の帳簿通貨と一致する必要があります" } }
+      }
+    },
     "io.import.csv.file.fail": {
       "extractionState": "manual",
       "localizations": {

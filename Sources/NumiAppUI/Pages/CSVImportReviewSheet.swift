@@ -261,6 +261,8 @@ public struct CSVImportReviewSheet: View {
         switch error.code {
         case .accountCurrencyMismatch:
             NumiLocalized.string("io.import.csv.error.account.currency.mismatch")
+        case .convertedAmountCurrencyMismatch:
+            NumiLocalized.string("io.import.csv.error.converted.amount.currency.mismatch")
         case nil:
             error.message
         }
