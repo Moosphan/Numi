@@ -332,6 +332,10 @@ public enum NumiCSVImporter {
                     amount: value(for: .convertedAmountAtRecord, in: values, mapping: mapping),
                     currencyCode: value(for: .convertedCurrencyAtRecord, in: values, mapping: mapping)
                 )
+                try validateConvertedAmountCurrency(
+                    convertedAmountAtRecord,
+                    ledgerCurrencyCode: context.ledger.currencyCode
+                )
                 transactions.append(Transaction(
                     id: transactionID,
                     type: type,
@@ -398,6 +402,16 @@ public enum NumiCSVImporter {
             throw ImportFailure("Missing convertedCurrencyAtRecord")
         }
         return try Money(decimalString: amount, currencyCode: currencyCode)
+    }
+
+    private static func validateConvertedAmountCurrency(
+        _ convertedAmount: Money?,
+        ledgerCurrencyCode: String
+    ) throws {
+        guard let convertedAmount else { return }
+        guard convertedAmount.currencyCode.caseInsensitiveCompare(ledgerCurrencyCode) == .orderedSame else {
+            throw ImportFailure("Converted amount currency does not match ledger currency")
+        }
     }
 
     private static func transactionType(from value: String?) throws -> TransactionType {
