@@ -13,8 +13,14 @@ public enum BackupReminderSchedulePolicy {
         calendar: Calendar = .current
     ) -> Date? {
         guard intervalDays > 0 else { return nil }
-        guard let lastBackupAt else { return now }
-        return calendar.date(byAdding: .day, value: intervalDays, to: lastBackupAt)
+        let reminderDate = lastBackupAt.flatMap {
+            calendar.date(byAdding: .day, value: intervalDays, to: $0)
+        } ?? now
+        guard reminderDate <= now else { return reminderDate }
+        guard let currentMinute = calendar.dateInterval(of: .minute, for: now)?.start else {
+            return now.addingTimeInterval(60)
+        }
+        return calendar.date(byAdding: .minute, value: 1, to: currentMinute)
     }
 }
 
