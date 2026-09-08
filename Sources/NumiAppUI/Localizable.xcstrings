@@ -16398,10 +16398,10 @@
     "membership.benefit.preview.notIncluded": {
       "extractionState": "manual",
       "localizations": {
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "功能预览 · 暂未包含" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Preview · not included yet" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "功能預覽 · 尚未包含" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "プレビュー・現在は対象外" } }
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "功能预览 · 暂未包含在 Pro 中" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Preview · not included in Pro" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "功能預覽 · 尚未包含在 Pro 中" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プレビュー・現在はPro対象外" } }
       }
     },
     "membership.benefit.pager.position": {

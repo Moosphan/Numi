@@ -346,6 +346,15 @@ public struct MembershipBenefitsView: View {
 enum MembershipBenefitAvailability: Equatable {
     case included
     case preview
+
+    /// A preview is shown for product discovery only; it must never be presented as
+    /// an entitlement included in the active Pro product.
+    var previewBadgeKey: String? {
+        switch self {
+        case .included: nil
+        case .preview: "membership.benefit.preview.notIncluded"
+        }
+    }
 }
 
 struct MembershipBenefit: Equatable, Identifiable {
@@ -532,7 +541,7 @@ private struct MembershipBenefitPagerCard: View {
         case .included:
             isPro ? NumiLocalized.string("membership.pro.active") : "Pro"
         case .preview:
-            NumiLocalized.string("membership.benefit.preview.badge")
+            NumiLocalized.string(benefit.availability.previewBadgeKey ?? "membership.benefit.preview.notIncluded")
         }
     }
 

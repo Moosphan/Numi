@@ -468,10 +468,10 @@ final class AppUILocalizationBundleTests: XCTestCase {
 
     func testMembershipBannerCopySeparatesReleasedBenefitsFromFeaturePreviews() {
         let expectedValues = [
-            "zh-Hans": (bills: "订阅与分期，一处掌控", sync: "跨设备同步", ai: "AI 快速记账", preview: "功能预览 · 暂未包含"),
-            "en": (bills: "Subscriptions & installments, in one place", sync: "Cross-device sync", ai: "AI quick record", preview: "Preview · not included yet"),
-            "zh-Hant": (bills: "訂閱與分期，一處掌控", sync: "跨裝置同步", ai: "AI 快速記帳", preview: "功能預覽 · 尚未包含"),
-            "ja": (bills: "サブスクと分割払いを一元管理", sync: "デバイス間同期", ai: "AIクイック記帳", preview: "プレビュー・現在は対象外")
+            "zh-Hans": (bills: "订阅与分期，一处掌控", sync: "跨设备同步", ai: "AI 快速记账", preview: "功能预览 · 暂未包含在 Pro 中"),
+            "en": (bills: "Subscriptions & installments, in one place", sync: "Cross-device sync", ai: "AI quick record", preview: "Preview · not included in Pro"),
+            "zh-Hant": (bills: "訂閱與分期，一處掌控", sync: "跨裝置同步", ai: "AI 快速記帳", preview: "功能預覽 · 尚未包含在 Pro 中"),
+            "ja": (bills: "サブスクと分割払いを一元管理", sync: "デバイス間同期", ai: "AIクイック記帳", preview: "プレビュー・現在はPro対象外")
         ]
 
         for (language, expected) in expectedValues {

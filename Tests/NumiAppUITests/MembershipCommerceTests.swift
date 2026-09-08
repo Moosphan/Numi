@@ -42,6 +42,14 @@ final class MembershipCommerceTests: XCTestCase {
         XCTAssertEqual(MembershipCommercialOffering.allCases.count, 7)
     }
 
+    func testFeaturePreviewsUseTheExplicitNotIncludedBadge() {
+        XCTAssertEqual(
+            MembershipBenefitAvailability.preview.previewBadgeKey,
+            "membership.benefit.preview.notIncluded"
+        )
+        XCTAssertNil(MembershipBenefitAvailability.included.previewBadgeKey)
+    }
+
     func testLifetimeWinsRegardlessOfRecurringOrder() {
         for entries: [MembershipEntitlement] in [
             [.init(plan: .lifetimePro), .init(plan: .yearlyPro, expiresAt: .distantFuture)],
