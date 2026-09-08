@@ -398,6 +398,22 @@ final class AppUILocalizationBundleTests: XCTestCase {
         }
     }
 
+    func testBackupReminderCopyCoversAllSupportedRuntimeLanguages() {
+        for language in ["zh-Hans", "zh-Hant", "en", "ja"] {
+            let locale = Locale(identifier: language)
+            for key in [
+                "backup.reminder.title",
+                "backup.reminder.enable",
+                "backup.reminder.desc",
+                "backup.reminder.interval",
+                "backup.reminder.authorization.failed",
+                "backup.reminder.schedule.failed"
+            ] {
+                XCTAssertFalse(NumiLocalized.lookup(key, locale: locale).contains("backup.reminder"))
+            }
+        }
+    }
+
     func testRecordSaveFailureCopyCoversAllSupportedRuntimeLanguages() {
         let expectedValues = [
             "zh-Hans": "无法保存记录，请检查账户币种和必填项后重试。",

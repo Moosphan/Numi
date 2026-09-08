@@ -405,6 +405,9 @@ public struct BackupView: View {
     @State private var toastMessage: String?
     @State private var showToast = false
     @State private var membershipPaywallContext: MembershipPaywallContext?
+    @AppStorage("app.backup.reminder.enabled") private var isBackupReminderEnabled = false
+    @AppStorage("app.backup.reminder.intervalDays") private var backupReminderIntervalDays = 14
+    @AppStorage("app.backup.reminder.lastBackupAt") private var lastBackupTimestamp = 0.0
 
     public init(
         exportSnapshot: @escaping () -> BookkeepingSnapshot,
@@ -419,6 +422,7 @@ public struct BackupView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                     createBackupSection
+                    backupReminderSection
                     restoreBackupSection
                 }
                 .padding(NumiSpacing.s5)
@@ -447,6 +451,10 @@ public struct BackupView: View {
 #endif
         }
         .task { await membership.start() }
+        .onChange(of: backupReminderIntervalDays) { _, _ in
+            guard isBackupReminderEnabled else { return }
+            Task { await scheduleBackupReminder() }
+        }
         .membershipPaywall(context: $membershipPaywallContext)
     }
 
@@ -530,6 +538,59 @@ public struct BackupView: View {
             .buttonStyle(.plain)
             .disabled(backupPassword.isEmpty)
         }
+    }
+
+    private var backupReminderSection: some View {
+        VStack(alignment: .leading, spacing: NumiSpacing.s3) {
+            Text(NumiLocalized.string("backup.reminder.title"))
+                .font(NumiFont.bodySmall)
+                .foregroundStyle(NumiColor.textSecondary)
+
+            VStack(spacing: 0) {
+                HStack(spacing: NumiSpacing.s3) {
+                    Image(systemName: "bell.badge")
+                        .font(.system(size: 17, weight: .semibold))
+                        .frame(width: 36, height: 36)
+                        .background(NumiColor.iconBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: NumiRadius.md, style: .continuous))
+                        .foregroundStyle(NumiColor.accentPrimary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(NumiLocalized.string("backup.reminder.enable"))
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(NumiColor.textPrimary)
+                        Text(NumiLocalized.string("backup.reminder.desc"))
+                            .font(NumiFont.footnote)
+                            .foregroundStyle(NumiColor.textTertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer()
+                    Toggle("", isOn: Binding(
+                        get: { isBackupReminderEnabled },
+                        set: { configureBackupReminder($0) }
+                    ))
+                    .labelsHidden()
+                    .tint(NumiColor.accentDeep)
+                }
+                .padding(.horizontal, NumiSpacing.s4)
+                .padding(.vertical, 14)
+
+                if isBackupReminderEnabled {
+                    Divider().padding(.leading, 48)
+                    Picker(NumiLocalized.string("backup.reminder.interval"), selection: $backupReminderIntervalDays) {
+                        Text(NumiLocalized.string("backup.reminder.interval.7")).tag(7)
+                        Text(NumiLocalized.string("backup.reminder.interval.14")).tag(14)
+                        Text(NumiLocalized.string("backup.reminder.interval.30")).tag(30)
+                    }
+                    .font(NumiFont.body)
+                    .padding(.horizontal, NumiSpacing.s4)
+                    .padding(.vertical, 8)
+                }
+            }
+            .background(NumiColor.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+            .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 3)
+        }
+        .accessibilityIdentifier("backup.reminder")
     }
 
     // MARK: - Restore Backup
@@ -623,6 +684,10 @@ public struct BackupView: View {
         let result = BackupService.shared.createBackup(snapshot: snapshot, password: backupPassword)
         switch result {
         case .success(let url):
+            lastBackupTimestamp = Date().timeIntervalSince1970
+            if isBackupReminderEnabled {
+                Task { await scheduleBackupReminder() }
+            }
             shareURL = ShareableURL(url: url)
             // 延迟显示 toast，避免与分享面板冲突
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -630,6 +695,38 @@ public struct BackupView: View {
             }
         case .failure(let error):
             showToastMessage(error.displayMessage)
+        }
+    }
+
+    private func configureBackupReminder(_ isEnabled: Bool) {
+        guard isEnabled else {
+            isBackupReminderEnabled = false
+            BackupReminderScheduler.cancel()
+            return
+        }
+        switch membership.decision(for: .openEncryptedBackup) {
+        case .granted:
+            Task {
+                guard await BackupReminderScheduler.requestAuthorization() else {
+                    showToastMessage(NumiLocalized.string("backup.reminder.authorization.failed"))
+                    return
+                }
+                isBackupReminderEnabled = true
+                await scheduleBackupReminder()
+            }
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
+    private func scheduleBackupReminder() async {
+        let lastBackupAt = lastBackupTimestamp > 0 ? Date(timeIntervalSince1970: lastBackupTimestamp) : nil
+        guard await BackupReminderScheduler.schedule(
+            lastBackupAt: lastBackupAt,
+            intervalDays: backupReminderIntervalDays
+        ) else {
+            showToastMessage(NumiLocalized.string("backup.reminder.schedule.failed"))
+            return
         }
     }
 
