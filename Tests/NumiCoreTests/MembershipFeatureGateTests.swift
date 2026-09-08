@@ -52,6 +52,15 @@ final class MembershipFeatureGateTests: XCTestCase {
         XCTAssertEqual(gate.decision(for: .openEncryptedBackup), .blocked(context: .backup))
     }
 
+    func testFreeTierBlocksHomeSummaryCustomization() {
+        let gate = MembershipFeatureGate(status: .free)
+
+        XCTAssertEqual(
+            gate.decision(for: .openHomeSummaryCustomization),
+            .blocked(context: .homeSummaryCustomization)
+        )
+    }
+
     func testProTierGrantsEveryDocumentedCapabilityAndRemovesLimits() {
         let tier = MembershipTier.proLifetime
         let gate = MembershipFeatureGate(status: MembershipStatus(tier: tier))

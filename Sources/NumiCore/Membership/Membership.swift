@@ -39,6 +39,7 @@ public enum MembershipCapability: String, CaseIterable, Codable, Hashable, Senda
     case batchEdit
     case premiumThemes
     case advancedImportExport
+    case homeSummaryCustomization
 }
 
 /// The only benefits that the V1 paywall may present as available today.
@@ -126,6 +127,7 @@ public enum MembershipPaywallContext: Equatable, Sendable {
     case batchEdit
     case premiumThemes
     case advancedImportExport
+    case homeSummaryCustomization
 }
 
 public enum MembershipFeatureRequest: Equatable, Sendable {
@@ -146,6 +148,7 @@ public enum MembershipFeatureRequest: Equatable, Sendable {
     case openBatchEdit
     case openPremiumThemes
     case openAdvancedImportExport
+    case openHomeSummaryCustomization
 }
 
 public enum MembershipFeatureAccessDecision: Equatable, Sendable {
@@ -208,6 +211,8 @@ public struct MembershipFeatureGate: Sendable {
             return capabilityDecision(.premiumThemes, context: .premiumThemes)
         case .openAdvancedImportExport:
             return capabilityDecision(.advancedImportExport, context: .advancedImportExport)
+        case .openHomeSummaryCustomization:
+            return capabilityDecision(.homeSummaryCustomization, context: .homeSummaryCustomization)
         }
     }
 

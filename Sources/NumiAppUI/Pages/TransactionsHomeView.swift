@@ -103,6 +103,9 @@ public struct TransactionsHomeView: View {
     @State private var showsBatchUndo = false
     @State private var batchUndoGeneration = 0
     @State private var membershipPaywallContext: MembershipPaywallContext?
+    @State private var showsSummaryCustomizer = false
+    @State private var draftSummaryCardOrder = HomeSummaryCard.allCases
+    @AppStorage("home.summary.card.order") private var summaryCardOrderRaw = ""
 
     public init(
         summary: TransactionSummary,
@@ -212,6 +215,10 @@ public struct TransactionsHomeView: View {
                 .presentationDetents([.medium])
                 .presentationCornerRadius(28)
         }
+        .sheet(isPresented: $showsSummaryCustomizer) {
+            homeSummaryCustomizerSheet
+                .presentationDetents([.medium])
+        }
         .confirmationDialog(
             NumiLocalized.string("batch.edit.choose.category"),
             isPresented: $showsBatchCategoryPicker,
@@ -299,8 +306,31 @@ public struct TransactionsHomeView: View {
 
     private var summaryGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: NumiSpacing.s3) {
-            NumiSummaryTile(title: NumiLocalized.string( "record.expense"), value: summary.expense.formatted(), systemImage: "cart", variant: .expense, accessibilityKey: "home.expense", amount: summary.expense)
-            NumiSummaryTile(title: NumiLocalized.string( "record.income"), value: summary.income.formatted(), systemImage: "creditcard", variant: .income, accessibilityKey: "home.income", amount: summary.income)
+            ForEach(visibleSummaryCards) { card in
+                summaryCard(card)
+            }
+        }
+    }
+
+    private var orderedSummaryCards: [HomeSummaryCard] {
+        HomeSummaryCardOrderPolicy.cards(from: summaryCardOrderRaw)
+    }
+
+    private var visibleSummaryCards: [HomeSummaryCard] {
+        membership.status.tier.isPro ? orderedSummaryCards : orderedSummaryCards.filter { $0 == .expense || $0 == .income }
+    }
+
+    @ViewBuilder
+    private func summaryCard(_ card: HomeSummaryCard) -> some View {
+        switch card {
+        case .expense:
+            NumiSummaryTile(title: NumiLocalized.string("record.expense"), value: summary.expense.formatted(), systemImage: "cart", variant: .expense, accessibilityKey: "home.expense", amount: summary.expense)
+        case .income:
+            NumiSummaryTile(title: NumiLocalized.string("record.income"), value: summary.income.formatted(), systemImage: "creditcard", variant: .income, accessibilityKey: "home.income", amount: summary.income)
+        case .balance:
+            NumiSummaryTile(title: NumiLocalized.string("insight.balance"), value: summary.balance.formatted(), systemImage: "equal.circle", variant: summary.balance.minorUnits < 0 ? .negative : .neutral, accessibilityKey: "home.balance", amount: summary.balance)
+        case .recordCount:
+            NumiSummaryTile(title: NumiLocalized.string("insight.record.count"), value: "\(summary.recordCount)", systemImage: "checklist", variant: .neutral, accessibilityKey: "home.recordCount")
         }
     }
 
@@ -489,6 +519,22 @@ public struct TransactionsHomeView: View {
                 .accessibilityIdentifier("action.finishBatchEdit")
             } else {
                 Button {
+                    startHomeSummaryCustomization()
+                } label: {
+                    Image(systemName: "rectangle.3.group")
+                        .font(.system(size: NumiChromeMetrics.toolbarSymbolSize, weight: .semibold))
+                        .foregroundStyle(NumiColor.textSecondary)
+                        .frame(
+                            width: NumiChromeMetrics.toolbarButtonHitSize,
+                            height: NumiChromeMetrics.toolbarButtonHitSize
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("action.customizeHomeSummary")
+                .accessibilityLabel(NumiLocalized.string("home.summary.customize"))
+
+                Button {
                     onSearch()
                 } label: {
                     Image(systemName: "magnifyingglass")
@@ -518,6 +564,104 @@ public struct TransactionsHomeView: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("action.openBatchEdit")
             }
+        }
+    }
+
+    private var homeSummaryCustomizerSheet: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text(NumiLocalized.string("home.summary.customize.hint"))
+                        .font(NumiFont.bodySmall)
+                        .foregroundStyle(NumiColor.textSecondary)
+                }
+
+                Section {
+                    ForEach(draftSummaryCardOrder) { card in
+                        HStack(spacing: NumiSpacing.s3) {
+                            Image(systemName: summaryCardIcon(for: card))
+                                .foregroundStyle(NumiColor.accentDeep)
+                                .frame(width: 22)
+                            Text(summaryCardDisplayName(for: card))
+                                .font(NumiFont.bodyStrong)
+                                .foregroundStyle(NumiColor.textPrimary)
+                            Spacer()
+                            VStack(spacing: 0) {
+                                Button {
+                                    moveDraftSummaryCard(card, by: -1)
+                                } label: {
+                                    Image(systemName: "chevron.up")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .frame(width: 28, height: 22)
+                                }
+                                .disabled(draftSummaryCardOrder.first == card)
+                                .accessibilityLabel(NumiLocalized.string("home.summary.customize.move.up"))
+
+                                Button {
+                                    moveDraftSummaryCard(card, by: 1)
+                                } label: {
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .frame(width: 28, height: 22)
+                                }
+                                .disabled(draftSummaryCardOrder.last == card)
+                                .accessibilityLabel(NumiLocalized.string("home.summary.customize.move.down"))
+                            }
+                            .foregroundStyle(NumiColor.accentDeep)
+                        }
+                        .accessibilityIdentifier("home.summary.card.\(card.rawValue)")
+                    }
+                }
+            }
+            .navigationTitle(NumiLocalized.string("home.summary.customize.title"))
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(NumiLocalized.string("common.cancel")) {
+                        showsSummaryCustomizer = false
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(NumiLocalized.string("common.done")) {
+                        summaryCardOrderRaw = HomeSummaryCardOrderPolicy.serialized(draftSummaryCardOrder)
+                        showsSummaryCustomizer = false
+                    }
+                }
+            }
+        }
+    }
+
+    private func startHomeSummaryCustomization() {
+        switch membership.decision(for: .openHomeSummaryCustomization) {
+        case .granted:
+            draftSummaryCardOrder = orderedSummaryCards
+            showsSummaryCustomizer = true
+        case .blocked(let context):
+            membershipPaywallContext = context
+        }
+    }
+
+    private func moveDraftSummaryCard(_ card: HomeSummaryCard, by offset: Int) {
+        guard let index = draftSummaryCardOrder.firstIndex(of: card) else { return }
+        let destination = index + offset
+        guard draftSummaryCardOrder.indices.contains(destination) else { return }
+        draftSummaryCardOrder.swapAt(index, destination)
+    }
+
+    private func summaryCardDisplayName(for card: HomeSummaryCard) -> String {
+        switch card {
+        case .expense: NumiLocalized.string("record.expense")
+        case .income: NumiLocalized.string("record.income")
+        case .balance: NumiLocalized.string("insight.balance")
+        case .recordCount: NumiLocalized.string("insight.record.count")
+        }
+    }
+
+    private func summaryCardIcon(for card: HomeSummaryCard) -> String {
+        switch card {
+        case .expense: "cart"
+        case .income: "creditcard"
+        case .balance: "equal.circle"
+        case .recordCount: "checklist"
         }
     }
 

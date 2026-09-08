@@ -18,6 +18,7 @@ extension MembershipPaywallContext {
         case .advancedPlans: "membership.limit.plans"
         case .batchEdit: "membership.limit.batch"
         case .advancedImportExport: "membership.limit.import"
+        case .homeSummaryCustomization: "membership.limit.insights"
         case .settingsEntry: "membership.paywall.description"
         }
     }
@@ -44,6 +45,7 @@ extension MembershipPaywallContext: Identifiable {
         case .batchEdit: "batchEdit"
         case .premiumThemes: "premiumThemes"
         case .advancedImportExport: "advancedImportExport"
+        case .homeSummaryCustomization: "homeSummaryCustomization"
         }
     }
 }

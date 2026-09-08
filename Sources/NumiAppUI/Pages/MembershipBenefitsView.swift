@@ -336,6 +336,7 @@ public struct MembershipBenefitsView: View {
             .init(id: "cloudSync", titleKey: "membership.comparison.sync", free: .unavailable, pro: .text("membership.benefit.preview.notIncluded")),
             .init(id: "aiRecord", titleKey: "membership.comparison.ai", free: .unavailable),
             .init(id: "premiumThemes", titleKey: "membership.comparison.themes", free: .text("membership.comparison.one")),
+            .init(id: "homeSummary", titleKey: "membership.comparison.homeSummary", free: .unavailable),
             .init(id: "encryptedBackup", titleKey: "membership.comparison.encryptedBackup", free: .unavailable),
             .init(id: "dataExport", titleKey: "membership.comparison.dataExport", free: .check),
             .init(id: "privacy", titleKey: "membership.comparison.privacy", free: .check)
