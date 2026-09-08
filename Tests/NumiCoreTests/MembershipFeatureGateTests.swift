@@ -3,7 +3,7 @@ import XCTest
 
 final class MembershipFeatureGateTests: XCTestCase {
 
-    func testCommercialOfferingListsAIQuickRecordOnlyAfterTheProFlowIsShippable() {
+    func testCommercialOfferingExcludesAIQuickRecordUntilItsProFlowIsShippable() {
         XCTAssertEqual(
             MembershipCommercialOffering.allCases.map(\.rawValue),
             [
@@ -12,8 +12,7 @@ final class MembershipFeatureGateTests: XCTestCase {
                 "plannedSpendingForecast",
                 "installments",
                 "premiumThemes",
-                "encryptedBackup",
-                "aiQuickRecord"
+                "encryptedBackup"
             ]
         )
     }
@@ -65,7 +64,7 @@ final class MembershipFeatureGateTests: XCTestCase {
     func testV1CommercialOfferingOnlyContainsReleasedProBenefits() {
         XCTAssertEqual(
             Set(MembershipCommercialOffering.allCases.map(\.rawValue)),
-            ["unlimitedOrganization", "subscriptions", "plannedSpendingForecast", "installments", "premiumThemes", "encryptedBackup", "aiQuickRecord"]
+            ["unlimitedOrganization", "subscriptions", "plannedSpendingForecast", "installments", "premiumThemes", "encryptedBackup"]
         )
     }
 }

@@ -334,7 +334,7 @@ public struct MembershipBenefitsView: View {
             .init(id: "currency", titleKey: "membership.comparison.currencies", free: .unavailable, pro: .text("membership.benefit.preview.notIncluded")),
             .init(id: "installments", titleKey: "membership.comparison.installments", free: .text("membership.comparison.two")),
             .init(id: "cloudSync", titleKey: "membership.comparison.sync", free: .unavailable, pro: .text("membership.benefit.preview.notIncluded")),
-            .init(id: "aiRecord", titleKey: "membership.comparison.ai", free: .unavailable),
+            .init(id: "aiRecord", titleKey: "membership.comparison.ai", free: .unavailable, pro: .text("membership.benefit.preview.notIncluded")),
             .init(id: "premiumThemes", titleKey: "membership.comparison.themes", free: .text("membership.comparison.one")),
             .init(id: "insightsReport", titleKey: "membership.comparison.insightsReport", free: .unavailable),
             .init(id: "encryptedBackup", titleKey: "membership.comparison.encryptedBackup", free: .unavailable),
@@ -400,12 +400,12 @@ struct MembershipBenefit: Equatable, Identifiable {
             availability: .preview
         ),
         .init(
-            id: MembershipCommercialOffering.aiQuickRecord.rawValue,
+            id: "aiQuickRecordPreview",
             icon: "sparkles",
             titleKey: "membership.benefit.ai.title",
             detailKey: "membership.benefit.ai.detail",
             palette: .coral,
-            availability: .included
+            availability: .preview
         ),
         .init(
             id: MembershipCommercialOffering.premiumThemes.rawValue,
