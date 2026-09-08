@@ -18,6 +18,15 @@ public enum BackupReminderSchedulePolicy {
     }
 }
 
+public enum BackupReminderPreferencePolicy {
+    public static func enabledValue(
+        requestedEnabled: Bool,
+        schedulingSucceeded: Bool
+    ) -> Bool {
+        requestedEnabled && schedulingSucceeded
+    }
+}
+
 public enum BackupReminderScheduler {
     private static let identifier = "backup-reminder"
 

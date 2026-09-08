@@ -30,4 +30,25 @@ final class BackupReminderSchedulePolicyTests: XCTestCase {
             now
         )
     }
+
+    func testOnlyPersistsAnEnabledReminderAfterSchedulingSucceeds() {
+        XCTAssertFalse(
+            BackupReminderPreferencePolicy.enabledValue(
+                requestedEnabled: true,
+                schedulingSucceeded: false
+            )
+        )
+        XCTAssertTrue(
+            BackupReminderPreferencePolicy.enabledValue(
+                requestedEnabled: true,
+                schedulingSucceeded: true
+            )
+        )
+        XCTAssertFalse(
+            BackupReminderPreferencePolicy.enabledValue(
+                requestedEnabled: false,
+                schedulingSucceeded: true
+            )
+        )
+    }
 }

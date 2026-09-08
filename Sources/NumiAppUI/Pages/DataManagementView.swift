@@ -453,7 +453,13 @@ public struct BackupView: View {
         .task { await membership.start() }
         .onChange(of: backupReminderIntervalDays) { _, _ in
             guard isBackupReminderEnabled else { return }
-            Task { await scheduleBackupReminder() }
+            Task {
+                let schedulingSucceeded = await scheduleBackupReminder()
+                isBackupReminderEnabled = BackupReminderPreferencePolicy.enabledValue(
+                    requestedEnabled: true,
+                    schedulingSucceeded: schedulingSucceeded
+                )
+            }
         }
         .membershipPaywall(context: $membershipPaywallContext)
     }
@@ -686,7 +692,13 @@ public struct BackupView: View {
         case .success(let url):
             lastBackupTimestamp = Date().timeIntervalSince1970
             if isBackupReminderEnabled {
-                Task { await scheduleBackupReminder() }
+                Task {
+                    let schedulingSucceeded = await scheduleBackupReminder()
+                    isBackupReminderEnabled = BackupReminderPreferencePolicy.enabledValue(
+                        requestedEnabled: true,
+                        schedulingSucceeded: schedulingSucceeded
+                    )
+                }
             }
             shareURL = ShareableURL(url: url)
             // 延迟显示 toast，避免与分享面板冲突
@@ -711,23 +723,28 @@ public struct BackupView: View {
                     showToastMessage(NumiLocalized.string("backup.reminder.authorization.failed"))
                     return
                 }
-                isBackupReminderEnabled = true
-                await scheduleBackupReminder()
+                let schedulingSucceeded = await scheduleBackupReminder()
+                isBackupReminderEnabled = BackupReminderPreferencePolicy.enabledValue(
+                    requestedEnabled: true,
+                    schedulingSucceeded: schedulingSucceeded
+                )
             }
         case .blocked(let context):
             membershipPaywallContext = context
         }
     }
 
-    private func scheduleBackupReminder() async {
+    private func scheduleBackupReminder() async -> Bool {
         let lastBackupAt = lastBackupTimestamp > 0 ? Date(timeIntervalSince1970: lastBackupTimestamp) : nil
-        guard await BackupReminderScheduler.schedule(
+        let schedulingSucceeded = await BackupReminderScheduler.schedule(
             lastBackupAt: lastBackupAt,
             intervalDays: backupReminderIntervalDays
-        ) else {
+        )
+        guard schedulingSucceeded else {
             showToastMessage(NumiLocalized.string("backup.reminder.schedule.failed"))
-            return
+            return false
         }
+        return true
     }
 
     private func handleRestore(_ result: Result<URL, Error>) {
