@@ -1482,6 +1482,19 @@ final class SwiftDataBookkeepingStoreTests: XCTestCase {
         XCTAssertEqual(store.visibleTransactions.map(\.note), ["Keep me"])
     }
 
+    @MainActor
+    func testPersistentStoreBootstrapBuildsTheStoreOnlyOnce() throws {
+        var buildCount = 0
+        let bootstrap = PersistentStoreBootstrap<Int> {
+            buildCount += 1
+            return buildCount
+        }
+
+        XCTAssertEqual(bootstrap.store(), 1)
+        XCTAssertEqual(bootstrap.store(), 1)
+        XCTAssertEqual(buildCount, 1)
+    }
+
     private func temporaryStoreURL() throws -> URL {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)

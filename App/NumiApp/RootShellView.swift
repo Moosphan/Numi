@@ -7,6 +7,37 @@ import NumiAppUI
 import NumiAppUI
 
 struct RootShellView: View {
+    private struct InitialStore {
+        let store: SwiftDataBookkeepingStore
+        let initializationError: String?
+    }
+
+    @MainActor private static let storeBootstrap = PersistentStoreBootstrap<InitialStore> {
+        let requestedCloudSyncEnabled = UserDefaults.standard.bool(forKey: "app.sync.icloudEnabled")
+        let activeMode = CloudSyncStorePolicy.storageMode(
+            isCloudSyncEnabled: CloudSyncSharedPreference.isCloudSyncEnabled
+        )
+        let sharedMode = CloudSyncStoreTransitionPolicy.sharedStorageMode(
+            activeMode: activeMode,
+            requestedCloudSyncEnabled: requestedCloudSyncEnabled,
+            appliesRequestedMode: true
+        )
+        CloudSyncSharedPreference.setCloudSyncEnabled(sharedMode == .cloudKit)
+
+        do {
+            let store = try makeStore()
+            try store.seedDefaultsIfNeeded()
+            try seedDemoDataIfNeeded(store: store)
+            UserDefaults.standard.set(false, forKey: "app.sync.icloudMigrationNeedsRelaunch")
+            return InitialStore(store: store, initializationError: nil)
+        } catch {
+            return InitialStore(
+                store: makeFallbackStore(),
+                initializationError: error.localizedDescription
+            )
+        }
+    }
+
     private struct CurrencySummaryResult {
         let summary: TransactionSummary
         let hasUnavailableHistoricalRate: Bool
@@ -98,45 +129,24 @@ struct RootShellView: View {
     @State private var isManagingLedgers = false
 
     init() {
-        do {
-            let requestedCloudSyncEnabled = UserDefaults.standard.bool(forKey: "app.sync.icloudEnabled")
-            let activeMode = CloudSyncStorePolicy.storageMode(
-                isCloudSyncEnabled: CloudSyncSharedPreference.isCloudSyncEnabled
-            )
-            let sharedMode = CloudSyncStoreTransitionPolicy.sharedStorageMode(
-                activeMode: activeMode,
-                requestedCloudSyncEnabled: requestedCloudSyncEnabled,
-                appliesRequestedMode: true
-            )
-            CloudSyncSharedPreference.setCloudSyncEnabled(sharedMode == .cloudKit)
-            let store = try Self.makeStore()
-            try store.seedDefaultsIfNeeded()
-            try Self.seedDemoDataIfNeeded(store: store)
-            _store = StateObject(wrappedValue: store)
-            // SwiftData's store configuration is fixed when the store is
-            // created. Clear the relaunch notice only after this launch has
-            // successfully opened the requested store, whether sync was
-            // enabled or disabled.
-            UserDefaults.standard.set(false, forKey: "app.sync.icloudMigrationNeedsRelaunch")
+        let initialStore = Self.storeBootstrap.store()
+        _store = StateObject(wrappedValue: initialStore.store)
+        _initializationError = State(initialValue: initialStore.initializationError)
 
-            // 注入 CloudKit 同步闭包
-            iCloudSyncService.shared.onPerformSync = {
-                do {
-                    let cloudStore = try SwiftDataBookkeepingStore(enableCloudSync: true)
-                    _ = cloudStore.categories
-                    _ = cloudStore.accounts
-                    // SwiftData/CloudKit performs import and export asynchronously.
-                    // Initialising the same container only proves that the request was
-                    // scheduled. The app may later observe CloudKit activity, but that
-                    // global event stream is not a receipt for this specific request.
-                    return .scheduled
-                } catch {
-                    return .failed
-                }
+        // 注入 CloudKit 同步闭包
+        iCloudSyncService.shared.onPerformSync = {
+            do {
+                let cloudStore = try SwiftDataBookkeepingStore(enableCloudSync: true)
+                _ = cloudStore.categories
+                _ = cloudStore.accounts
+                // SwiftData/CloudKit performs import and export asynchronously.
+                // Initialising the same container only proves that the request was
+                // scheduled. The app may later observe CloudKit activity, but that
+                // global event stream is not a receipt for this specific request.
+                return .scheduled
+            } catch {
+                return .failed
             }
-        } catch {
-            initializationError = error.localizedDescription
-            _store = StateObject(wrappedValue: Self.makeFallbackStore())
         }
     }
 
