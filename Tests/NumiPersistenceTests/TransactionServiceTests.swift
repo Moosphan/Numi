@@ -147,6 +147,66 @@ final class TransactionServiceTests: XCTestCase {
         XCTAssertEqual(reopenedStore.visibleTransactions.last?.note, "快捷指令午餐")
     }
 
+    func testTransactionServiceUsesTheRequestedCurrentLedgerAndCurrency() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TransactionServiceCurrentLedgerTests", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let storeURL = directory.appendingPathComponent("Numi.store")
+        let appStore = try SwiftDataBookkeepingStore(storeURL: storeURL)
+        try appStore.seedDefaultsIfNeeded()
+        let travelLedger = try appStore.createLedger(name: "Travel", currencyCode: "USD")
+        let travelAccount = try appStore.createAccount(
+            name: "Travel Cash",
+            type: .cash,
+            balance: .zero(currencyCode: "USD")
+        )
+
+        let service = TransactionService(storeURL: storeURL, currentLedgerID: travelLedger.id)
+        _ = try service.createTransaction(from: ParsedTransaction(
+            type: .expense,
+            amount: 28,
+            categoryName: "餐饮",
+            accountName: travelAccount.name,
+            occurredAt: Date(timeIntervalSince1970: 1_725_000_000),
+            note: "Travel lunch"
+        ))
+
+        let reopenedStore = try SwiftDataBookkeepingStore(storeURL: storeURL)
+        XCTAssertEqual(reopenedStore.visibleTransactions.last?.ledgerID, travelLedger.id)
+        XCTAssertEqual(reopenedStore.visibleTransactions.last?.amount.currencyCode, "USD")
+    }
+
+    func testTransactionServiceRejectsAnAccountWhoseCurrencyDiffersFromTheCurrentLedger() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TransactionServiceAccountCurrencyTests", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let storeURL = directory.appendingPathComponent("Numi.store")
+        let appStore = try SwiftDataBookkeepingStore(storeURL: storeURL)
+        try appStore.seedDefaultsIfNeeded()
+        let travelLedger = try appStore.createLedger(name: "Travel", currencyCode: "USD")
+        let cnyAccount = try XCTUnwrap(appStore.accounts.first)
+        let service = TransactionService(storeURL: storeURL, currentLedgerID: travelLedger.id)
+
+        XCTAssertThrowsError(try service.createTransaction(from: ParsedTransaction(
+            type: .expense,
+            amount: 28,
+            categoryName: "餐饮",
+            accountName: cnyAccount.name,
+            occurredAt: Date(timeIntervalSince1970: 1_725_000_000),
+            note: "Mismatched account"
+        ))) { error in
+            guard case TransactionServiceError.noAccount = error else {
+                return XCTFail("Expected an unavailable-account error, got \(error)")
+            }
+        }
+    }
+
     func testSharedStoreRefreshPublishesShortcutTransactionWrittenElsewhere() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("TransactionServiceExternalRefreshTests", isDirectory: true)

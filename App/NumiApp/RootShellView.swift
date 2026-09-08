@@ -168,6 +168,10 @@ struct RootShellView: View {
         .onAppear {
             bottomAccessoryHiddenProgress = bottomAccessoryShouldBeHidden ? 1 : 0
             consumePendingLanguageToastIfNeeded()
+            CloudSyncSharedPreference.setCurrentLedgerID(currentLedger?.id)
+        }
+        .onChange(of: currentLedgerIDString) { _, newValue in
+            CloudSyncSharedPreference.setCurrentLedgerID(UUID(uuidString: newValue))
         }
         .onChange(of: isBottomAccessoryHiddenByPage) { _, _ in
             animateBottomAccessoryVisibility()

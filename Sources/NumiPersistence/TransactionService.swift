@@ -9,6 +9,7 @@ public final class TransactionService: @unchecked Sendable {
     private static let appGroupID = "group.com.numi.shared"
     private let container: ModelContainer?
     private let context: ModelContext?
+    private let currentLedgerID: UUID?
     public let storageMode: CloudSyncStoreMode
 
     public init() {
@@ -16,6 +17,7 @@ public final class TransactionService: @unchecked Sendable {
             isCloudSyncEnabled: CloudSyncSharedPreference.isCloudSyncEnabled
         )
         storageMode = mode
+        currentLedgerID = CloudSyncSharedPreference.currentLedgerID
         switch mode {
         case .cloudKit:
             let store = Self.makeCloudStore()
@@ -40,8 +42,9 @@ public final class TransactionService: @unchecked Sendable {
 
     /// Creates a service for the same store URL used by the main app.
     /// This initializer keeps the cross-process write path testable without an App Group entitlement.
-    public init(storeURL: URL) {
+    public init(storeURL: URL, currentLedgerID: UUID? = nil) {
         storageMode = .sharedAppGroup
+        self.currentLedgerID = currentLedgerID
         let store = Self.makeStore(at: storeURL)
         self.container = store.container
         self.context = store.context
@@ -125,6 +128,9 @@ public final class TransactionService: @unchecked Sendable {
         }
         guard let ledger else {
             throw TransactionServiceError.noLedger
+        }
+        guard account.currencyCode.caseInsensitiveCompare(ledger.currencyCode) == .orderedSame else {
+            throw TransactionServiceError.noAccount
         }
 
         let targetAccount: AccountEntity?
@@ -216,7 +222,21 @@ public final class TransactionService: @unchecked Sendable {
     private func defaultLedger() -> LedgerEntity? {
         guard let context else { return nil }
         let desc = FetchDescriptor<LedgerEntity>(sortBy: [SortDescriptor(\.name)])
-        return try? context.fetch(desc).first
+        guard let ledgers = try? context.fetch(desc) else { return nil }
+        let resolvedLedger = CurrentLedgerSelectionPolicy.resolve(
+            currentLedgerID: currentLedgerID,
+            from: ledgers.map(ledgerModel)
+        )
+        return ledgers.first { $0.id == resolvedLedger?.id }
+    }
+
+    private func ledgerModel(_ entity: LedgerEntity) -> Ledger {
+        Ledger(
+            id: entity.id,
+            name: entity.name,
+            builtInKey: entity.builtInKey,
+            currencyCode: entity.currencyCode
+        )
     }
 
     private func categoryModel(_ entity: CategoryEntity) -> NumiCore.Category {
