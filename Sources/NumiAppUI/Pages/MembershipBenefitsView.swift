@@ -3,6 +3,7 @@ import NumiCore
 
 @MainActor
 public struct MembershipBenefitsView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @ObservedObject private var membership: MembershipController
     @Environment(\.openURL) private var openURL
     private let context: MembershipPaywallContext?

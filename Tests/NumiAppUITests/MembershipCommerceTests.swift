@@ -196,6 +196,22 @@ final class MembershipCommerceTests: XCTestCase {
     }
 
     @MainActor
+    func testDebugProOverrideUnlocksFeaturesAndSurvivesStatusRefresh() async {
+        let service = CommerceStub()
+        let controller = controller(service)
+
+        controller.enableTestProMembership()
+
+        XCTAssertTrue(controller.isTestProMembershipEnabled)
+        XCTAssertTrue(controller.status.tier.isPro)
+        XCTAssertEqual(controller.decision(for: .openBatchEdit), .granted)
+
+        await controller.refreshStatus()
+
+        XCTAssertTrue(controller.status.tier.isPro)
+    }
+
+    @MainActor
     func testCacheDoesNotGrantAccessOnRestart() async {
         let service = CommerceStub()
         let suite = UserDefaults(suiteName: "membership.tests.\(UUID().uuidString)")!

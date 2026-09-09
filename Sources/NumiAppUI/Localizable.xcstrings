@@ -6439,6 +6439,168 @@
         }
       }
     },
+    "setting.category.featureExtensions": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "功能扩展" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Extensions" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "功能擴充" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "機能拡張" } }
+      }
+    },
+    "setting.category.featureExtensions.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "预算、计划与效率工具" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Budgets, plans, and productivity tools" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "預算、計畫與效率工具" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "予算、プラン、便利なツール" } }
+      }
+    },
+    "setting.category.dataManagement": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "数据管理" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Data Management" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "資料管理" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "データ管理" } }
+      }
+    },
+    "setting.category.dataManagement.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "账户、账本、导入与备份" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Accounts, ledgers, imports, and backups" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "帳戶、帳本、匯入與備份" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "アカウント、台帳、インポート、バックアップ" } }
+      }
+    },
+    "setting.category.appearance": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "外观设置" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Appearance" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "外觀設定" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "外観設定" } }
+      }
+    },
+    "setting.category.appearance.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "主题、语言与显示" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Themes, language, and display" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "主題、語言與顯示" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "テーマ、言語、表示" } }
+      }
+    },
+    "setting.category.security": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "安全中心" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Security" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "安全中心" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "セキュリティ" } }
+      }
+    },
+    "setting.category.security.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "隐私锁与金额保护" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Privacy lock and amount protection" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "隱私鎖與金額保護" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プライバシーロックと金額保護" } }
+      }
+    },
+    "setting.category.notifications": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "通知管理" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Notifications" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "通知管理" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "通知管理" } }
+      }
+    },
+    "setting.category.notifications.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅与分期提醒" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Subscription and installment reminders" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱與分期提醒" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスクと分割払いの通知" } }
+      }
+    },
+    "setting.category.aiLab": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI 实验室" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI Lab" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI 實驗室" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AIラボ" } }
+      }
+    },
+    "setting.category.aiLab.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "智能记账与快捷指令" } },
+        "en": { "stringUnit": { "state": "translated", "value": "AI bookkeeping and Shortcuts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "智慧記帳與捷徑" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AI記帳とショートカット" } }
+      }
+    },
+    "setting.category.plans": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "预算与计划" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Budgets & Plans" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "預算與計畫" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "予算とプラン" } }
+      }
+    },
+    "setting.category.planSettings": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "计划设置" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Plan Settings" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "計畫設定" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "プラン設定" } }
+      }
+    },
+    "setting.category.planSettings.preview": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未来支出预览" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Upcoming spending preview" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "未來支出預覽" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "今後の支出プレビュー" } }
+      }
+    },
+    "setting.category.planSettings.subscription": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "订阅扣费处理" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Subscription billing" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "訂閱扣款處理" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "サブスク請求処理" } }
+      }
+    },
+    "setting.category.status.count": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%lld 个账户" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%lld accounts" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "%lld 個帳戶" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld個のアカウント" } }
+      }
+    },
+    "setting.category.status.enabled": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "已保护" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Protected" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "已保護" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "保護中" } }
+      }
+    },
     "setting.data": {
       "extractionState": "manual",
       "localizations": {
@@ -16306,6 +16468,24 @@
         "en": { "stringUnit": { "state": "translated", "value": "All core bookkeeping is available; Pro unlocks more efficiency and security." } },
         "zh-Hant": { "stringUnit": { "state": "translated", "value": "基礎記帳完整可用，Pro 解鎖更多效率與安全能力" } },
         "ja": { "stringUnit": { "state": "translated", "value": "基本の家計管理はすべて利用可能。Proで効率性と安全性をさらに高められます。" } }
+      }
+    },
+    "membership.debug.enable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "启用测试 Pro 会员" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Enable Test Pro" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "啟用測試 Pro 會員" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "テストProを有効化" } }
+      }
+    },
+    "membership.debug.disable": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "关闭测试 Pro 会员" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Disable Test Pro" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "關閉測試 Pro 會員" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "テストProを無効化" } }
       }
     },
     "membership.details.title": {

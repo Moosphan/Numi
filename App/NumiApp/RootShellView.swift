@@ -61,6 +61,7 @@ struct RootShellView: View {
     @AppStorage(NumiAppLanguage.pendingToastDefaultsKey) private var pendingLanguageToastCode: String = ""
     @StateObject private var rateService = ExchangeRateService.shared
     @ObservedObject private var membership = MembershipController.shared
+    @ObservedObject private var themeController = NumiThemeController.shared
 
     enum Tab: String, CaseIterable {
         case transactions
@@ -1047,6 +1048,9 @@ struct RootShellView: View {
                     } catch {
                         initializationError = error.localizedDescription
                     }
+                },
+                onOpenPlans: {
+                    selectedTab = .plans
                 }
             )
             .numiBottomAccessoryNavigationDepth()

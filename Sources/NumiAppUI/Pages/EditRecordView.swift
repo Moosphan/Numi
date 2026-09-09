@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct EditRecordView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedType: TransactionType

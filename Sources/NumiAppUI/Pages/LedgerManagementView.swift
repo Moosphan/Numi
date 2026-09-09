@@ -28,6 +28,7 @@ public struct LedgerDraft: Identifiable {
 // MARK: - Ledger Management View
 
 public struct LedgerManagementView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @ObservedObject private var membership = MembershipController.shared
     @State private var editingDraft: LedgerDraft?
     @State private var pendingDelete: Ledger?

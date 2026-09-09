@@ -60,9 +60,9 @@ public struct BudgetCardModel: Identifiable, Equatable {
 
 public struct PlansView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
-    @AppStorage("app.subscription.requiresConfirmation") private var requiresSubscriptionConfirmation = false
     @AppStorage("plans.forecast.horizon.days") private var forecastHorizonDays = PlanForecastHorizon.thirtyDays.rawValue
     @ObservedObject private var membership = MembershipController.shared
+    @ObservedObject private var themeController = NumiThemeController.shared
     @State private var editingDraft: BudgetDraft?
     @State private var showAddSubscription = false
     @State private var showAddInstallment = false
@@ -360,15 +360,6 @@ public struct PlansView: View {
                         .font(NumiFont.caption)
                         .foregroundStyle(NumiColor.textSecondary)
 
-                    Picker(NumiLocalized.string("plans.forecast.horizon"), selection: $forecastHorizonDays) {
-                        ForEach(PlanForecastHorizon.allCases) { horizon in
-                            Text(forecastHorizonTitle(for: horizon))
-                                .tag(horizon.rawValue)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .accessibilityIdentifier("plans.forecast.horizon")
-
                     if forecast.items.isEmpty {
                         if forecast.excludedCurrencyItemCount > 0 {
                             Text(NumiLocalized.string(
@@ -472,22 +463,6 @@ public struct PlansView: View {
                 trailingText: nil,
                 accessibilityIdentifier: "plans.section.subscriptions"
             )
-
-            Toggle(isOn: $requiresSubscriptionConfirmation) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(NumiLocalized.string("subscription.confirmation.mode"))
-                        .font(NumiFont.bodyStrong)
-                        .foregroundStyle(NumiColor.textPrimary)
-                    Text(NumiLocalized.string("subscription.confirmation.mode.detail"))
-                        .font(NumiFont.caption)
-                        .foregroundStyle(NumiColor.textSecondary)
-                }
-            }
-            .tint(NumiColor.accentDeep)
-            .padding(NumiSpacing.s4)
-            .background(NumiColor.surfaceCard)
-            .clipShape(RoundedRectangle(cornerRadius: NumiRadius.lg, style: .continuous))
-            .accessibilityIdentifier("plans.subscription.confirmationMode")
 
             if subscriptions.isEmpty {
                 PlanEmptyStateCard(

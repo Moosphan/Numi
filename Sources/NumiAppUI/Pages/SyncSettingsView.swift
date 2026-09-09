@@ -311,6 +311,7 @@ public class iCloudSyncService: ObservableObject {
 // MARK: - Sync Settings View
 
 public struct SyncSettingsView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @StateObject private var syncService = iCloudSyncService.shared
     @ObservedObject private var membership = MembershipController.shared
     @State private var membershipPaywallContext: MembershipPaywallContext?

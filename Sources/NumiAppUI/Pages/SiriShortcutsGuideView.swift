@@ -3,6 +3,7 @@ import NumiCore
 
 /// A compact in-app guide for the free Siri and App Shortcuts bookkeeping flow.
 public struct SiriShortcutsGuideView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     private let isAIConfigured: Bool
 
     public init(isAIConfigured: Bool) {

@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct CategoryManagementView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @State private var selectedKind: CategoryKind = .expense
     @State private var localCategories: [NumiCore.Category]
     @State private var showAddSheet = false

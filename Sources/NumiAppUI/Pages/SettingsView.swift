@@ -40,6 +40,7 @@ public struct SettingsView: View {
     private let importSnapshot: ((BookkeepingSnapshot) throws -> Void)?
     private let appendTransactions: (([NumiCore.Transaction]) throws -> Void)?
     @ObservedObject private var membership = MembershipController.shared
+    @ObservedObject private var themeController = NumiThemeController.shared
     private var membershipStatus: MembershipStatus {
         if !membership.hasResolvedStatus, let tier = membership.cachedTier {
             return MembershipStatus(tier: tier, source: .cached)
@@ -54,6 +55,7 @@ public struct SettingsView: View {
     private let onCategoryCreate: ((CategoryKind, String, String) -> Void)?
     private let onCategoryDelete: ((NumiCore.Category) -> Void)?
     private let onAccountDelete: ((Account) -> Void)?
+    private let onOpenPlans: () -> Void
 
     @AppStorage("app.privacy.lockEnabled") private var isLockEnabled = false
     @AppStorage("app.privacy.autoBlur") private var isAutoBlurEnabled = false
@@ -115,7 +117,8 @@ public struct SettingsView: View {
         onAccountUpdate: @escaping (Account, AccountDraft) -> Void = { _, _ in },
         onCategoryCreate: ((CategoryKind, String, String) -> Void)? = nil,
         onCategoryDelete: ((NumiCore.Category) -> Void)? = nil,
-        onAccountDelete: ((Account) -> Void)? = nil
+        onAccountDelete: ((Account) -> Void)? = nil,
+        onOpenPlans: @escaping () -> Void = {}
     ) {
         self.categories = categories
         self.accounts = accounts
@@ -135,9 +138,164 @@ public struct SettingsView: View {
         self.onCategoryCreate = onCategoryCreate
         self.onCategoryDelete = onCategoryDelete
         self.onAccountDelete = onAccountDelete
+        self.onOpenPlans = onOpenPlans
     }
 
     public var body: some View {
+        NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.settingsHome") {
+            VStack(alignment: .leading, spacing: NumiSpacing.s5) {
+                statsRow
+                NavigationLink { MembershipBenefitsView() } label: { MembershipStatusCard(status: membershipStatus) }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings.membership")
+#if DEBUG
+                Button {
+                    if membership.isTestProMembershipEnabled {
+                        membership.disableTestProMembership()
+                    } else {
+                        membership.enableTestProMembership()
+                    }
+                } label: {
+                    HStack(spacing: NumiSpacing.s3) {
+                        Image(systemName: membership.isTestProMembershipEnabled ? "checkmark.seal.fill" : "ladybug.fill")
+                        Text(NumiLocalized.string(membership.isTestProMembershipEnabled ? "membership.debug.disable" : "membership.debug.enable"))
+                        Spacer()
+                    }
+                    .font(NumiFont.footnote.weight(.semibold))
+                    .foregroundStyle(NumiColor.accentDeep)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, NumiSpacing.s4)
+                    .padding(.vertical, NumiSpacing.s3)
+                    .background(NumiColor.controlFill)
+                    .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings.debugProToggle")
+#endif
+
+                VStack(spacing: NumiSpacing.s3) {
+                    categoryLink(.featureExtensions) { featureExtensionsPage }
+                    categoryLink(.dataManagement) { dataManagementPage }
+                    categoryLink(.appearance) { appearancePage }
+                    categoryLink(.security) { securityPage }
+                    categoryLink(.notifications) { notificationPage }
+                    categoryLink(.aiLab) { aiLabPage }
+                }
+            }
+            .padding(.horizontal, NumiSpacing.s5)
+            .padding(.top, NumiSpacing.s4)
+            .padding(.bottom, 120)
+        }
+        .background(NumiColor.surfacePage)
+        .navigationTitle(NumiLocalized.string("setting.title"))
+        .modifier(LargeTitleNavigationChrome())
+        .onAppear { presentRequestedAIConfigurationIfNeeded() }
+        .onChange(of: requestAIConfiguration) { _, _ in presentRequestedAIConfigurationIfNeeded() }
+        .sheet(isPresented: $showLanguageSheet) {
+            languageSheet
+                .presentationDetents([.medium])
+                .presentationCornerRadius(28)
+        }
+    }
+
+    @ViewBuilder
+    private func categoryLink<Destination: View>(_ category: SettingsCategory, @ViewBuilder destination: () -> Destination) -> some View {
+        NavigationLink { destination() } label: {
+            SettingsCategoryCard(category: category)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("settings.category.\(category.rawValue)")
+    }
+
+    private var featureExtensionsPage: some View {
+        SettingsCategoryPage(category: .featureExtensions) {
+            Button { onOpenPlans() } label: { settingsRow(NumiLocalized.string("setting.category.plans"), icon: "calendar.badge.clock") }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.plans")
+            NavigationLink { PlanSettingsView() } label: { settingsRow(NumiLocalized.string("setting.category.planSettings"), icon: "slider.horizontal.3") }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.planSettings")
+        }
+    }
+
+    private var dataManagementPage: some View {
+        SettingsCategoryPage(category: .dataManagement) {
+            Button { onManageLedgers() } label: { settingsRow(NumiLocalized.string("setting.ledger"), icon: "book") }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.ledgers")
+            NavigationLink { CategoryManagementView(categories: categories, onVisibilityChange: onCategoryVisibilityChange, onCategoryCreate: onCategoryCreate, onCategoryDelete: onCategoryDelete) } label: { settingsRow(NumiLocalized.string("setting.category"), icon: "square.grid.2x2") }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.categories")
+            NavigationLink { AccountManagementView(accounts: accounts, transactions: transactions, categories: categories, exchangeRateHistory: exchangeRateHistory, onVisibilityChange: onAccountVisibilityChange, onCreate: onAccountCreate, onUpdate: onAccountUpdate, onDelete: onAccountDelete) } label: { settingsRow(NumiLocalized.string("setting.account"), icon: "creditcard") }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.accounts")
+            NavigationLink { CurrencyManagementView() } label: { settingsRow(NumiLocalized.string("setting.multi.currency"), icon: "dollarsign.circle") }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.currency")
+            NavigationLink {
+                SyncSettingsView(onPrepareMigration: {
+                    guard let exportSnapshot else { throw CloudMigrationTransferError.stage }
+                    try CloudMigrationTransferService.shared.stage(exportSnapshot())
+                }, hasPendingMigration: {
+                    CloudMigrationTransferService.shared.isMigrationPending
+                }, onMigrationAssessment: {
+                    let transfer = CloudMigrationTransferService.shared
+                    guard transfer.isMigrationPending, let exportSnapshot else { return nil }
+                    return CloudMigrationPolicy.assessment(local: try transfer.load(), cloud: exportSnapshot())
+                }, onResolveMigration: { strategy in
+                    let transfer = CloudMigrationTransferService.shared
+                    guard let exportSnapshot, let importSnapshot else { throw CloudMigrationTransferError.load }
+                    try CloudMigrationCoordinator(transferService: transfer).apply(local: try transfer.load(), cloud: exportSnapshot(), strategy: strategy, writeDestination: importSnapshot)
+                })
+            } label: { settingsRow(NumiLocalized.string("setting.icloud.sync"), icon: "icloud") }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.sync")
+            if let export = exportSnapshot, let importFn = importSnapshot, let appendFn = appendTransactions {
+                NavigationLink { DataManagementView(exportSnapshot: export, importSnapshot: importFn, appendTransactions: appendFn, currentLedgerID: currentLedgerID) } label: { settingsRow(NumiLocalized.string("setting.import.export"), icon: "square.and.arrow.up") }
+                    .buttonStyle(.plain).accessibilityIdentifier("settings.importExport")
+                NavigationLink { BackupView(exportSnapshot: export, importSnapshot: importFn) } label: { settingsRow(NumiLocalized.string("setting.local.backup"), icon: "lock.doc") }
+                    .buttonStyle(.plain).accessibilityIdentifier("settings.backup")
+            }
+        }
+    }
+
+    private var appearancePage: some View {
+        SettingsCategoryPage(category: .appearance) {
+            Button { showLanguageSheet = true } label: { settingsRow(NumiLocalized.string("setting.language"), icon: "globe", trailingText: currentLanguageName) }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.language")
+            NavigationLink { ThemeSelectionView() } label: { settingsRow(NumiLocalized.string("setting.theme"), icon: "paintpalette") }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.theme")
+        }
+    }
+
+    private var securityPage: some View {
+        SettingsCategoryPage(category: .security) {
+            privacyLockRow
+            if isLockEnabled {
+                lockMethodRow
+                if lockMethod == "passcode" || lockMethod == "both" { changePasscodeRow }
+            }
+            autoBlurRow
+            hiddenAmountRow
+        }
+    }
+
+    private var notificationPage: some View {
+        SettingsCategoryPage(category: .notifications) {
+            reminderPreferenceRow(title: NumiLocalized.string("setting.installment.reminder.days"), description: NumiLocalized.string("setting.installment.reminder.days.desc"), icon: "creditcard", selection: $installmentReminderDaysBefore, accessibilityID: "settings.installmentReminderDays", showsDivider: true)
+            reminderPreferenceRow(title: NumiLocalized.string("setting.subscription.reminder.days"), description: NumiLocalized.string("setting.subscription.reminder.days.desc"), icon: "repeat", selection: $subscriptionReminderDaysBefore, accessibilityID: "settings.subscriptionReminderDays", showsDivider: false)
+        }
+    }
+
+    private var aiLabPage: some View {
+        SettingsCategoryPage(category: .aiLab) {
+            Button { showAIKeySheet = true } label: { settingsRow(NumiLocalized.string("setting.ai.config"), icon: "brain", trailingText: currentProviderDisplayName) }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.ai")
+                .sheet(isPresented: $showAIKeySheet) {
+                    aiConfigSheet
+                        .presentationDetents([.height(420)])
+                        .presentationCornerRadius(28)
+                        .onAppear { editingProvider = aiProvider; editingClaudeKey = claudeAPIKey; editingQwenKey = qwenAPIKey; editingDeepseekKey = deepseekAPIKey }
+                }
+            NavigationLink { SiriShortcutsGuideView(isAIConfigured: hasAPIKey) } label: { settingsRow(NumiLocalized.string("siri.shortcuts.title"), icon: "mic.and.signal.meter", trailingText: NumiLocalized.string(hasAPIKey ? "siri.shortcuts.status.ready" : "siri.shortcuts.status.setup")) }
+                .buttonStyle(.plain).accessibilityIdentifier("settings.siriShortcuts")
+        }
+    }
+
+    private var legacyBody: some View {
         NumiBottomAccessoryTrackingScrollView(accessibilityIdentifier: "scroll.settingsHome") {
             VStack(alignment: .leading, spacing: NumiSpacing.s5) {
                 // 统计小卡片
@@ -1217,6 +1375,7 @@ struct LargeTitleNavigationChrome: ViewModifier {
 }
 
 private struct MembershipStatusCard: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     let status: MembershipStatus
 
     private var tierTitle: String {
@@ -1266,5 +1425,6 @@ private struct MembershipStatusCard: View {
         .clipShape(RoundedRectangle(cornerRadius: NumiRadius.xl, style: .continuous))
         .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 4)
         .accessibilityElement(children: .combine)
+        .id("\(themeController.theme.id)-\(themeController.colorScheme)")
     }
 }

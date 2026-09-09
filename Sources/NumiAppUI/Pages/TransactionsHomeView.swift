@@ -91,6 +91,7 @@ public struct TransactionsHomeView: View {
     private let onBatchCategory: (Set<UUID>, UUID) -> Bool
     private let onUndoBatchCategory: () -> Bool
     @ObservedObject private var membership = MembershipController.shared
+    @ObservedObject private var themeController = NumiThemeController.shared
     @State private var pendingDelete: NumiCore.Transaction?
     @State private var showsUndo = false
     @State private var showsPeriodPicker = false
@@ -503,20 +504,6 @@ public struct TransactionsHomeView: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("action.openTransactionSearch")
 
-                Button {
-                    openBatchEditing()
-                } label: {
-                    Image(systemName: "checklist")
-                        .font(.system(size: NumiChromeMetrics.toolbarSymbolSize, weight: .semibold))
-                        .foregroundStyle(NumiColor.textSecondary)
-                        .frame(
-                            width: NumiChromeMetrics.toolbarButtonHitSize,
-                            height: NumiChromeMetrics.toolbarButtonHitSize
-                        )
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("action.openBatchEdit")
             }
         }
     }
@@ -774,6 +761,13 @@ public struct TransactionsHomeView: View {
                     Label(NumiLocalized.string("common.share"), systemImage: "square.and.arrow.up")
                 }
                 .accessibilityIdentifier("action.context.shareRecord")
+
+                Button {
+                    openBatchEditing()
+                } label: {
+                    Label(NumiLocalized.string("batch.edit"), systemImage: "checklist")
+                }
+                .accessibilityIdentifier("action.context.batchEdit")
             }
         }
     }

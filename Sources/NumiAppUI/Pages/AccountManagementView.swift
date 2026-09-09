@@ -3,6 +3,7 @@ import Foundation
 import NumiCore
 
 public struct AccountManagementView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @ObservedObject private var membership = MembershipController.shared
@@ -610,6 +611,7 @@ private struct AccountFormView: View {
 // MARK: - AccountDetailView
 
 struct AccountDetailView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     let account: Account
     let transactions: [NumiCore.Transaction]

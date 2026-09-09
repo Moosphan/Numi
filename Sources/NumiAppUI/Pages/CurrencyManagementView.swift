@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct CurrencyManagementView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @AppStorage("app.currency.default") private var defaultCurrencyCode = "CNY"
     @AppStorage("app.currency.autoUpdate") private var isAutoUpdateEnabled = true
     @ObservedObject private var membership = MembershipController.shared

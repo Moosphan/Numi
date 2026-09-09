@@ -85,6 +85,7 @@ public struct TransactionSearchFilter: Equatable {
 }
 
 public struct TransactionSearchView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @Environment(\.dismiss) private var dismiss
 
     private let rows: [TransactionSearchRow]

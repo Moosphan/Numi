@@ -48,6 +48,7 @@ public enum InsightsTimeDimension: String, CaseIterable, Identifiable {
 public struct InsightsView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     @ObservedObject private var membership = MembershipController.shared
+    @ObservedObject private var themeController = NumiThemeController.shared
     private let summary: TransactionSummary
     private let previousPeriodSummary: TransactionSummary?
     private let trendPoints: [CashflowTrendPoint]
@@ -906,6 +907,7 @@ public struct InsightsView: View {
 
 public struct CategoryTransactionsDetailView: View {
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
+    @ObservedObject private var themeController = NumiThemeController.shared
     private let categoryID: UUID
     private let transactions: [NumiCore.Transaction]
     private let categories: [NumiCore.Category]

@@ -147,6 +147,9 @@ if stage_is_selected ui-tests; then
     -only-testing:NumiUITests/NumiUITests/testImportRecoveryRestoreIsDisabledWithoutSavedRecoveryPoint \
     -only-testing:NumiUITests/NumiUITests/testCSVImportEntryIsReachable \
     -only-testing:NumiUITests/NumiUITests/testDataManagementExportAndImportEntriesAreReachable \
+    -only-testing:NumiUITests/NumiUITests/testSearchingTransactionsFiltersAndClearsResults \
+    -only-testing:NumiUITests/NumiUITests/testSearchPresentedFromFullScreenPageHidesHomeAddButton \
+    -only-testing:NumiUITests/NumiUITests/testSearchKeyboardDoesNotShiftSearchField \
     test
 fi
 

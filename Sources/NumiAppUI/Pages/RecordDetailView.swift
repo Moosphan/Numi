@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct RecordDetailView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @Environment(\.privacyAmountDisplayPolicy) private var privacyAmountDisplayPolicy
     private let transaction: NumiCore.Transaction
     private let categories: [NumiCore.Category]

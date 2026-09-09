@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct CSVImportReviewSheet: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     private let document: CSVImportDocument
     private let context: CSVImportContext
     private let onImport: ([NumiCore.Transaction]) -> Void

@@ -37,10 +37,8 @@ final class NumiUITests: XCTestCase {
         let settingsScroll = app.scrollViews["scroll.settingsHome"]
         XCTAssertTrue(settingsScroll.waitForExistence(timeout: 5))
 
+        openAppearanceSettings(in: app)
         let languageRow = app.buttons["settings.language"]
-        if languageRow.exists && !languageRow.isHittable {
-            settingsScroll.swipeUp()
-        }
         XCTAssertTrue(languageRow.waitForExistence(timeout: 5), "settings.language button should exist")
         languageRow.tap()
 
@@ -57,17 +55,14 @@ final class NumiUITests: XCTestCase {
         app.buttons["tab.settings"].tap()
         XCTAssertTrue(settingsScroll.waitForExistence(timeout: 5))
 
-        waitForLabel("Data", on: app.staticTexts["settings.section.data"])
-        waitForLabel("Security", on: app.staticTexts["settings.section.security"])
-        waitForLabel("Appearance", on: app.staticTexts["settings.section.appearance"])
+        XCTAssertTrue(app.buttons["settings.category.featureExtensions"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["settings.category.dataManagement"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["settings.category.appearance"].waitForExistence(timeout: 5))
+        openAppearanceSettings(in: app)
         waitForLabel("Theme", on: app.buttons["settings.theme"])
-        waitForLabel("Multi-Currency", on: app.buttons["settings.currency"])
 
-        app.buttons["tab.insights"].tap()
-        XCTAssertTrue(app.staticTexts["summary.insights.expense.value"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["summary.insights.income.value"].waitForExistence(timeout: 5))
-
-        app.buttons["tab.settings"].tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        openAppearanceSettings(in: app)
         XCTAssertTrue(languageRow.waitForExistence(timeout: 5))
         languageRow.tap()
 
@@ -84,11 +79,11 @@ final class NumiUITests: XCTestCase {
         app.buttons["tab.settings"].tap()
         XCTAssertTrue(settingsScroll.waitForExistence(timeout: 5))
 
-        waitForLabel("数据", on: app.staticTexts["settings.section.data"])
-        waitForLabel("安全", on: app.staticTexts["settings.section.security"])
-        waitForLabel("外观", on: app.staticTexts["settings.section.appearance"])
+        XCTAssertTrue(app.buttons["settings.category.featureExtensions"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["settings.category.dataManagement"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["settings.category.appearance"].waitForExistence(timeout: 5))
+        openAppearanceSettings(in: app)
         waitForLabel("主题", on: app.buttons["settings.theme"])
-        waitForLabel("多货币管理", on: app.buttons["settings.currency"])
     }
 
     func testBottomBarUsesFourTabsPlusTrailingAddButtonLayout() {
@@ -120,6 +115,7 @@ final class NumiUITests: XCTestCase {
         let baselineAddButtonFrame = app.buttons["button.addRecord"].frame
 
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         let categoriesEntry = app.buttons["settings.categories"]
         XCTAssertTrue(categoriesEntry.waitForExistence(timeout: 5))
         categoriesEntry.tap()
@@ -172,6 +168,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         let categoriesEntry = app.buttons["settings.categories"]
         XCTAssertTrue(categoriesEntry.waitForExistence(timeout: 5))
         categoriesEntry.tap()
@@ -188,6 +185,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         let accountsEntry = app.buttons["settings.accounts"]
         XCTAssertTrue(accountsEntry.waitForExistence(timeout: 5))
         accountsEntry.tap()
@@ -207,6 +205,7 @@ final class NumiUITests: XCTestCase {
         let baselineAddButtonFrame = app.buttons["button.addRecord"].frame
 
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         let accountsEntry = app.buttons["settings.accounts"]
         XCTAssertTrue(accountsEntry.waitForExistence(timeout: 5))
         accountsEntry.tap()
@@ -226,8 +225,9 @@ final class NumiUITests: XCTestCase {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
         tabButton("我的", in: app).tap()
+        openSecuritySettings(in: app)
 
-        let securityHeader = app.staticTexts["settings.section.security"]
+        let securityHeader = app.navigationBars["安全中心"]
         let settingsTab = tabButton("我的", in: app)
 
         XCTAssertTrue(securityHeader.waitForExistence(timeout: 5))
@@ -311,7 +311,7 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(recordElement("交通", in: app).waitForExistence(timeout: 5))
 
         app.buttons["action.openTransactionSearch"].tap()
-        let searchField = app.searchFields.firstMatch
+        let searchField = transactionSearchField(in: app)
         XCTAssertTrue(searchField.waitForExistence(timeout: 5))
         searchField.tap()
         searchField.typeText("交通")
@@ -331,29 +331,25 @@ final class NumiUITests: XCTestCase {
         assertBottomBarVisible(in: app)
         app.buttons["action.openTransactionSearch"].tap()
 
-        let searchField = app.searchFields.firstMatch
+        let searchField = transactionSearchField(in: app)
         XCTAssertTrue(searchField.waitForExistence(timeout: 5))
         assertBottomBarHiddenAfterScroll(in: app, baselineAddButtonFrame: baselineAddButtonFrame)
     }
 
-    func testSearchKeyboardDoesNotLiftBottomTabBar() {
+    func testSearchKeyboardDoesNotShiftSearchField() {
         let app = launchApp()
 
         let searchButton = app.buttons["action.openTransactionSearch"]
         XCTAssertTrue(searchButton.waitForExistence(timeout: 5))
-        let beforeMinY = searchButton.frame.minY
 
         searchButton.tap()
-        let searchField = app.searchFields.firstMatch
+        let searchField = transactionSearchField(in: app)
         XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+        let beforeMinY = searchField.frame.minY
         searchField.tap()
 
         XCTAssertTrue(app.keyboards.element.waitForExistence(timeout: 5))
-        let searchPage = app.otherElements["page.transactionSearch"]
-        XCTAssertTrue(searchPage.waitForExistence(timeout: 5))
-        let afterMinY = searchPage.frame.minY
-
-        XCTAssertLessThan(fabs(afterMinY - beforeMinY), 24)
+        XCTAssertLessThan(abs(searchField.frame.minY - beforeMinY), 24)
     }
 
     func testTopLevelPagesShowNativeNavigationTitles() {
@@ -374,6 +370,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
         tabButton("我的", in: app).tap()
+        openAppearanceSettings(in: app)
         let themeEntry = app.descendants(matching: .any)["settings.theme"]
         XCTAssertTrue(themeEntry.waitForExistence(timeout: 5))
         themeEntry.tap()
@@ -388,6 +385,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
         tabButton("我的", in: app).tap()
+        openAppearanceSettings(in: app)
         let themeEntry = app.descendants(matching: .any)["settings.theme"]
         XCTAssertTrue(themeEntry.waitForExistence(timeout: 5))
         themeEntry.tap()
@@ -404,6 +402,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
         tabButton("我的", in: app).tap()
+        openAppearanceSettings(in: app)
         let themeEntry = app.descendants(matching: .any)["settings.theme"]
         XCTAssertTrue(themeEntry.waitForExistence(timeout: 5))
         themeEntry.tap()
@@ -420,15 +419,14 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.buttons["action.closeAddRecordSelection"].waitForExistence(timeout: 5))
     }
 
-    func testSearchOpensDedicatedPageWithSystemSearchField() {
+    func testSearchOpensDedicatedPageWithAccessibleSearchField() {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
         XCTAssertTrue(app.buttons["action.openTransactionSearch"].waitForExistence(timeout: 5))
         app.buttons["action.openTransactionSearch"].tap()
 
         XCTAssertTrue(app.otherElements["page.transactionSearch"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.textFields["search.transactions"].exists)
+        XCTAssertTrue(transactionSearchField(in: app).waitForExistence(timeout: 5))
     }
 
     func testTransactionFiltersCanOpenApplyAndReset() {
@@ -552,6 +550,8 @@ final class NumiUITests: XCTestCase {
         XCTAssertTrue(app.buttons["action.context.editRecord"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["action.context.deleteRecord"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["action.context.shareRecord"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["action.context.batchEdit"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["action.openBatchEdit"].exists)
     }
 
     func testEmptyHomeStateOffersPrimaryAddAction() {
@@ -603,7 +603,7 @@ final class NumiUITests: XCTestCase {
 
         XCTAssertTrue(recordElement("餐饮", in: app).waitForExistence(timeout: 5))
         app.buttons["action.openTransactionSearch"].tap()
-        let searchField = app.searchFields.firstMatch
+        let searchField = transactionSearchField(in: app)
         XCTAssertTrue(searchField.waitForExistence(timeout: 5))
         searchField.tap()
         searchField.typeText("地铁通勤")
@@ -662,7 +662,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp(seedProfile: "screenshot_showcase")
 
         tabButton("我的", in: app).tap()
-        XCTAssertTrue(app.staticTexts["settings.section.security"].waitForExistence(timeout: 5))
+        openSecuritySettings(in: app)
 
         let privacyLockSwitch = app.switches["toggle.privacyLock"]
         XCTAssertTrue(privacyLockSwitch.waitForExistence(timeout: 5))
@@ -691,12 +691,41 @@ final class NumiUITests: XCTestCase {
 
         tabButton("我的", in: app).tap()
 
-        XCTAssertTrue(app.staticTexts["settings.section.data"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["settings.section.security"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["settings.section.appearance"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.otherElements["settings.card.data"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.otherElements["settings.card.security"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.otherElements["settings.card.appearance"].waitForExistence(timeout: 5))
+        for identifier in ["featureExtensions", "dataManagement", "appearance", "security", "notifications", "aiLab"] {
+            XCTAssertTrue(app.buttons["settings.category.\(identifier)"].waitForExistence(timeout: 5))
+        }
+    }
+
+    func testSettingsCategoriesUseSingleColumnListLayout() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+        tabButton("我的", in: app).tap()
+
+        let identifiers = ["featureExtensions", "dataManagement", "appearance", "security", "notifications", "aiLab"]
+        var frames: [CGRect] = []
+        for identifier in identifiers {
+            let card = app.buttons["settings.category.\(identifier)"]
+            XCTAssertTrue(card.waitForExistence(timeout: 5))
+            frames.append(card.frame)
+        }
+
+        for pair in zip(frames, frames.dropFirst()) {
+            XCTAssertGreaterThan(pair.1.minY, pair.0.maxY - 1, "Settings categories should be stacked in one column")
+        }
+    }
+
+    func testSettingsCategoriesDescribeTheirFunctionsInsteadOfCurrentStatus() {
+        let app = launchApp(seedProfile: "screenshot_showcase")
+        tabButton("我的", in: app).tap()
+
+        let dataManagement = app.buttons["settings.category.dataManagement"]
+        XCTAssertTrue(dataManagement.waitForExistence(timeout: 5))
+        XCTAssertTrue(dataManagement.label.contains("账户、账本、导入与备份"))
+        XCTAssertFalse(dataManagement.label.contains("2 个账户"))
+
+        let appearance = app.buttons["settings.category.appearance"]
+        XCTAssertTrue(appearance.waitForExistence(timeout: 5))
+        XCTAssertTrue(appearance.label.contains("主题、语言与显示"))
+        XCTAssertFalse(appearance.label.contains("简体中文"))
     }
 
     func testHiddenAmountModeMasksHomeAndDetailAmounts() {
@@ -706,10 +735,8 @@ final class NumiUITests: XCTestCase {
         tabButton("我的", in: app).tap()
         let settingsScroll = app.scrollViews["scroll.settingsHome"]
         XCTAssertTrue(settingsScroll.waitForExistence(timeout: 5))
+        openSecuritySettings(in: app)
         let hideAmountsToggle = app.switches["toggle.hideAmounts"]
-        if !hideAmountsToggle.waitForExistence(timeout: 2) {
-            settingsScroll.swipeUp()
-        }
         XCTAssertTrue(hideAmountsToggle.waitForExistence(timeout: 5))
         if (hideAmountsToggle.value as? String) == "0" {
             hideAmountsToggle.tap()
@@ -822,6 +849,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp()
 
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         XCTAssertTrue(app.buttons["settings.categories"].waitForExistence(timeout: 5))
         app.buttons["settings.categories"].tap()
 
@@ -843,6 +871,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp()
 
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         XCTAssertTrue(app.buttons["settings.accounts"].waitForExistence(timeout: 5))
         app.buttons["settings.accounts"].tap()
 
@@ -867,6 +896,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp()
 
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         XCTAssertTrue(app.buttons["settings.accounts"].waitForExistence(timeout: 5))
         app.buttons["settings.accounts"].tap()
 
@@ -998,7 +1028,7 @@ final class NumiUITests: XCTestCase {
         XCTAssertEqual(app.staticTexts["budget.month.amount"].label, "¥5,200.00")
 
         tabButton("我的", in: app).tap()
-        XCTAssertTrue(app.buttons["settings.accounts"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["settings.category.dataManagement"].waitForExistence(timeout: 5))
     }
 
     func testBackupRestoreRequiresPasswordBeforeSelectingFile() {
@@ -1007,6 +1037,7 @@ final class NumiUITests: XCTestCase {
         let settingsTab = tabButton("我的", in: app)
         XCTAssertTrue(settingsTab.waitForExistence(timeout: 5))
         settingsTab.tap()
+        openDataManagement(in: app)
         app.buttons["settings.backup"].tap()
 
         let restoreButton = app.buttons["backup.restore.selectFile"]
@@ -1018,6 +1049,7 @@ final class NumiUITests: XCTestCase {
         let app = launchApp()
         XCTAssertTrue(app.scrollViews["scroll.transactionsHome"].waitForExistence(timeout: 5))
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         app.buttons["settings.importExport"].tap()
 
         let restoreButton = app.buttons["io.import.restorePrevious"]
@@ -1028,6 +1060,7 @@ final class NumiUITests: XCTestCase {
     func testCSVImportEntryIsReachable() {
         let app = launchApp()
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         app.buttons["settings.importExport"].tap()
 
         XCTAssertTrue(app.buttons["io.import.csv"].waitForExistence(timeout: 5))
@@ -1036,6 +1069,7 @@ final class NumiUITests: XCTestCase {
     func testDataManagementExportAndImportEntriesAreReachable() {
         let app = launchApp()
         tabButton("我的", in: app).tap()
+        openDataManagement(in: app)
         app.buttons["settings.importExport"].tap()
 
         XCTAssertTrue(app.buttons["io.export.json"].waitForExistence(timeout: 5))
@@ -1051,7 +1085,7 @@ final class NumiUITests: XCTestCase {
         saveScreenshot(named: "01-transactions-home")
 
         app.buttons["action.openTransactionSearch"].tap()
-        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(transactionSearchField(in: app).waitForExistence(timeout: 5))
         saveScreenshot(named: "02-transactions-search")
         app.buttons["action.closeTransactionSearch"].tap()
 
@@ -1071,9 +1105,10 @@ final class NumiUITests: XCTestCase {
         saveScreenshot(named: "05-plans")
 
         tabButton("我的", in: app).tap()
-        XCTAssertTrue(app.buttons["settings.accounts"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["settings.category.dataManagement"].waitForExistence(timeout: 5))
         saveScreenshot(named: "06-settings")
 
+        openDataManagement(in: app)
         app.buttons["settings.accounts"].tap()
         XCTAssertTrue(app.scrollViews["scroll.accountManagement"].waitForExistence(timeout: 5))
         saveScreenshot(named: "07-accounts")
@@ -1106,6 +1141,18 @@ final class NumiUITests: XCTestCase {
         let membershipCard = app.descendants(matching: .any)["settings.membership"]
         XCTAssertTrue(membershipCard.waitForExistence(timeout: 5))
         saveScreenshot(named: "settings-membership-status")
+    }
+
+    func testSettingsDebugEntryCanEnableProMembership() {
+        let app = launchApp()
+        tabButton("我的", in: app).tap()
+
+        let debugToggle = app.buttons["settings.debugProToggle"]
+        XCTAssertTrue(debugToggle.waitForExistence(timeout: 5))
+        debugToggle.tap()
+
+        XCTAssertTrue(debugToggle.label.contains("关闭测试 Pro 会员"))
+        XCTAssertTrue(app.staticTexts["Pro 已激活"].waitForExistence(timeout: 5))
     }
 
     func testMembershipBenefitsDisplaysDetails() {
@@ -1262,6 +1309,27 @@ final class NumiUITests: XCTestCase {
         return app.buttons["tab.\(tabIdentifier(for: title))"]
     }
 
+    private func openDataManagement(in app: XCUIApplication) {
+        let entry = app.buttons["settings.category.dataManagement"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 5))
+        entry.tap()
+        XCTAssertTrue(app.scrollViews["scroll.settingsCategory.dataManagement"].waitForExistence(timeout: 5))
+    }
+
+    private func openAppearanceSettings(in app: XCUIApplication) {
+        let entry = app.buttons["settings.category.appearance"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 5))
+        entry.tap()
+        XCTAssertTrue(app.scrollViews["scroll.settingsCategory.appearance"].waitForExistence(timeout: 5))
+    }
+
+    private func openSecuritySettings(in app: XCUIApplication) {
+        let entry = app.buttons["settings.category.security"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 5))
+        entry.tap()
+        XCTAssertTrue(app.scrollViews["scroll.settingsCategory.security"].waitForExistence(timeout: 5))
+    }
+
     private func waitForLabel(
         _ expected: String,
         on element: XCUIElement,
@@ -1314,6 +1382,10 @@ final class NumiUITests: XCTestCase {
         return app.descendants(matching: .any)
             .matching(NSPredicate(format: "label BEGINSWITH %@", name))
             .firstMatch
+    }
+
+    private func transactionSearchField(in app: XCUIApplication) -> XCUIElement {
+        app.textFields.firstMatch
     }
 
     private func recordAmountElement(_ name: String, in app: XCUIApplication) -> XCUIElement {

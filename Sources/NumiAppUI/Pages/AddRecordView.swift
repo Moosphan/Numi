@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct AddRecordView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @State private var selectedType: TransactionType = .expense
     @State private var selectedCategoryID: UUID?
     @State private var selectedAccountID: UUID?

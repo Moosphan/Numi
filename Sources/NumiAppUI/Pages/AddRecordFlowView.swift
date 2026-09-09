@@ -2,6 +2,7 @@ import SwiftUI
 import NumiCore
 
 public struct AddRecordFlowView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     @Environment(\.dismiss) private var dismiss
 
     private let categories: [NumiCore.Category]

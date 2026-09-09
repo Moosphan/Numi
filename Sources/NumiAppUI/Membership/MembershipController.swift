@@ -20,6 +20,9 @@ public final class MembershipController: ObservableObject {
     @Published public private(set) var products: [MembershipProduct] = []
     @Published public private(set) var state: MembershipCommerceState = .idle
     @Published public private(set) var hasResolvedStatus = false
+#if DEBUG
+    @Published public private(set) var isTestProMembershipEnabled = false
+#endif
     @Published public var messageKey: String?
     @Published public private(set) var productErrorKey: String?
     private let service: any MembershipCommerceService
@@ -55,6 +58,12 @@ public final class MembershipController: ObservableObject {
     }
 
     public func refreshStatus() async {
+#if DEBUG
+        if isTestProMembershipEnabled {
+            applyTestProStatus()
+            return
+        }
+#endif
         refreshGeneration += 1
         let generation = refreshGeneration
         let resolved = await service.currentStatus()
@@ -119,6 +128,26 @@ public final class MembershipController: ObservableObject {
     public func decision(for request: MembershipFeatureRequest) -> MembershipFeatureAccessDecision {
         MembershipFeatureGate(status: status).decision(for: request)
     }
+
+#if DEBUG
+    public func enableTestProMembership() {
+        isTestProMembershipEnabled = true
+        applyTestProStatus()
+    }
+
+    public func disableTestProMembership() {
+        isTestProMembershipEnabled = false
+        status = .free
+        cachedTier = nil
+        hasResolvedStatus = false
+    }
+
+    private func applyTestProStatus() {
+        status = MembershipStatus(tier: .proLifetime, source: .unknown)
+        hasResolvedStatus = true
+        cachedTier = nil
+    }
+#endif
 
     private func apply(_ resolved: MembershipStatus) {
         status = resolved

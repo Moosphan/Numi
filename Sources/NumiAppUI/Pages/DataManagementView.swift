@@ -23,6 +23,7 @@ private func localizedImportErrorDetail(_ error: Error) -> String {
 // MARK: - Data Management View
 
 public struct DataManagementView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     private let exportSnapshot: () -> BookkeepingSnapshot
     private let importSnapshot: (BookkeepingSnapshot) throws -> Void
     private let appendTransactions: ([NumiCore.Transaction]) throws -> Void
@@ -402,6 +403,7 @@ public struct DataManagementView: View {
 // MARK: - Backup View
 
 public struct BackupView: View {
+    @ObservedObject private var themeController = NumiThemeController.shared
     private let exportSnapshot: () -> BookkeepingSnapshot
     private let importSnapshot: (BookkeepingSnapshot) throws -> Void
 
